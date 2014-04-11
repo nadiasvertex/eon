@@ -7,7 +7,7 @@ def main():
 
     from eonmgr import config, data_server, management_server
 
-    parser = argparse.ArgumentParser(prog="isqlmgr", description='Manage an InfiniSQL cluster.')
+    parser = argparse.ArgumentParser(prog="eon", description='Manage an eon cluster.')
 
     parser.add_argument('--dist-dir', dest='dist_dir',
                         default="/opt/eon",
