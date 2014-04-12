@@ -3,5 +3,5 @@ WORKING_DIR=$PWD
 SCRIPT_DIR="`dirname \"$0\"`"
 SCRIPT_PATH="`( cd \"$SCRIPT_DIR\" && pwd )`"
 cd $SCRIPT_PATH
-python3 -m eonmgr $*
+python3 -m eon.manager $*
 cd $WORKING_DIR
