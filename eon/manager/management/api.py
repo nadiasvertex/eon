@@ -6,12 +6,12 @@ import time
 import parsedatetime
 import tornado.web
 
-import eonmgr
+import eon.manager
 
 
 class ManagementNodeListHandler(tornado.web.RequestHandler):
     def get(self):
-        instance = eonmgr.management.Controller.instance
+        instance = eon.manager.management.Controller.instance
 
         self.write(json.dumps({
             "cluster_name": instance.cluster_name,
@@ -24,7 +24,7 @@ class ManagementNodeListHandler(tornado.web.RequestHandler):
 
 class ManagementNodeDetailsHandler(tornado.web.RequestHandler):
     def get(self, node_name):
-        instance = eonmgr.management.Controller.instance
+        instance = eon.manager.management.Controller.instance
         parts = node_name.split(":")
         node_id = (parts[0], int(parts[1]))
         if not instance.is_node_known(node_id):
@@ -55,7 +55,7 @@ class MetricsHandler(tornado.web.RequestHandler):
             return sum(values) / len(values)
 
     def get(self, metric_name, operation):
-        instance = eonmgr.management.Controller.instance
+        instance = eon.manager.management.Controller.instance
         health = instance.get_health()
         metric = health.lookup(metric_name)
         if metric is None:
@@ -81,14 +81,14 @@ class MetricsHandler(tornado.web.RequestHandler):
 
 class MetricsListHandler(tornado.web.RequestHandler):
     def get(self):
-        instance = eonmgr.management.Controller.instance
+        instance = eon.manager.management.Controller.instance
         health = instance.get_health()
         self.write(json.dumps(health.get_metric_names()))
 
 
 class DatabaseEngineHandler(tornado.web.RequestHandler):
     def get(self, operation, dbe_node_id):
-        instance = eonmgr.management.Controller.instance
+        instance = eon.manager.management.Controller.instance
 
 
 handlers = [

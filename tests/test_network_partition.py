@@ -2,8 +2,8 @@ __author__ = 'Christopher Nelson'
 
 import unittest
 
-from eonmgr import management, config
-from eonmgr.management.nodeid import NodeId
+from eon.manager import management, config
+from eon.manager.management.nodeid import NodeId
 
 
 class SimpleConfig(object):

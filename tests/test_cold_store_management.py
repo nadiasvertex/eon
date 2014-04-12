@@ -1,7 +1,7 @@
 __author__ = 'Christopher Nelson'
 
 import unittest
-from eonmgr.cold_store import ManagementDriver
+from eon.manager.cold_store import ManagementDriver
 
 class TestColdStoreManagement(unittest.TestCase):
     def setUp(self):

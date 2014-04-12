@@ -5,7 +5,7 @@ __version__ = 0.1
 def main():
     import argparse
 
-    from eonmgr import config, data_server, management_server
+    from eon.manager import config, data_server, management_server
 
     parser = argparse.ArgumentParser(prog="eon", description='Manage an eon cluster.')
 

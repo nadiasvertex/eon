@@ -5,7 +5,7 @@ import getpass
 import os
 import ipaddress
 
-import eonmgr.getifaddrs
+import eon.manager.getifaddrs
 
 
 class Configuration(object):
@@ -200,7 +200,7 @@ class Configuration(object):
         :return: A list containing all of the available ip addresses.
         """
 
-        interfaces = eonmgr.getifaddrs.getifaddrs()
+        interfaces = eon.manager.getifaddrs.getifaddrs()
         return [ipaddress.ip_interface("%s/%d" % (the_interface.addr[0],
                                                   self._get_net_size(the_interface.netmask[1])))
                 for the_interface in interfaces if the_interface.name == interface]
@@ -213,7 +213,7 @@ class Configuration(object):
         """
         from socket import AF_INET
 
-        local_interfaces = eonmgr.getifaddrs.getifaddrs()
+        local_interfaces = eon.manager.getifaddrs.getifaddrs()
         interface_d = {}
         for interface in local_interfaces:
             if interface.addr is None or interface.family != AF_INET:

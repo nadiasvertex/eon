@@ -2,7 +2,6 @@ __author__ = 'Christopher Nelson'
 
 # We currently use monetdb as our cold store. This is very efficient for large tables, especially archival storage.
 
-import monetdb
 import os
 import subprocess
 

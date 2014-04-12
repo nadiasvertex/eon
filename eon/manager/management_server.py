@@ -5,11 +5,11 @@ import os
 import signal
 import time
 
-from eonmgr import common, management
+from eon.manager import common, management
 
 
 def start_management_server(config):
-    from eonmgr.management import util
+    from eon.manager.management import util
 
     common.configure_logging(config)
     cluster_name = config.get("management", "cluster_name")
@@ -34,7 +34,7 @@ def start_management_server(config):
 
 
 def stop_management_server(config):
-    from eonmgr.management import util
+    from eon.manager.management import util
 
     common.configure_logging(config)
     cluster_name = config.get("management", "cluster_name")

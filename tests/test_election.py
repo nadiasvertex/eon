@@ -2,9 +2,9 @@ __author__ = 'christopher'
 
 import unittest
 
-from eonmgr import config
-from eonmgr.management import Controller, election
-from eonmgr.management.nodeid import NodeId
+from eon.manager import config
+from eon.manager.management import Controller, election
+from eon.manager.management.nodeid import NodeId
 
 
 class SimpleConfig(object):

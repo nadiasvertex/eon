@@ -15,8 +15,8 @@ import tornado.web
 import zmq
 import zmq.eventloop.ioloop as zmq_ioloop
 
-import eonmgr
-from eonmgr.management import msg, election, health, api
+import eon.manager
+from eon.manager.management import msg, election, health, api
 
 
 class Controller(object):
@@ -499,7 +499,7 @@ class Controller(object):
         self.process_leader_tasks()
 
     def start_engine(self, dbe_node_id):
-        engine = eonmgr.engine.Configuration(dbe_node_id, self.dis)
+        engine = eon.manager.engine.Configuration(dbe_node_id, self.dis)
         self.engines[dbe_node_id] = engine
 
     def run_management_only(self):

@@ -2,7 +2,7 @@ __author__ = 'Christopher Nelson'
 
 import unittest
 
-from eonmgr import management, config
+from eon.manager import management, config
 
 
 class SimpleConfig(object):

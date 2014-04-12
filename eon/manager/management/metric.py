@@ -2,7 +2,7 @@ __author__ = 'Christopher Nelson'
 
 import os
 
-from eonmgr.management import whisper
+from eon.manager.management import whisper
 
 
 class Metric(object):

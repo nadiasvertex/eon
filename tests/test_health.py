@@ -3,8 +3,8 @@ __author__ = 'Christopher Nelson'
 import time
 import unittest
 
-from eonmgr.config import Configuration
-from eonmgr.management.health import Health
+from eon.manager.config import Configuration
+from eon.manager.management.health import Health
 
 
 class SimpleConfig(object):

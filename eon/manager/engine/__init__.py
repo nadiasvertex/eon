@@ -7,7 +7,7 @@ import signal
 import psutil
 import zmq
 
-from eonmgr.engine import state
+from eon.manager.engine import state
 
 
 class Configuration(object):

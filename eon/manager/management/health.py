@@ -5,7 +5,7 @@ import time
 
 import psutil
 
-from eonmgr.management.metric import Metric
+from eon.manager.management.metric import Metric
 
 
 memory = ["total", "available", "percent", "used", "free", "active", "inactive", "buffers", "cached"]

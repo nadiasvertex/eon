@@ -4,8 +4,8 @@ import random
 import time
 import unittest
 
-from eonmgr.management import whisper
-from eonmgr.management.metric import Metric
+from eon.manager.management import whisper
+from eon.manager.management.metric import Metric
 
 
 node1_id = ("10.0.0.1", 11000)

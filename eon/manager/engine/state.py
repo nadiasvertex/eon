@@ -5,7 +5,7 @@ from io import BytesIO
 
 import msgpack
 
-from eonmgr.engine import cfg
+from eon.manager.engine import cfg
 
 
 class ConfigurationState(object):
