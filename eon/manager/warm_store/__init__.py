@@ -2,16 +2,6 @@ __author__ = 'cnelson'
 
 import subprocess
 
-#                                   List of databases
-#    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
-# -----------+----------+----------+-------------+-------------+-----------------------
-#  postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
-#  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-#            |          |          |             |             | postgres=CTc/postgres
-#  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-#            |          |          |             |             | postgres=CTc/postgres
-# (3 rows)
-
 
 class ManagementDriver:
     def __init__(self):
@@ -55,3 +45,19 @@ class ManagementDriver:
                 return {"name": name, "owner": owner.strip()}
 
         return None
+
+    def create_user(self, database_name, user_name, password):
+        query = "CREATE USER {user_name} WITH PASSWORD '{password}';".format(
+            user_name = user_name,
+            password = password
+        )
+        cmd = [self.psql, "-q", "-d", database_name, "-c", query]
+        subprocess.check_call(cmd)
+
+    def drop_user(self, database_name, user_name):
+        query = "DROP ROLE IF EXISTS {user_name};".format(
+            user_name = user_name,
+        )
+        cmd = [self.psql, "-q", "-d", database_name, "-c", query]
+        subprocess.check_call(cmd)
+
