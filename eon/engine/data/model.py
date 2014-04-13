@@ -25,6 +25,15 @@ class TextField(Field):
         self.limit = limit
 
 
+def to_underscore(name):
+    """
+    Converts PascalCase to underscore_style.
+    :param name: The name to convert.
+    """
+    v = "".join([c if c.islower() else "_" + c.lower() for c in name])
+    return v if not v.startswith("_") else v[1:]
+
+
 def model(cls):
     """
     This decorator turns a normal class into a model. It performs some post-processing to identify fields in the
@@ -37,14 +46,13 @@ def model(cls):
         for name in members
         if isinstance(getattr(cls, name), Field)
     }
-    id_field = cls.__name__ + "Id"
-    id_field = "".join([c if c.islower() else "_" + c.lower() for c in id_field])
-    if id_field.startswith("_"):
-        id_field = id_field[1:]
+    id_field = to_underscore(cls.__name__ + "Id")
     if id_field not in fields:
         kf = KeyField()
         fields[id_field] = kf
         setattr(cls, id_field, kf)
 
-    setattr(cls, "_fields", fields)
+    setattr(cls, "fields", fields)
+    setattr(cls, "table_name", to_underscore(cls.__name__))
+    setattr(cls, "key_name", id_field)
     return cls

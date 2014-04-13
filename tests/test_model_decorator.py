@@ -11,7 +11,7 @@ class TestModelDecorator(unittest.TestCase):
             field1 = IntegerField()
             field2 = TextField()
 
-        fields = getattr(TestModel, "_fields")
+        fields = TestModel.fields
         self.assertIn("field1", fields)
         self.assertIn("field2", fields)
 
@@ -22,6 +22,6 @@ class TestModelDecorator(unittest.TestCase):
             field1 = IntegerField()
             field2 = TextField()
 
-        fields = getattr(TestModel, "_fields")
+        fields = TestModel.fields
         self.assertIn("test_model_id", fields)
 
