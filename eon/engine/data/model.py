@@ -25,6 +25,15 @@ class TextField(Field):
         self.limit = limit
 
 
+class ModelManager:
+    """
+    This object manages the list of all model objects defined by the system. It is important to have a repository
+    of this information so that we can check the state of the databases and make sure that they are current. It is
+    also important to know what special indexes exist for distribution purposes.
+    """
+    models = []
+
+
 def to_underscore(name):
     """
     Converts PascalCase to underscore_style.
@@ -55,4 +64,6 @@ def model(cls):
     setattr(cls, "fields", fields)
     setattr(cls, "table_name", to_underscore(cls.__name__))
     setattr(cls, "key_name", id_field)
+
+    ModelManager.models.append(cls)
     return cls
