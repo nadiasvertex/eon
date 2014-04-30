@@ -6,6 +6,17 @@ import (
    zmq   "github.com/vaughan0/go-zmq"
 )
 
+func process_request(request *Request) {
+   switch(request.GetCmd()) {
+      case Request_CMD_NONE:
+         log.Print("Empty command request.");
+      case Request_CMD_ADD_NODE:
+         log.Print("A new worker node was added.");
+      case Request_CMD_START:
+         log.Print("Request local nodes start.");
+   }
+}
+
 func configuration_server(connect_to string) {
    ctx, err := zmq.NewContext()
    if err != nil {
@@ -39,6 +50,7 @@ func configuration_server(connect_to string) {
                   if err != nil {
                      log.Print("Unable to unmarshal a configuration request.");
                   }
+                  process_request(request);
                }
            }()
 
