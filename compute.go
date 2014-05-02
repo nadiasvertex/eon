@@ -4,7 +4,7 @@ import (
    lmdb "github.com/szferi/gomdb"
 )
 
-type RequestCmd int 
+type RequestCmd int
 
 const (
    Get  RequestCmd = iota
@@ -60,7 +60,6 @@ const (
    2. 110
    3. 010
 
-
  What about:
 
  SELECT * FROM test WHERE (c1 < 2 AND c2='train') OR (c2='plane');
@@ -81,13 +80,68 @@ const (
 
  So the compare operation becomes something more like:
 
- match := (evaluation & pattern) == pattern;
+   match := (evaluation & pattern) == pattern;
 
  Using the masked version of the data hides the 'spurious' result and allows us to perform a perfect match.
 
- An additional optimization enabled by this method involves efficient processing of each column. For example,
- we could do the two tests for c1 (in the first example) while we have the c1 value for the row. That avoids
- deserializing the value twice, or having to cache it in a deserialized format somewhere.
+ What about processing logical inversions? This method only allows us to deal with true results, not explicit
+ false results. For example:
+
+ SELECT * FROM test WHERE NOT (c1 > 5 AND c2='train') OR (c2='plane');
+
+ This would fail to evaluate correctly, since what we really want are to see two false values on the left,
+ or just one true value on the right. We can't just invert the pattern because we want to see the results
+ of those bits. We need them to be checked, and to be false. The solution is fairly obvious: just introduce
+ a third value that contains the desired fields.
+
+ The bit pattern and usage masks should be:
+   1. 000 / 011
+   2. 100 / 100
+
+ Then we proceed as above, with one slight change:
+
+  match := (evaluation & usage_mask) == pattern
+
+ This provides us with the ability to select on the fields we care about, and to test for logical inclusion
+ or exclusion.
+
+ What about multiple levels of predicates, like this:
+
+ SELECT * FROM test WHERE ((c1 > 5 AND c2='train') OR (c1 < 2 AND c2='train')) AND
+                          ((c1!=0 AND c1!=10) OR (c1!=0 AND c1!=20));
+
+ The 'AND' pieces are simple: we just bitwise-or together the bits in the pattern and it works. The problem is the 'OR'
+ sections. On the one hand, we don't need to evaluate all of the OR terms that occur at the same level. We just need to
+ evaluate them until one is true. On the other hand, we can't combine the bits of two OR terms because it's entirely
+ likely that all of the bits of the two terms won't be evaluated. Consequently, we at least need to keep a usage mask
+ for each OR term.
+
+ That means we need to provide for a general expression solver, and we need to provide byte code that can encode
+ general expressions. Thus we have the eon virtual machine.
+
+ The machine has an infinite number of registers. The registers hold typed values. An instruction generally writes it's
+ result back to a register.
+
+ Binary operations:
+ byte:operation byte:type ushort:dest_register ushort:source_register
+
+ Load/Store operations:
+ byte:operation byte:type ushort:dest_or_source_register uint:column
+
+ Context operations:
+ byte:operation ushort:register uint:offset
+
+ Literal operations:
+ byte:operation byte:type ushort:dest_register uint:offset_or_data
+
+ For context operations there are two possible data components: the register where the value comes from, and an offset into
+ the data page associated with the code. For operations like ChooseTable, the register contains an object identifier that should
+ be loaded as the active table. ChooseRow is similar, except that it uses the internal row_id, whatever that is.
+
+ For literal operations, if the literal value is small enough to fit in the 32-bit offset_or_data value, then the value is
+ stored there. The operation is encoded as a 'get'. If the 'type' is a 64-bit integer, then if the value can be encoded in
+ 32-bits it will also be stored directly. In all other cases the offset_or_data parameter references an offset into the binary
+ data page associated with the code. The operation is encoded as 'get_indirect'
 
  */
 
@@ -95,12 +149,26 @@ type Opcode byte
 
 const (
    Nop   Opcode = iota
+
+   // Binary operations
    Eq
    Ne
    Ge
    Le
    Gt
    Lt
+
+   // Load/Store operations
+   Load
+   Store
+
+   // Context operations
+   ChooseTable
+   ChooseRow
+
+   // Literal operations
+   Get
+   GetIndirect
 )
 
 type Literal struct {
