@@ -134,14 +134,57 @@ const (
  Literal operations:
  byte:operation byte:type ushort:dest_register uint:offset_or_data
 
+ Branch operations:
+ byte:operation ushort:register uint:offset
+
  For context operations there are two possible data components: the register where the value comes from, and an offset into
  the data page associated with the code. For operations like ChooseTable, the register contains an object identifier that should
  be loaded as the active table. ChooseRow is similar, except that it uses the internal row_id, whatever that is.
 
  For literal operations, if the literal value is small enough to fit in the 32-bit offset_or_data value, then the value is
- stored there. The operation is encoded as a 'get'. If the 'type' is a 64-bit integer, then if the value can be encoded in
+ stored there. The operation is encoded as a 'load_literal'. If the 'type' is a 64-bit integer, then if the value can be encoded in
  32-bits it will also be stored directly. In all other cases the offset_or_data parameter references an offset into the binary
- data page associated with the code. The operation is encoded as 'get_indirect'
+ data page associated with the code. The operation is encoded as 'load_literal_indirect' The operation 'load_parameter' is used to
+ load a parameterized value for pre-compiled queries. That way if we store the compiled query we can simply refer to a parameter
+ and avoid having to re-write any part of the
+
+ The predicate above could be encoded like this:
+
+ term1:
+ r0 = load int c1
+ r1 = load_literal int 5
+ r2 = r0 gt r1
+ branch_if_false r5 => term2
+ r3 = load str c2
+ r4 = load_literal_indirect str 0 ; the only literal in the data space is 'train' which starts at offset 0.
+ r5 = r3 eq r4
+ branch_if_false r5 => term2
+ branch => term4
+
+ term2:
+ r7 = load_literal int 2
+ r8 = r0 lt r7
+ branch_if_false r8 => failed
+ r9 = r8 and r5
+ branch_if_false r9 => failed
+ branch => term4
+
+ term4:
+ r10 = load_literal int 0
+ r11 = r0 ne r10
+ branch_if_false r11 => failed
+ r12 = load_literal int 10
+ r13 = r0 ne r12
+ branch_if_false r13 => term5
+ branch => passed
+
+ term5:
+ r14 = load_literal int 20
+ r15 = r0 ne r14
+ branch_if_false r15 => failed
+ branch => passed
+
+
 
  */
 
@@ -157,6 +200,13 @@ const (
    Le
    Gt
    Lt
+   And
+   Or
+   Add
+   Sub
+   Mul
+   Div
+   Mod
 
    // Load/Store operations
    Load
@@ -167,8 +217,14 @@ const (
    ChooseRow
 
    // Literal operations
-   Get
-   GetIndirect
+   Load
+   LoadIndirect
+   LoadParameter
+
+   // Flow control operations
+   BranchIfTrue
+   BranchIfFalse
+   Branch
 )
 
 type Literal struct {
