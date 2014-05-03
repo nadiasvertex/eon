@@ -184,7 +184,12 @@ const (
  branch_if_false r15 => failed
  branch => passed
 
-
+ failed:
+ fail
+ 
+ passed:
+ pass
+ 
 
  */
 
@@ -225,6 +230,8 @@ const (
    BranchIfTrue
    BranchIfFalse
    Branch
+   Pass
+   Fail
 )
 
 type Literal struct {
@@ -248,8 +255,8 @@ type Request struct {
    Predicate []Op
 }
 
-
-func compute_server(c chan) {
+func compute_server(c chan *Request) {
+	return(0);
 }
 
 func Start() channel {
