@@ -1,5 +1,10 @@
 package compute
 
+import (
+	"bytes"
+	"encoding/binary"
+)
+
 /*
   Predicate matching works like this:
 
@@ -123,6 +128,19 @@ const (
 	Fail
 )
 
+type ValueType byte
+
+const (
+	Null ValueType = iota
+	Bool
+	SmallInteger
+	Integer
+	BigInteger
+	Decimal
+	String
+	DateTime
+)
+
 type Op struct {
 	Cmd Opcode
 	O1  uint16
@@ -162,4 +180,55 @@ type BranchOp struct {
 	Cmd      opcode
 	Register uint16
 	Offset   uint32
+}
+
+type Predicate struct {
+	Instructions       []uint64
+	InstructionPointer int
+	RegisterFileSize   int
+	Data               []byte
+}
+
+type Register struct {
+	Type    ValueType
+	Written bool
+	Value   interface{}
+}
+
+type Machine struct {
+	Registers []Register
+}
+
+func get_op_code(instruction uint64) Opcode {
+	return Opcode(instruction)
+}
+
+func get_op_type(instruction uint64) ValueType {
+	return ValueType(instruction >> 8)
+}
+
+func get_binop_dst_register(instruction uint64) {
+	return uint16(instruction >> 16)
+}
+
+func get_binop_src1_register(instruction uint64) {
+	return uint16(instruction >> 32)
+}
+
+func get_binop_src2_register(instruction uint64) {
+	return uint16(instruction >> 48)
+}
+
+func Execute(p *Predicate) {
+	m := new(Machine)
+	m.Registers = make(Register, p.RegisterFileSize)
+
+	for index := p.InstructionPointer; index < len(p.Instructions); index++ {
+		instruction := p.Instructions[index]
+		switch get_op_code(instruction) {
+		case Eq, Ne, Ge, Le, Gt, Lt,
+			And, Or, Add, Sub, Mul, Div, Mod:
+			exec_binop(instruction, p, m)
+		}
+	}
 }
