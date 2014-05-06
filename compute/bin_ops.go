@@ -1,6 +1,7 @@
 package compute
 
 import (
+	inf "speter.net/go/exp/math/dec/inf"
 	"time"
 )
 
@@ -15,7 +16,6 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 	src2_reg := m.Registers[src2_reg_idx]
 
 	switch get_op_code(instruction) {
-
 	case Eq:
 		switch lvalue_type {
 
@@ -24,49 +24,70 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
+
 			v1 := src1_reg.Value.(bool)
 			v2 := src2_reg.Value.(bool)
+
 			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 == v2
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
-			dst_reg.Type = SmallInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 == v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
-			dst_reg.Type = Integer
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 == v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
-			dst_reg.Type = BigInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 == v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 == v2
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Bool
+
+			result := v1.Cmp(v2)
+			dst_reg.Value = result == 0
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 == v2
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 == v2
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1.Equal(v2)
 
 		}
-
 	case Ne:
 		switch lvalue_type {
 
@@ -75,49 +96,70 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
+
 			v1 := src1_reg.Value.(bool)
 			v2 := src2_reg.Value.(bool)
+
 			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 != v2
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
-			dst_reg.Type = SmallInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 != v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
-			dst_reg.Type = Integer
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 != v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
-			dst_reg.Type = BigInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 != v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 != v2
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Bool
+
+			result := v1.Cmp(v2)
+			dst_reg.Value = result != 0
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 != v2
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 != v2
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = !v1.Equal(v2)
 
 		}
-
 	case Lt:
 		switch lvalue_type {
 
@@ -126,49 +168,64 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 < v2
+			panic("Unsupported operation '<' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
-			dst_reg.Type = SmallInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 < v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
-			dst_reg.Type = Integer
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 < v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
-			dst_reg.Type = BigInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 < v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 < v2
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Bool
+
+			result := v1.Cmp(v2)
+			dst_reg.Value = result < 0
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 < v2
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 < v2
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1.Before(v2)
 
 		}
-
 	case Gt:
 		switch lvalue_type {
 
@@ -177,49 +234,64 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 > v2
+			panic("Unsupported operation '>' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
-			dst_reg.Type = SmallInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 > v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
-			dst_reg.Type = Integer
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 > v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
-			dst_reg.Type = BigInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 > v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 > v2
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Bool
+
+			result := v1.Cmp(v2)
+			dst_reg.Value = result > 0
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 > v2
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 > v2
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1.After(v2)
 
 		}
-
 	case Le:
 		switch lvalue_type {
 
@@ -228,49 +300,64 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 <= v2
+			panic("Unsupported operation '<=' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
-			dst_reg.Type = SmallInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 <= v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
-			dst_reg.Type = Integer
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 <= v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
-			dst_reg.Type = BigInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 <= v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 <= v2
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Bool
+
+			result := v1.Cmp(v2)
+			dst_reg.Value = result <= 0
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 <= v2
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 <= v2
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1.Before(v2) || v1.Equal(v2)
 
 		}
-
 	case Ge:
 		switch lvalue_type {
 
@@ -279,49 +366,64 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 >= v2
+			panic("Unsupported operation '>=' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
-			dst_reg.Type = SmallInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 >= v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
-			dst_reg.Type = Integer
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 >= v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
-			dst_reg.Type = BigInteger
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 >= v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 >= v2
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Bool
+
+			result := v1.Cmp(v2)
+			dst_reg.Value = result >= 0
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
+
+			dst_reg.Type = Bool
+
 			dst_reg.Value = v1 >= v2
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 >= v2
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1.After(v2) || v1.Equal(v2)
 
 		}
-
 	case And:
 		switch lvalue_type {
 
@@ -330,49 +432,45 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 & v2
+			panic("Unsupported operation '&' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 & v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 & v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 & v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 & v2
+			panic("Unsupported operation '&' on type 'Decimal'.")
 
 		case String:
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
-			dst_reg.Value = v1 & v2
+			panic("Unsupported operation '&' on type 'String'.")
 
 		case DateTime:
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 & v2
+			panic("Unsupported operation '&' on type 'DateTime'.")
 
 		}
-
 	case Or:
 		switch lvalue_type {
 
@@ -381,49 +479,45 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 | v2
+			panic("Unsupported operation '|' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 | v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 | v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 | v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 | v2
+			panic("Unsupported operation '|' on type 'Decimal'.")
 
 		case String:
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
-			dst_reg.Value = v1 | v2
+			panic("Unsupported operation '|' on type 'String'.")
 
 		case DateTime:
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 | v2
+			panic("Unsupported operation '|' on type 'DateTime'.")
 
 		}
-
 	case Add:
 		switch lvalue_type {
 
@@ -432,49 +526,51 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 + v2
+			panic("Unsupported operation '+' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 + v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 + v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 + v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 + v2
+			panic("Unsupported operation '+' on type 'Decimal'.")
 
 		case String:
+
 			v1 := src1_reg.Value.(string)
 			v2 := src2_reg.Value.(string)
+
 			dst_reg.Type = String
+
 			dst_reg.Value = v1 + v2
 
 		case DateTime:
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 + v2
+			panic("Unsupported operation '+' on type 'DateTime'.")
 
 		}
-
 	case Sub:
 		switch lvalue_type {
 
@@ -483,49 +579,51 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 - v2
+			panic("Unsupported operation '-' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 - v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 - v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 - v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 - v2
+			panic("Unsupported operation '-' on type 'Decimal'.")
 
 		case String:
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
-			dst_reg.Value = v1 - v2
+			panic("Unsupported operation '-' on type 'String'.")
 
 		case DateTime:
+
 			v1 := src1_reg.Value.(time.Time)
 			v2 := src2_reg.Value.(time.Time)
+
 			dst_reg.Type = DateTime
-			dst_reg.Value = v1 - v2
+
+			dst_reg.Value = v1.Sub(v2)
 
 		}
-
 	case Mul:
 		switch lvalue_type {
 
@@ -534,49 +632,45 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 * v2
+			panic("Unsupported operation '*' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 * v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 * v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 * v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 * v2
+			panic("Unsupported operation '*' on type 'Decimal'.")
 
 		case String:
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
-			dst_reg.Value = v1 * v2
+			panic("Unsupported operation '*' on type 'String'.")
 
 		case DateTime:
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 * v2
+			panic("Unsupported operation '*' on type 'DateTime'.")
 
 		}
-
 	case Div:
 		switch lvalue_type {
 
@@ -585,49 +679,45 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 / v2
+			panic("Unsupported operation '/' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 / v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 / v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 / v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 / v2
+			panic("Unsupported operation '/' on type 'Decimal'.")
 
 		case String:
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
-			dst_reg.Value = v1 / v2
+			panic("Unsupported operation '/' on type 'String'.")
 
 		case DateTime:
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 / v2
+			panic("Unsupported operation '/' on type 'DateTime'.")
 
 		}
-
 	case Mod:
 		switch lvalue_type {
 
@@ -636,48 +726,44 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = nil
 
 		case Bool:
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
-			dst_reg.Type = Bool
-			dst_reg.Value = v1 % v2
+			panic("Unsupported operation '%' on type 'Bool'.")
 
 		case SmallInteger:
+
 			v1 := src1_reg.Value.(int16)
 			v2 := src2_reg.Value.(int16)
+
 			dst_reg.Type = SmallInteger
+
 			dst_reg.Value = v1 % v2
 
 		case Integer:
+
 			v1 := src1_reg.Value.(int32)
 			v2 := src2_reg.Value.(int32)
+
 			dst_reg.Type = Integer
+
 			dst_reg.Value = v1 % v2
 
 		case BigInteger:
+
 			v1 := src1_reg.Value.(int64)
 			v2 := src2_reg.Value.(int64)
+
 			dst_reg.Type = BigInteger
+
 			dst_reg.Value = v1 % v2
 
 		case Decimal:
-			v1 := src1_reg.Value.(decimal)
-			v2 := src2_reg.Value.(decimal)
-			dst_reg.Type = Decimal
-			dst_reg.Value = v1 % v2
+			panic("Unsupported operation '%' on type 'Decimal'.")
 
 		case String:
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-			dst_reg.Type = String
-			dst_reg.Value = v1 % v2
+			panic("Unsupported operation '%' on type 'String'.")
 
 		case DateTime:
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-			dst_reg.Type = DateTime
-			dst_reg.Value = v1 % v2
+			panic("Unsupported operation '%' on type 'DateTime'.")
 
 		}
-
 	}
 }

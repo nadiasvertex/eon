@@ -1,19 +1,8 @@
 package compute
 
 import (
-   lmdb "github.com/szferi/gomdb"
+//   lmdb "github.com/szferi/gomdb"
 )
-
-type RequestCmd int
-
-const (
-   Get  RequestCmd = iota
-   Put
-   Find
-   Update
-   Delete
-)
-
 
 /*
 
@@ -193,75 +182,19 @@ const (
 
  */
 
-type Opcode byte
-
-const (
-   Nop   Opcode = iota
-
-   // Binary operations
-   Eq
-   Ne
-   Ge
-   Le
-   Gt
-   Lt
-   And
-   Or
-   Add
-   Sub
-   Mul
-   Div
-   Mod
-
-   // Load/Store operations
-   Load
-   Store
-
-   // Context operations
-   ChooseTable
-   ChooseRow
-
-   // Literal operations
-   Load
-   LoadIndirect
-   LoadParameter
-
-   // Flow control operations
-   BranchIfTrue
-   BranchIfFalse
-   Branch
-   Pass
-   Fail
-)
-
-type Literal struct {
-   Column int
-   Value []byte
-}
-
-type Subselect struct {
-   Column int
-   ResultSet int
-}
-
-type Op struct {
-   Cmd Opcode
-   ResultBit byte
-   Target interface{}
-}
 
 type Request struct {
-   Cmd RequestCmd
-   Predicate []Op
+   Cmd int
 }
 
 func compute_server(c chan *Request) {
-	return(0);
+	return;
 }
 
-func Start() channel {
-   c := make(chan *Request, 100);
-   go compute_server(c);
+func Start() (chan *Request) {
+   c := make(chan *Request, 100)
+   go compute_server(c)
+   return c
 }
 
 

@@ -1,10 +1,5 @@
 package compute
 
-import (
-	"bytes"
-	"encoding/binary"
-)
-
 /*
   Predicate matching works like this:
 
@@ -116,8 +111,8 @@ const (
 	ChooseRow
 
 	// Literal operations
-	Load
-	LoadIndirect
+	LoadLiteral
+	LoadLiteralIndirect
 	LoadParameter
 
 	// Flow control operations
@@ -164,20 +159,20 @@ type LoadStoreOp struct {
 }
 
 type ContextOp struct {
-	Cmd      opcode
+	Cmd      Opcode
 	Register uint16
 	Offset   uint32
 }
 
 type LiteralOp struct {
-	Cmd        opcode
+	Cmd        Opcode
 	Type       byte
 	Dst        uint16
 	OffsetData uint32
 }
 
 type BranchOp struct {
-	Cmd      opcode
+	Cmd      Opcode
 	Register uint16
 	Offset   uint32
 }
@@ -207,21 +202,21 @@ func get_op_type(instruction uint64) ValueType {
 	return ValueType(instruction >> 8)
 }
 
-func get_binop_dst_register(instruction uint64) {
+func get_binop_dst_register(instruction uint64) uint16 {
 	return uint16(instruction >> 16)
 }
 
-func get_binop_src1_register(instruction uint64) {
+func get_binop_src1_register(instruction uint64) uint16 {
 	return uint16(instruction >> 32)
 }
 
-func get_binop_src2_register(instruction uint64) {
+func get_binop_src2_register(instruction uint64) uint16 {
 	return uint16(instruction >> 48)
 }
 
 func Execute(p *Predicate) {
 	m := new(Machine)
-	m.Registers = make(Register, p.RegisterFileSize)
+	m.Registers = make([]Register, p.RegisterFileSize)
 
 	for index := p.InstructionPointer; index < len(p.Instructions); index++ {
 		instruction := p.Instructions[index]
