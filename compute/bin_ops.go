@@ -32,6 +32,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 			dst_reg.Value = v1 == v2
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1 == v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -104,6 +113,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 			dst_reg.Value = v1 != v2
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1 != v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -169,6 +187,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 		case Bool:
 			panic("Unsupported operation '<' on type 'Bool'.")
+
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1 < v2
 
 		case SmallInteger:
 
@@ -236,6 +263,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 		case Bool:
 			panic("Unsupported operation '>' on type 'Bool'.")
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1 > v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -301,6 +337,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 		case Bool:
 			panic("Unsupported operation '<=' on type 'Bool'.")
+
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1 <= v2
 
 		case SmallInteger:
 
@@ -368,6 +413,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 		case Bool:
 			panic("Unsupported operation '>=' on type 'Bool'.")
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = Bool
+
+			dst_reg.Value = v1 >= v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -434,6 +488,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 		case Bool:
 			panic("Unsupported operation '&' on type 'Bool'.")
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 & v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -480,6 +543,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 		case Bool:
 			panic("Unsupported operation '|' on type 'Bool'.")
+
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 | v2
 
 		case SmallInteger:
 
@@ -528,6 +600,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 		case Bool:
 			panic("Unsupported operation '+' on type 'Bool'.")
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 + v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -556,7 +637,13 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = v1 + v2
 
 		case Decimal:
-			panic("Unsupported operation '+' on type 'Decimal'.")
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Decimal
+
+			dst_reg.Value.(*inf.Dec).Add(v1, v2)
 
 		case String:
 
@@ -581,6 +668,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 		case Bool:
 			panic("Unsupported operation '-' on type 'Bool'.")
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 - v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -609,7 +705,13 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = v1 - v2
 
 		case Decimal:
-			panic("Unsupported operation '-' on type 'Decimal'.")
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Decimal
+
+			dst_reg.Value.(*inf.Dec).Sub(v1, v2)
 
 		case String:
 			panic("Unsupported operation '-' on type 'String'.")
@@ -634,6 +736,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 		case Bool:
 			panic("Unsupported operation '*' on type 'Bool'.")
 
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 * v2
+
 		case SmallInteger:
 
 			v1 := src1_reg.Value.(int16)
@@ -662,7 +773,13 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 			dst_reg.Value = v1 * v2
 
 		case Decimal:
-			panic("Unsupported operation '*' on type 'Decimal'.")
+
+			v1 := src1_reg.Value.(*inf.Dec)
+			v2 := src2_reg.Value.(*inf.Dec)
+
+			dst_reg.Type = Decimal
+
+			dst_reg.Value.(*inf.Dec).Mul(v1, v2)
 
 		case String:
 			panic("Unsupported operation '*' on type 'String'.")
@@ -680,6 +797,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 		case Bool:
 			panic("Unsupported operation '/' on type 'Bool'.")
+
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 / v2
 
 		case SmallInteger:
 
@@ -727,6 +853,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 
 		case Bool:
 			panic("Unsupported operation '%' on type 'Bool'.")
+
+		case TinyInteger:
+
+			v1 := src1_reg.Value.(int8)
+			v2 := src2_reg.Value.(int8)
+
+			dst_reg.Type = TinyInteger
+
+			dst_reg.Value = v1 % v2
 
 		case SmallInteger:
 

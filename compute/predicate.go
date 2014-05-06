@@ -128,6 +128,7 @@ type ValueType byte
 const (
 	Null ValueType = iota
 	Bool
+	TinyInteger
 	SmallInteger
 	Integer
 	BigInteger

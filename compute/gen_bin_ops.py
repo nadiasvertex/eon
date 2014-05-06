@@ -70,6 +70,15 @@ func exec_binop(instruction uint64, p *Predicate, m *Machine) {
 				${make_fetch(type, go_type, go_op)}
 				result := v1.Cmp(v2);
 				dst_reg.Value = result ${go_op} 0 
+				% elif go_op == '+':
+				${make_fetch(type, go_type, go_op)}
+				dst_reg.Value.(${go_type}).Add(v1, v2)
+				% elif go_op == '-':
+				${make_fetch(type, go_type, go_op)}
+				dst_reg.Value.(${go_type}).Sub(v1, v2)
+				% elif go_op == '*':
+				${make_fetch(type, go_type, go_op)}
+				dst_reg.Value.(${go_type}).Mul(v1, v2)
 				% else:
 				panic("Unsupported operation '${go_op}' on type '${type}'.")
 				% endif
@@ -115,7 +124,7 @@ bin_ops = [("Eq", "=="), ("Ne","!="), ("Lt", "<"), ("Gt", ">"),
 		   ("Add", "+"), ("Sub", "-"), ("Mul", "*"), ("Div", "/"),
 		   ("Mod", "%")]
 
-types = [("Null", "nil"), ("Bool", "bool"), ("SmallInteger", "int16"),
+types = [("Null", "nil"), ("Bool", "bool"), ("TinyInteger", "int8"), ("SmallInteger", "int16"),
 		  ("Integer", "int32"), ("BigInteger", "int64"),
 	      ("Decimal", "*inf.Dec"), ("String", "string"), ("DateTime", "time.Time")]
 
