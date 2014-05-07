@@ -122,7 +122,11 @@ func exec_binop(instruction uint64, m *Machine) {
 tests = Template("""
 package compute
 
-import "testing"
+import (
+	"testing"
+	"time"
+	inf "speter.net/go/exp/math/dec/inf"
+)
 
 % for op, go_op in binops:
 %   for type, go_type in types:
@@ -134,6 +138,10 @@ func Test${op}${type}(t *testing.T) {
 	${make_null_assign(type, go_type)}
 	% elif type=="Bool":
 	${make_bool_assign(type, go_type)}
+	% elif type=="Decimal":
+	${make_decimal_assign(type, go_type)}
+	% elif type=="DateTime":
+	${make_datetime_assign(type, go_type)}
 	% else:
 	${make_standard_assign(type, go_type)}
 	% endif
@@ -157,6 +165,16 @@ func Test${op}${type}(t *testing.T) {
 <%def name="make_standard_assign(type, go_type)">
 	m.Registers[0].Value = ${go_type}(0);
 	m.Registers[1].Value = ${go_type}(1);
+</%def>
+
+<%def name="make_decimal_assign(type, go_type)">
+	m.Registers[0].Value = inf.NewDec(0,0)
+	m.Registers[1].Value = inf.NewDec(1,0)
+</%def>
+
+<%def name="make_datetime_assign(type, go_type)">
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 </%def>
 
 <%def name="make_bool_assign(type, go_type)">

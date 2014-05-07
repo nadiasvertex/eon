@@ -1,6 +1,10 @@
 package compute
 
-import "testing"
+import (
+	inf "speter.net/go/exp/math/dec/inf"
+	"testing"
+	"time"
+)
 
 func TestEqNull(t *testing.T) {
 	m := new(Machine)
@@ -126,8 +130,8 @@ func TestEqDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -166,8 +170,8 @@ func TestEqDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -306,8 +310,8 @@ func TestNeDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -346,8 +350,8 @@ func TestNeDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -486,8 +490,8 @@ func TestLtDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -526,8 +530,8 @@ func TestLtDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -666,8 +670,8 @@ func TestGtDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -706,8 +710,8 @@ func TestGtDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -846,8 +850,8 @@ func TestLeDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -886,8 +890,8 @@ func TestLeDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -1026,8 +1030,8 @@ func TestGeDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -1066,8 +1070,8 @@ func TestGeDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -1206,8 +1210,8 @@ func TestAndDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -1246,8 +1250,8 @@ func TestAndDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -1386,8 +1390,8 @@ func TestOrDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -1426,8 +1430,8 @@ func TestOrDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -1566,8 +1570,8 @@ func TestAddDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -1606,8 +1610,8 @@ func TestAddDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -1746,8 +1750,8 @@ func TestSubDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -1786,8 +1790,8 @@ func TestSubDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -1926,8 +1930,8 @@ func TestMulDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -1966,8 +1970,8 @@ func TestMulDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -2106,8 +2110,8 @@ func TestDivDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -2146,8 +2150,8 @@ func TestDivDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
@@ -2286,8 +2290,8 @@ func TestModDecimal(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = *inf.Dec(0)
-	m.Registers[1].Value = *inf.Dec(1)
+	m.Registers[0].Value = inf.NewDec(0, 0)
+	m.Registers[1].Value = inf.NewDec(1, 0)
 
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
@@ -2326,8 +2330,8 @@ func TestModDateTime(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = time.Time(0)
-	m.Registers[1].Value = time.Time(1)
+	m.Registers[0].Value = time.Date(2004, time.April, 17, 14, 0, 0, 0, time.UTC)
+	m.Registers[1].Value = time.Date(2014, time.May, 7, 19, 0, 0, 0, time.UTC)
 
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
