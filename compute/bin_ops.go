@@ -5,15 +5,15 @@ import (
 	"time"
 )
 
-func exec_binop(instruction uint64, p *Predicate, m *Machine) {
+func exec_binop(instruction uint64, m *Machine) {
 	lvalue_type := get_op_type(instruction)
 	dst_reg_idx := get_binop_dst_register(instruction)
 	src1_reg_idx := get_binop_src1_register(instruction)
 	src2_reg_idx := get_binop_src2_register(instruction)
 
-	dst_reg := m.Registers[dst_reg_idx]
-	src1_reg := m.Registers[src1_reg_idx]
-	src2_reg := m.Registers[src2_reg_idx]
+	dst_reg := &m.Registers[dst_reg_idx]
+	src1_reg := &m.Registers[src1_reg_idx]
+	src2_reg := &m.Registers[src2_reg_idx]
 
 	switch get_op_code(instruction) {
 	case Eq:

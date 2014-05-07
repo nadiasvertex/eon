@@ -224,7 +224,7 @@ func Execute(p *Predicate) {
 		switch get_op_code(instruction) {
 		case Eq, Ne, Ge, Le, Gt, Lt,
 			And, Or, Add, Sub, Mul, Div, Mod:
-			exec_binop(instruction, p, m)
+			exec_binop(instruction, m)
 		}
 	}
 }
