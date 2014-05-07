@@ -130,8 +130,13 @@ func Test${op}${type}(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = ${go_type}(0);
-	m.Registers[1].Value = ${go_type}(1);
+	% if type=="Null":
+	${make_null_assign(type, go_type)}
+	% elif type=="Bool":
+	${make_bool_assign(type, go_type)}
+	% else:
+	${make_standard_assign(type, go_type)}
+	% endif
 
 	m.Registers[0].Type = ${type}
 	m.Registers[1].Type = ${type}
@@ -148,6 +153,21 @@ func Test${op}${type}(t *testing.T) {
 }
 %   endfor
 % endfor
+
+<%def name="make_standard_assign(type, go_type)">
+	m.Registers[0].Value = ${go_type}(0);
+	m.Registers[1].Value = ${go_type}(1);
+</%def>
+
+<%def name="make_bool_assign(type, go_type)">
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
+</%def>
+
+<%def name="make_null_assign(type, go_type)">
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
+</%def>
 """)
 
 bin_ops = [("Eq", "=="), ("Ne","!="), ("Lt", "<"), ("Gt", ">"),

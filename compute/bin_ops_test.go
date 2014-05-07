@@ -6,8 +6,8 @@ func TestEqNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -26,8 +26,8 @@ func TestEqBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -186,8 +186,8 @@ func TestNeNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -206,8 +206,8 @@ func TestNeBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -366,8 +366,8 @@ func TestLtNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -386,8 +386,8 @@ func TestLtBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -546,8 +546,8 @@ func TestGtNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -566,8 +566,8 @@ func TestGtBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -726,8 +726,8 @@ func TestLeNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -746,8 +746,8 @@ func TestLeBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -906,8 +906,8 @@ func TestGeNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -926,8 +926,8 @@ func TestGeBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -1086,8 +1086,8 @@ func TestAndNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -1106,8 +1106,8 @@ func TestAndBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -1266,8 +1266,8 @@ func TestOrNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -1286,8 +1286,8 @@ func TestOrBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -1446,8 +1446,8 @@ func TestAddNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -1466,8 +1466,8 @@ func TestAddBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -1626,8 +1626,8 @@ func TestSubNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -1646,8 +1646,8 @@ func TestSubBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -1806,8 +1806,8 @@ func TestMulNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -1826,8 +1826,8 @@ func TestMulBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -1986,8 +1986,8 @@ func TestDivNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -2006,8 +2006,8 @@ func TestDivBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
@@ -2166,8 +2166,8 @@ func TestModNull(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = nil(0)
-	m.Registers[1].Value = nil(1)
+	m.Registers[0].Value = nil
+	m.Registers[1].Value = nil
 
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
@@ -2186,8 +2186,8 @@ func TestModBool(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
 
-	m.Registers[0].Value = bool(0)
-	m.Registers[1].Value = bool(1)
+	m.Registers[0].Value = true
+	m.Registers[1].Value = false
 
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
