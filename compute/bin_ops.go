@@ -1,8 +1,9 @@
+
 package compute
 
 import (
-	inf "speter.net/go/exp/math/dec/inf"
 	"time"
+	inf "speter.net/go/exp/math/dec/inf"
 )
 
 func exec_binop(instruction uint64, m *Machine) {
@@ -16,889 +17,1082 @@ func exec_binop(instruction uint64, m *Machine) {
 	src2_reg := &m.Registers[src2_reg_idx]
 
 	switch get_op_code(instruction) {
-	case Eq:
-		switch lvalue_type {
+		case Eq:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
+
+				
+			case Bool:
+				
+				v1 := src1_reg.Value.(bool)
+				v2 := src2_reg.Value.(bool)
+				
+				dst_reg.Type = Bool
+
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				dst_reg.Value = v1 == v2
+
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = Bool
+
 
-		case Bool:
+				dst_reg.Value = v1 == v2
 
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 == v2
+				dst_reg.Value = v1 == v2
 
-		case TinyInteger:
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1 == v2
 
-			dst_reg.Value = v1 == v2
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = Bool
 
-		case SmallInteger:
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+				dst_reg.Value = v1 == v2
 
-			dst_reg.Type = Bool
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = v1 == v2
 
-		case Integer:
+				result := v1.Cmp(v2);
+				dst_reg.Value = result == 0
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 == v2
+				dst_reg.Value = v1 == v2
 
-		case BigInteger:
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1.Equal(v2)
 
-			dst_reg.Value = v1 == v2
+			}
+		case Ne:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-		case Decimal:
+				
+			case Bool:
+				
+				v1 := src1_reg.Value.(bool)
+				v2 := src2_reg.Value.(bool)
+				
+				dst_reg.Type = Bool
+
+
+				dst_reg.Value = v1 != v2
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = Bool
+
+
+				dst_reg.Value = v1 != v2
 
-			dst_reg.Type = Bool
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = Bool
+
+
+				dst_reg.Value = v1 != v2
 
-			result := v1.Cmp(v2)
-			dst_reg.Value = result == 0
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Bool
 
-		case String:
+
+				dst_reg.Value = v1 != v2
 
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 == v2
+				dst_reg.Value = v1 != v2
 
-		case DateTime:
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
 
-			dst_reg.Type = Bool
+				result := v1.Cmp(v2);
+				dst_reg.Value = result != 0
 
-			dst_reg.Value = v1.Equal(v2)
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = Bool
 
-		}
-	case Ne:
-		switch lvalue_type {
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				dst_reg.Value = v1 != v2
 
-		case Bool:
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(bool)
-			v2 := src2_reg.Value.(bool)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = !v1.Equal(v2)
 
-			dst_reg.Value = v1 != v2
+			}
+		case Lt:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-		case TinyInteger:
+				
+			case Bool:
+				panic("Unsupported operation '<' on type 'Bool'.")
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
+
+				dst_reg.Value = v1 < v2
 
-			dst_reg.Value = v1 != v2
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = Bool
 
-		case SmallInteger:
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+				dst_reg.Value = v1 < v2
 
-			dst_reg.Type = Bool
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = v1 != v2
 
-		case Integer:
+				dst_reg.Value = v1 < v2
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 != v2
+				dst_reg.Value = v1 < v2
 
-		case BigInteger:
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
 
-			dst_reg.Type = Bool
+				result := v1.Cmp(v2);
+				dst_reg.Value = result < 0
 
-			dst_reg.Value = v1 != v2
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = Bool
 
-		case Decimal:
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
+				dst_reg.Value = v1 < v2
 
-			dst_reg.Type = Bool
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = Bool
 
-			result := v1.Cmp(v2)
-			dst_reg.Value = result != 0
 
-		case String:
+				dst_reg.Value = v1.Before(v2)
 
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
+			}
+		case Gt:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			dst_reg.Type = Bool
+				
+			case Bool:
+				panic("Unsupported operation '>' on type 'Bool'.")
 
-			dst_reg.Value = v1 != v2
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = Bool
 
-		case DateTime:
 
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
+				dst_reg.Value = v1 > v2
 
-			dst_reg.Type = Bool
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = !v1.Equal(v2)
 
-		}
-	case Lt:
-		switch lvalue_type {
+				dst_reg.Value = v1 > v2
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Bool
 
-		case Bool:
-			panic("Unsupported operation '<' on type 'Bool'.")
 
-		case TinyInteger:
+				dst_reg.Value = v1 > v2
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 < v2
+				dst_reg.Value = v1 > v2
 
-		case SmallInteger:
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
 
-			dst_reg.Type = Bool
+				result := v1.Cmp(v2);
+				dst_reg.Value = result > 0
 
-			dst_reg.Value = v1 < v2
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = Bool
 
-		case Integer:
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
+				dst_reg.Value = v1 > v2
 
-			dst_reg.Type = Bool
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = v1 < v2
 
-		case BigInteger:
+				dst_reg.Value = v1.After(v2)
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+			}
+		case Le:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			dst_reg.Type = Bool
+				
+			case Bool:
+				panic("Unsupported operation '<=' on type 'Bool'.")
 
-			dst_reg.Value = v1 < v2
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = Bool
 
-		case Decimal:
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
+				dst_reg.Value = v1 <= v2
 
-			dst_reg.Type = Bool
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = Bool
 
-			result := v1.Cmp(v2)
-			dst_reg.Value = result < 0
 
-		case String:
+				dst_reg.Value = v1 <= v2
 
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 < v2
+				dst_reg.Value = v1 <= v2
 
-		case DateTime:
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1 <= v2
 
-			dst_reg.Value = v1.Before(v2)
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Bool
 
-		}
-	case Gt:
-		switch lvalue_type {
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				result := v1.Cmp(v2);
+				dst_reg.Value = result <= 0
 
-		case Bool:
-			panic("Unsupported operation '>' on type 'Bool'.")
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = Bool
 
-		case TinyInteger:
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				dst_reg.Value = v1 <= v2
 
-			dst_reg.Type = Bool
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = v1 > v2
 
-		case SmallInteger:
+				dst_reg.Value = v1.Before(v2) || v1.Equal(v2)
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+			}
+		case Ge:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			dst_reg.Type = Bool
+				
+			case Bool:
+				panic("Unsupported operation '>=' on type 'Bool'.")
 
-			dst_reg.Value = v1 > v2
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = Bool
 
-		case Integer:
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
+				dst_reg.Value = v1 >= v2
 
-			dst_reg.Type = Bool
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = v1 > v2
 
-		case BigInteger:
+				dst_reg.Value = v1 >= v2
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 > v2
+				dst_reg.Value = v1 >= v2
 
-		case Decimal:
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = Bool
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1 >= v2
 
-			result := v1.Cmp(v2)
-			dst_reg.Value = result > 0
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Bool
 
-		case String:
 
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
+				result := v1.Cmp(v2);
+				dst_reg.Value = result >= 0
 
-			dst_reg.Type = Bool
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Value = v1 > v2
 
-		case DateTime:
+				dst_reg.Value = v1 >= v2
 
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = Bool
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1.After(v2)
+				dst_reg.Value = v1.After(v2)  || v1.Equal(v2)
 
-		}
-	case Le:
-		switch lvalue_type {
+			}
+		case And:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				
+			case Bool:
+				panic("Unsupported operation '&' on type 'Bool'.")
 
-		case Bool:
-			panic("Unsupported operation '<=' on type 'Bool'.")
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-		case TinyInteger:
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				dst_reg.Value = v1 & v2
 
-			dst_reg.Type = Bool
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-			dst_reg.Value = v1 <= v2
 
-		case SmallInteger:
+				dst_reg.Value = v1 & v2
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 <= v2
+				dst_reg.Value = v1 & v2
 
-		case Integer:
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1 & v2
 
-			dst_reg.Value = v1 <= v2
+				
+			case Decimal:
+				panic("Unsupported operation '&' on type 'Decimal'.")
 
-		case BigInteger:
+				
+			case String:
+				panic("Unsupported operation '&' on type 'String'.")
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+				
+			case DateTime:
+				panic("Unsupported operation '&' on type 'DateTime'.")
 
-			dst_reg.Type = Bool
+			}
+		case Or:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			dst_reg.Value = v1 <= v2
+				
+			case Bool:
+				panic("Unsupported operation '|' on type 'Bool'.")
 
-		case Decimal:
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1 | v2
 
-			result := v1.Cmp(v2)
-			dst_reg.Value = result <= 0
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-		case String:
 
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
+				dst_reg.Value = v1 | v2
 
-			dst_reg.Type = Bool
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-			dst_reg.Value = v1 <= v2
 
-		case DateTime:
+				dst_reg.Value = v1 | v2
 
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1.Before(v2) || v1.Equal(v2)
+				dst_reg.Value = v1 | v2
 
-		}
-	case Ge:
-		switch lvalue_type {
+				
+			case Decimal:
+				panic("Unsupported operation '|' on type 'Decimal'.")
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				
+			case String:
+				panic("Unsupported operation '|' on type 'String'.")
 
-		case Bool:
-			panic("Unsupported operation '>=' on type 'Bool'.")
+				
+			case DateTime:
+				panic("Unsupported operation '|' on type 'DateTime'.")
 
-		case TinyInteger:
+			}
+		case Add:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				
+			case Bool:
+				panic("Unsupported operation '+' on type 'Bool'.")
 
-			dst_reg.Type = Bool
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-			dst_reg.Value = v1 >= v2
 
-		case SmallInteger:
+				dst_reg.Value = v1 + v2
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-			dst_reg.Type = Bool
 
-			dst_reg.Value = v1 >= v2
+				dst_reg.Value = v1 + v2
 
-		case Integer:
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
 
-			dst_reg.Type = Bool
+				dst_reg.Value = v1 + v2
 
-			dst_reg.Value = v1 >= v2
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-		case BigInteger:
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+				dst_reg.Value = v1 + v2
 
-			dst_reg.Type = Bool
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Decimal
 
-			dst_reg.Value = v1 >= v2
 
-		case Decimal:
+				dst_reg.Value.(*inf.Dec).Add(v1, v2)
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
+				
+			case String:
+				
+				v1 := src1_reg.Value.(string)
+				v2 := src2_reg.Value.(string)
+				
+				dst_reg.Type = String
 
-			dst_reg.Type = Bool
 
-			result := v1.Cmp(v2)
-			dst_reg.Value = result >= 0
+				dst_reg.Value = v1 + v2
 
-		case String:
+				
+			case DateTime:
+				panic("Unsupported operation '+' on type 'DateTime'.")
 
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
+			}
+		case Sub:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			dst_reg.Type = Bool
+				
+			case Bool:
+				panic("Unsupported operation '-' on type 'Bool'.")
 
-			dst_reg.Value = v1 >= v2
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-		case DateTime:
 
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
+				dst_reg.Value = v1 - v2
 
-			dst_reg.Type = Bool
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-			dst_reg.Value = v1.After(v2) || v1.Equal(v2)
 
-		}
-	case And:
-		switch lvalue_type {
+				dst_reg.Value = v1 - v2
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-		case Bool:
-			panic("Unsupported operation '&' on type 'Bool'.")
 
-		case TinyInteger:
+				dst_reg.Value = v1 - v2
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-			dst_reg.Type = TinyInteger
 
-			dst_reg.Value = v1 & v2
+				dst_reg.Value = v1 - v2
 
-		case SmallInteger:
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Decimal
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
 
-			dst_reg.Type = SmallInteger
+				dst_reg.Value.(*inf.Dec).Sub(v1, v2)
 
-			dst_reg.Value = v1 & v2
+				
+			case String:
+				panic("Unsupported operation '-' on type 'String'.")
 
-		case Integer:
+				
+			case DateTime:
+				
+				v1 := src1_reg.Value.(time.Time)
+				v2 := src2_reg.Value.(time.Time)
+				
+				dst_reg.Type = DateTime
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
 
-			dst_reg.Type = Integer
+				dst_reg.Value = v1.Sub(v2)
 
-			dst_reg.Value = v1 & v2
+			}
+		case Mul:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-		case BigInteger:
+				
+			case Bool:
+				panic("Unsupported operation '*' on type 'Bool'.")
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-			dst_reg.Type = BigInteger
 
-			dst_reg.Value = v1 & v2
+				dst_reg.Value = v1 * v2
 
-		case Decimal:
-			panic("Unsupported operation '&' on type 'Decimal'.")
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-		case String:
-			panic("Unsupported operation '&' on type 'String'.")
 
-		case DateTime:
-			panic("Unsupported operation '&' on type 'DateTime'.")
+				dst_reg.Value = v1 * v2
 
-		}
-	case Or:
-		switch lvalue_type {
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
 
-		case Bool:
-			panic("Unsupported operation '|' on type 'Bool'.")
+				dst_reg.Value = v1 * v2
 
-		case TinyInteger:
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
 
-			dst_reg.Type = TinyInteger
+				dst_reg.Value = v1 * v2
 
-			dst_reg.Value = v1 | v2
+				
+			case Decimal:
+				
+				v1 := src1_reg.Value.(*inf.Dec)
+				v2 := src2_reg.Value.(*inf.Dec)
+				
+				dst_reg.Type = Decimal
 
-		case SmallInteger:
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+				dst_reg.Value.(*inf.Dec).Mul(v1, v2)
 
-			dst_reg.Type = SmallInteger
+				
+			case String:
+				panic("Unsupported operation '*' on type 'String'.")
 
-			dst_reg.Value = v1 | v2
+				
+			case DateTime:
+				panic("Unsupported operation '*' on type 'DateTime'.")
 
-		case Integer:
+			}
+		case Div:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
+				
+			case Bool:
+				panic("Unsupported operation '/' on type 'Bool'.")
 
-			dst_reg.Type = Integer
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-			dst_reg.Value = v1 | v2
 
-		case BigInteger:
+				dst_reg.Value = v1 / v2
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-			dst_reg.Type = BigInteger
 
-			dst_reg.Value = v1 | v2
+				dst_reg.Value = v1 / v2
 
-		case Decimal:
-			panic("Unsupported operation '|' on type 'Decimal'.")
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-		case String:
-			panic("Unsupported operation '|' on type 'String'.")
 
-		case DateTime:
-			panic("Unsupported operation '|' on type 'DateTime'.")
+				dst_reg.Value = v1 / v2
 
-		}
-	case Add:
-		switch lvalue_type {
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
 
-		case Bool:
-			panic("Unsupported operation '+' on type 'Bool'.")
+				dst_reg.Value = v1 / v2
 
-		case TinyInteger:
+				
+			case Decimal:
+				panic("Unsupported operation '/' on type 'Decimal'.")
 
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
+				
+			case String:
+				panic("Unsupported operation '/' on type 'String'.")
 
-			dst_reg.Type = TinyInteger
+				
+			case DateTime:
+				panic("Unsupported operation '/' on type 'DateTime'.")
 
-			dst_reg.Value = v1 + v2
+			}
+		case Mod:
+			switch(lvalue_type) {
+				
+			case Null:
+				dst_reg.Type = Null
+				dst_reg.Value = nil
 
-		case SmallInteger:
+				
+			case Bool:
+				panic("Unsupported operation '%' on type 'Bool'.")
 
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
+				
+			case TinyInteger:
+				
+				v1 := src1_reg.Value.(int8)
+				v2 := src2_reg.Value.(int8)
+				
+				dst_reg.Type = TinyInteger
 
-			dst_reg.Type = SmallInteger
 
-			dst_reg.Value = v1 + v2
+				dst_reg.Value = v1 % v2
 
-		case Integer:
+				
+			case SmallInteger:
+				
+				v1 := src1_reg.Value.(int16)
+				v2 := src2_reg.Value.(int16)
+				
+				dst_reg.Type = SmallInteger
 
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
 
-			dst_reg.Type = Integer
+				dst_reg.Value = v1 % v2
 
-			dst_reg.Value = v1 + v2
+				
+			case Integer:
+				
+				v1 := src1_reg.Value.(int32)
+				v2 := src2_reg.Value.(int32)
+				
+				dst_reg.Type = Integer
 
-		case BigInteger:
 
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
+				dst_reg.Value = v1 % v2
 
-			dst_reg.Type = BigInteger
+				
+			case BigInteger:
+				
+				v1 := src1_reg.Value.(int64)
+				v2 := src2_reg.Value.(int64)
+				
+				dst_reg.Type = BigInteger
 
-			dst_reg.Value = v1 + v2
 
-		case Decimal:
+				dst_reg.Value = v1 % v2
 
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
+				
+			case Decimal:
+				panic("Unsupported operation '%' on type 'Decimal'.")
 
-			dst_reg.Type = Decimal
+				
+			case String:
+				panic("Unsupported operation '%' on type 'String'.")
 
-			dst_reg.Value.(*inf.Dec).Add(v1, v2)
+				
+			case DateTime:
+				panic("Unsupported operation '%' on type 'DateTime'.")
 
-		case String:
-
-			v1 := src1_reg.Value.(string)
-			v2 := src2_reg.Value.(string)
-
-			dst_reg.Type = String
-
-			dst_reg.Value = v1 + v2
-
-		case DateTime:
-			panic("Unsupported operation '+' on type 'DateTime'.")
-
-		}
-	case Sub:
-		switch lvalue_type {
-
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
-
-		case Bool:
-			panic("Unsupported operation '-' on type 'Bool'.")
-
-		case TinyInteger:
-
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
-
-			dst_reg.Type = TinyInteger
-
-			dst_reg.Value = v1 - v2
-
-		case SmallInteger:
-
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
-
-			dst_reg.Type = SmallInteger
-
-			dst_reg.Value = v1 - v2
-
-		case Integer:
-
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
-
-			dst_reg.Type = Integer
-
-			dst_reg.Value = v1 - v2
-
-		case BigInteger:
-
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
-
-			dst_reg.Type = BigInteger
-
-			dst_reg.Value = v1 - v2
-
-		case Decimal:
-
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
-
-			dst_reg.Type = Decimal
-
-			dst_reg.Value.(*inf.Dec).Sub(v1, v2)
-
-		case String:
-			panic("Unsupported operation '-' on type 'String'.")
-
-		case DateTime:
-
-			v1 := src1_reg.Value.(time.Time)
-			v2 := src2_reg.Value.(time.Time)
-
-			dst_reg.Type = DateTime
-
-			dst_reg.Value = v1.Sub(v2)
-
-		}
-	case Mul:
-		switch lvalue_type {
-
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
-
-		case Bool:
-			panic("Unsupported operation '*' on type 'Bool'.")
-
-		case TinyInteger:
-
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
-
-			dst_reg.Type = TinyInteger
-
-			dst_reg.Value = v1 * v2
-
-		case SmallInteger:
-
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
-
-			dst_reg.Type = SmallInteger
-
-			dst_reg.Value = v1 * v2
-
-		case Integer:
-
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
-
-			dst_reg.Type = Integer
-
-			dst_reg.Value = v1 * v2
-
-		case BigInteger:
-
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
-
-			dst_reg.Type = BigInteger
-
-			dst_reg.Value = v1 * v2
-
-		case Decimal:
-
-			v1 := src1_reg.Value.(*inf.Dec)
-			v2 := src2_reg.Value.(*inf.Dec)
-
-			dst_reg.Type = Decimal
-
-			dst_reg.Value.(*inf.Dec).Mul(v1, v2)
-
-		case String:
-			panic("Unsupported operation '*' on type 'String'.")
-
-		case DateTime:
-			panic("Unsupported operation '*' on type 'DateTime'.")
-
-		}
-	case Div:
-		switch lvalue_type {
-
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
-
-		case Bool:
-			panic("Unsupported operation '/' on type 'Bool'.")
-
-		case TinyInteger:
-
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
-
-			dst_reg.Type = TinyInteger
-
-			dst_reg.Value = v1 / v2
-
-		case SmallInteger:
-
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
-
-			dst_reg.Type = SmallInteger
-
-			dst_reg.Value = v1 / v2
-
-		case Integer:
-
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
-
-			dst_reg.Type = Integer
-
-			dst_reg.Value = v1 / v2
-
-		case BigInteger:
-
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
-
-			dst_reg.Type = BigInteger
-
-			dst_reg.Value = v1 / v2
-
-		case Decimal:
-			panic("Unsupported operation '/' on type 'Decimal'.")
-
-		case String:
-			panic("Unsupported operation '/' on type 'String'.")
-
-		case DateTime:
-			panic("Unsupported operation '/' on type 'DateTime'.")
-
-		}
-	case Mod:
-		switch lvalue_type {
-
-		case Null:
-			dst_reg.Type = Null
-			dst_reg.Value = nil
-
-		case Bool:
-			panic("Unsupported operation '%' on type 'Bool'.")
-
-		case TinyInteger:
-
-			v1 := src1_reg.Value.(int8)
-			v2 := src2_reg.Value.(int8)
-
-			dst_reg.Type = TinyInteger
-
-			dst_reg.Value = v1 % v2
-
-		case SmallInteger:
-
-			v1 := src1_reg.Value.(int16)
-			v2 := src2_reg.Value.(int16)
-
-			dst_reg.Type = SmallInteger
-
-			dst_reg.Value = v1 % v2
-
-		case Integer:
-
-			v1 := src1_reg.Value.(int32)
-			v2 := src2_reg.Value.(int32)
-
-			dst_reg.Type = Integer
-
-			dst_reg.Value = v1 % v2
-
-		case BigInteger:
-
-			v1 := src1_reg.Value.(int64)
-			v2 := src2_reg.Value.(int64)
-
-			dst_reg.Type = BigInteger
-
-			dst_reg.Value = v1 % v2
-
-		case Decimal:
-			panic("Unsupported operation '%' on type 'Decimal'.")
-
-		case String:
-			panic("Unsupported operation '%' on type 'String'.")
-
-		case DateTime:
-			panic("Unsupported operation '%' on type 'DateTime'.")
-
-		}
+			}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+

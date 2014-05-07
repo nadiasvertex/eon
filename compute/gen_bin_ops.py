@@ -19,7 +19,7 @@ func exec_binop(instruction uint64, m *Machine) {
 	src2_reg := &m.Registers[src2_reg_idx]
 
 	switch get_op_code(instruction) {
-		% for op, go_op in binops: 
+		% for op, go_op in binops:
 		case ${op}:
 			switch(lvalue_type) {
 				% for type, go_type in types:
@@ -34,7 +34,7 @@ func exec_binop(instruction uint64, m *Machine) {
 					% endif
 				% endfor
 			}
-		% endfor		
+		% endfor
 	}
 }
 
@@ -69,7 +69,7 @@ func exec_binop(instruction uint64, m *Machine) {
 				% if go_op in ("==", "!=", "<=", ">=", "<", ">"):
 				${make_fetch(type, go_type, go_op)}
 				result := v1.Cmp(v2);
-				dst_reg.Value = result ${go_op} 0 
+				dst_reg.Value = result ${go_op} 0
 				% elif go_op == '+':
 				${make_fetch(type, go_type, go_op)}
 				dst_reg.Value.(${go_type}).Add(v1, v2)
@@ -88,13 +88,13 @@ func exec_binop(instruction uint64, m *Machine) {
 			case ${type}:
 				% if go_op == "==":
 				${make_fetch(type, go_type, go_op)}
-				dst_reg.Value = v1.Equal(v2) 
+				dst_reg.Value = v1.Equal(v2)
 				% elif go_op == "!=":
 				${make_fetch(type, go_type, go_op)}
-				dst_reg.Value = !v1.Equal(v2) 
+				dst_reg.Value = !v1.Equal(v2)
 				% elif go_op == "<":
 				${make_fetch(type, go_type, go_op)}
-				dst_reg.Value = v1.Before(v2) 
+				dst_reg.Value = v1.Before(v2)
 				% elif go_op == ">":
 				${make_fetch(type, go_type, go_op)}
 				dst_reg.Value = v1.After(v2)
@@ -119,6 +119,37 @@ func exec_binop(instruction uint64, m *Machine) {
 </%def>
 """)
 
+tests = Template("""
+package compute
+
+import "testing"
+
+% for op, go_op in binops:
+%   for type, go_type in types:
+func Test${op}${type}(t *testing.T) {
+	m := new(Machine)
+	m.Registers = make([]Register, 3)
+
+	m.Registers[0].Value = ${go_type}(0);
+	m.Registers[1].Value = ${go_type}(1);
+
+	m.Registers[0].Type = ${type}
+	m.Registers[1].Type = ${type}
+
+	instruction := uint64(${op}) |
+	               uint64(${type})<<8 |
+	               uint64(2)<<16 |
+	               uint64(0)<<32 |
+	               uint64(1)<<48
+
+	if get_op_code(instruction) != ${op} {
+		t.Error("Expected op code to be '${op}'")
+	}
+}
+%   endfor
+% endfor
+""")
+
 bin_ops = [("Eq", "=="), ("Ne","!="), ("Lt", "<"), ("Gt", ">"),
 		   ("Le", "<="), ("Ge",">="), ("And", "&"), ("Or", "|"),
 		   ("Add", "+"), ("Sub", "-"), ("Mul", "*"), ("Div", "/"),
@@ -128,5 +159,9 @@ types = [("Null", "nil"), ("Bool", "bool"), ("TinyInteger", "int8"), ("SmallInte
 		  ("Integer", "int32"), ("BigInteger", "int64"),
 	      ("Decimal", "*inf.Dec"), ("String", "string"), ("DateTime", "time.Time")]
 
-print(t.render(binops=bin_ops, types=types))
+with open("bin_ops.go", "w") as out:
+	out.write(t.render(binops=bin_ops, types=types))
+
+with open("bin_ops_test.go", "w") as out:
+	out.write(tests.render(binops=bin_ops, types=types))
 
