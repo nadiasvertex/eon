@@ -172,6 +172,20 @@ func Test${op}${type}(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	% if type == "Null":
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
+	% elif go_op in ("<", ">", "<=", ">=", "==", "!="):
+	if m.Registers[2].Value.(bool) != (0 ${go_op} 1) {
+		t.Error("Expected result to be false.")
+	}
+	% elif type in ("TinyInteger", "SmallInteger", "Integer", "BigInteger"):
+	if m.Registers[2].Value.(${go_type}) != (0 ${go_op} 1) {
+		t.Error("Expected result to be 0 ${go_op} 1.")
+	}
+	% endif
 }
 %     endif
 %   endfor

@@ -27,6 +27,10 @@ func TestEqNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 func TestEqBool(t *testing.T) {
 	m := new(Machine)
@@ -49,6 +53,10 @@ func TestEqBool(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqTinyInteger(t *testing.T) {
 	m := new(Machine)
@@ -71,6 +79,10 @@ func TestEqTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -93,6 +105,10 @@ func TestEqSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqInteger(t *testing.T) {
 	m := new(Machine)
@@ -115,6 +131,10 @@ func TestEqInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -137,6 +157,10 @@ func TestEqBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqDecimal(t *testing.T) {
 	m := new(Machine)
@@ -159,6 +183,10 @@ func TestEqDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqString(t *testing.T) {
 	m := new(Machine)
@@ -181,6 +209,10 @@ func TestEqString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestEqDateTime(t *testing.T) {
 	m := new(Machine)
@@ -203,6 +235,10 @@ func TestEqDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 == 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeNull(t *testing.T) {
 	m := new(Machine)
@@ -225,6 +261,10 @@ func TestNeNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 func TestNeBool(t *testing.T) {
 	m := new(Machine)
@@ -247,6 +287,10 @@ func TestNeBool(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeTinyInteger(t *testing.T) {
 	m := new(Machine)
@@ -269,6 +313,10 @@ func TestNeTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -291,6 +339,10 @@ func TestNeSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeInteger(t *testing.T) {
 	m := new(Machine)
@@ -313,6 +365,10 @@ func TestNeInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -335,6 +391,10 @@ func TestNeBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeDecimal(t *testing.T) {
 	m := new(Machine)
@@ -357,6 +417,10 @@ func TestNeDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeString(t *testing.T) {
 	m := new(Machine)
@@ -379,6 +443,10 @@ func TestNeString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestNeDateTime(t *testing.T) {
 	m := new(Machine)
@@ -401,6 +469,10 @@ func TestNeDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 != 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtNull(t *testing.T) {
 	m := new(Machine)
@@ -423,6 +495,10 @@ func TestLtNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -447,6 +523,10 @@ func TestLtTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -469,6 +549,10 @@ func TestLtSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtInteger(t *testing.T) {
 	m := new(Machine)
@@ -491,6 +575,10 @@ func TestLtInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -513,6 +601,10 @@ func TestLtBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtDecimal(t *testing.T) {
 	m := new(Machine)
@@ -535,6 +627,10 @@ func TestLtDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtString(t *testing.T) {
 	m := new(Machine)
@@ -557,6 +653,10 @@ func TestLtString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLtDateTime(t *testing.T) {
 	m := new(Machine)
@@ -579,6 +679,10 @@ func TestLtDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 < 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtNull(t *testing.T) {
 	m := new(Machine)
@@ -601,6 +705,10 @@ func TestGtNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -625,6 +733,10 @@ func TestGtTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -647,6 +759,10 @@ func TestGtSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtInteger(t *testing.T) {
 	m := new(Machine)
@@ -669,6 +785,10 @@ func TestGtInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -691,6 +811,10 @@ func TestGtBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtDecimal(t *testing.T) {
 	m := new(Machine)
@@ -713,6 +837,10 @@ func TestGtDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtString(t *testing.T) {
 	m := new(Machine)
@@ -735,6 +863,10 @@ func TestGtString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGtDateTime(t *testing.T) {
 	m := new(Machine)
@@ -757,6 +889,10 @@ func TestGtDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 > 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeNull(t *testing.T) {
 	m := new(Machine)
@@ -779,6 +915,10 @@ func TestLeNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -803,6 +943,10 @@ func TestLeTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -825,6 +969,10 @@ func TestLeSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeInteger(t *testing.T) {
 	m := new(Machine)
@@ -847,6 +995,10 @@ func TestLeInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -869,6 +1021,10 @@ func TestLeBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeDecimal(t *testing.T) {
 	m := new(Machine)
@@ -891,6 +1047,10 @@ func TestLeDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeString(t *testing.T) {
 	m := new(Machine)
@@ -913,6 +1073,10 @@ func TestLeString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestLeDateTime(t *testing.T) {
 	m := new(Machine)
@@ -935,6 +1099,10 @@ func TestLeDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 <= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeNull(t *testing.T) {
 	m := new(Machine)
@@ -957,6 +1125,10 @@ func TestGeNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -981,6 +1153,10 @@ func TestGeTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1003,6 +1179,10 @@ func TestGeSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeInteger(t *testing.T) {
 	m := new(Machine)
@@ -1025,6 +1205,10 @@ func TestGeInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1047,6 +1231,10 @@ func TestGeBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeDecimal(t *testing.T) {
 	m := new(Machine)
@@ -1069,6 +1257,10 @@ func TestGeDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeString(t *testing.T) {
 	m := new(Machine)
@@ -1091,6 +1283,10 @@ func TestGeString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestGeDateTime(t *testing.T) {
 	m := new(Machine)
@@ -1113,6 +1309,10 @@ func TestGeDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(bool) != (0 >= 1) {
+		t.Error("Expected result to be false.")
+	}
 }
 func TestAndNull(t *testing.T) {
 	m := new(Machine)
@@ -1135,6 +1335,10 @@ func TestAndNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1159,6 +1363,10 @@ func TestAndTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 & 1) {
+		t.Error("Expected result to be 0 & 1.")
+	}
 }
 func TestAndSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1181,6 +1389,10 @@ func TestAndSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 & 1) {
+		t.Error("Expected result to be 0 & 1.")
+	}
 }
 func TestAndInteger(t *testing.T) {
 	m := new(Machine)
@@ -1203,6 +1415,10 @@ func TestAndInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 & 1) {
+		t.Error("Expected result to be 0 & 1.")
+	}
 }
 func TestAndBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1225,6 +1441,10 @@ func TestAndBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 & 1) {
+		t.Error("Expected result to be 0 & 1.")
+	}
 }
 
 //
@@ -1251,6 +1471,10 @@ func TestOrNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1275,6 +1499,10 @@ func TestOrTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 | 1) {
+		t.Error("Expected result to be 0 | 1.")
+	}
 }
 func TestOrSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1297,6 +1525,10 @@ func TestOrSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 | 1) {
+		t.Error("Expected result to be 0 | 1.")
+	}
 }
 func TestOrInteger(t *testing.T) {
 	m := new(Machine)
@@ -1319,6 +1551,10 @@ func TestOrInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 | 1) {
+		t.Error("Expected result to be 0 | 1.")
+	}
 }
 func TestOrBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1341,6 +1577,10 @@ func TestOrBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 | 1) {
+		t.Error("Expected result to be 0 | 1.")
+	}
 }
 
 //
@@ -1367,6 +1607,10 @@ func TestAddNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1391,6 +1635,10 @@ func TestAddTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 + 1) {
+		t.Error("Expected result to be 0 + 1.")
+	}
 }
 func TestAddSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1413,6 +1661,10 @@ func TestAddSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 + 1) {
+		t.Error("Expected result to be 0 + 1.")
+	}
 }
 func TestAddInteger(t *testing.T) {
 	m := new(Machine)
@@ -1435,6 +1687,10 @@ func TestAddInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 + 1) {
+		t.Error("Expected result to be 0 + 1.")
+	}
 }
 func TestAddBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1457,6 +1713,10 @@ func TestAddBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 + 1) {
+		t.Error("Expected result to be 0 + 1.")
+	}
 }
 func TestAddDecimal(t *testing.T) {
 	m := new(Machine)
@@ -1479,6 +1739,7 @@ func TestAddDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
 }
 func TestAddString(t *testing.T) {
 	m := new(Machine)
@@ -1501,6 +1762,7 @@ func TestAddString(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
 }
 
 //
@@ -1525,6 +1787,10 @@ func TestSubNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1549,6 +1815,10 @@ func TestSubTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 - 1) {
+		t.Error("Expected result to be 0 - 1.")
+	}
 }
 func TestSubSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1571,6 +1841,10 @@ func TestSubSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 - 1) {
+		t.Error("Expected result to be 0 - 1.")
+	}
 }
 func TestSubInteger(t *testing.T) {
 	m := new(Machine)
@@ -1593,6 +1867,10 @@ func TestSubInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 - 1) {
+		t.Error("Expected result to be 0 - 1.")
+	}
 }
 func TestSubBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1615,6 +1893,10 @@ func TestSubBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 - 1) {
+		t.Error("Expected result to be 0 - 1.")
+	}
 }
 func TestSubDecimal(t *testing.T) {
 	m := new(Machine)
@@ -1637,6 +1919,7 @@ func TestSubDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
 }
 
 //
@@ -1661,6 +1944,7 @@ func TestSubDateTime(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
 }
 func TestMulNull(t *testing.T) {
 	m := new(Machine)
@@ -1683,6 +1967,10 @@ func TestMulNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1707,6 +1995,10 @@ func TestMulTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 * 1) {
+		t.Error("Expected result to be 0 * 1.")
+	}
 }
 func TestMulSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1729,6 +2021,10 @@ func TestMulSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 * 1) {
+		t.Error("Expected result to be 0 * 1.")
+	}
 }
 func TestMulInteger(t *testing.T) {
 	m := new(Machine)
@@ -1751,6 +2047,10 @@ func TestMulInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 * 1) {
+		t.Error("Expected result to be 0 * 1.")
+	}
 }
 func TestMulBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1773,6 +2073,10 @@ func TestMulBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 * 1) {
+		t.Error("Expected result to be 0 * 1.")
+	}
 }
 func TestMulDecimal(t *testing.T) {
 	m := new(Machine)
@@ -1795,6 +2099,7 @@ func TestMulDecimal(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
 }
 
 //
@@ -1820,6 +2125,10 @@ func TestDivNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1844,6 +2153,10 @@ func TestDivTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 / 1) {
+		t.Error("Expected result to be 0 / 1.")
+	}
 }
 func TestDivSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1866,6 +2179,10 @@ func TestDivSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 / 1) {
+		t.Error("Expected result to be 0 / 1.")
+	}
 }
 func TestDivInteger(t *testing.T) {
 	m := new(Machine)
@@ -1888,6 +2205,10 @@ func TestDivInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 / 1) {
+		t.Error("Expected result to be 0 / 1.")
+	}
 }
 func TestDivBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -1910,6 +2231,10 @@ func TestDivBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 / 1) {
+		t.Error("Expected result to be 0 / 1.")
+	}
 }
 
 //
@@ -1936,6 +2261,10 @@ func TestModNull(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Type != Null {
+		t.Error("Expected result to be null.")
+	}
 }
 
 //
@@ -1960,6 +2289,10 @@ func TestModTinyInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int8) != (0 % 1) {
+		t.Error("Expected result to be 0 % 1.")
+	}
 }
 func TestModSmallInteger(t *testing.T) {
 	m := new(Machine)
@@ -1982,6 +2315,10 @@ func TestModSmallInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int16) != (0 % 1) {
+		t.Error("Expected result to be 0 % 1.")
+	}
 }
 func TestModInteger(t *testing.T) {
 	m := new(Machine)
@@ -2004,6 +2341,10 @@ func TestModInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int32) != (0 % 1) {
+		t.Error("Expected result to be 0 % 1.")
+	}
 }
 func TestModBigInteger(t *testing.T) {
 	m := new(Machine)
@@ -2026,6 +2367,10 @@ func TestModBigInteger(t *testing.T) {
 	}
 
 	exec_binop(instruction, m)
+
+	if m.Registers[2].Value.(int64) != (0 % 1) {
+		t.Error("Expected result to be 0 % 1.")
+	}
 }
 
 //
