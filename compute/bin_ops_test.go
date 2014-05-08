@@ -16,11 +16,15 @@ func TestEqNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Eq) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -42,11 +46,15 @@ func TestEqBool(t *testing.T) {
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
 
-	instruction := uint64(Eq) |
-		uint64(Bool)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Bool),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -68,11 +76,15 @@ func TestEqTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Eq) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -94,11 +106,15 @@ func TestEqSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Eq) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -120,11 +136,15 @@ func TestEqInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Eq) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -146,11 +166,15 @@ func TestEqBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Eq) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -172,11 +196,15 @@ func TestEqDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Eq) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -198,11 +226,15 @@ func TestEqString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Eq) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -224,11 +256,15 @@ func TestEqDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Eq) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Eq)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
@@ -250,11 +286,15 @@ func TestNeNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Ne) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -276,11 +316,15 @@ func TestNeBool(t *testing.T) {
 	m.Registers[0].Type = Bool
 	m.Registers[1].Type = Bool
 
-	instruction := uint64(Ne) |
-		uint64(Bool)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Bool),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -302,11 +346,15 @@ func TestNeTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Ne) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -328,11 +376,15 @@ func TestNeSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Ne) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -354,11 +406,15 @@ func TestNeInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Ne) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -380,11 +436,15 @@ func TestNeBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Ne) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -406,11 +466,15 @@ func TestNeDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Ne) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -432,11 +496,15 @@ func TestNeString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Ne) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -458,11 +526,15 @@ func TestNeDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Ne) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Ne)
 
 	if get_op_code(instruction) != Ne {
 		t.Error("Expected op code to be 'Ne'")
@@ -484,11 +556,15 @@ func TestLtNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Lt) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -512,11 +588,15 @@ func TestLtTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Lt) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -538,11 +618,15 @@ func TestLtSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Lt) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -564,11 +648,15 @@ func TestLtInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Lt) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -590,11 +678,15 @@ func TestLtBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Lt) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -616,11 +708,15 @@ func TestLtDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Lt) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -642,11 +738,15 @@ func TestLtString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Lt) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -668,11 +768,15 @@ func TestLtDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Lt) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Lt)
 
 	if get_op_code(instruction) != Lt {
 		t.Error("Expected op code to be 'Lt'")
@@ -694,11 +798,15 @@ func TestGtNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Gt) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -722,11 +830,15 @@ func TestGtTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Gt) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -748,11 +860,15 @@ func TestGtSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Gt) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -774,11 +890,15 @@ func TestGtInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Gt) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -800,11 +920,15 @@ func TestGtBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Gt) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -826,11 +950,15 @@ func TestGtDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Gt) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -852,11 +980,15 @@ func TestGtString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Gt) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -878,11 +1010,15 @@ func TestGtDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Gt) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Gt)
 
 	if get_op_code(instruction) != Gt {
 		t.Error("Expected op code to be 'Gt'")
@@ -904,11 +1040,15 @@ func TestLeNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Le) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -932,11 +1072,15 @@ func TestLeTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Le) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -958,11 +1102,15 @@ func TestLeSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Le) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -984,11 +1132,15 @@ func TestLeInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Le) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -1010,11 +1162,15 @@ func TestLeBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Le) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -1036,11 +1192,15 @@ func TestLeDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Le) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -1062,11 +1222,15 @@ func TestLeString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Le) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -1088,11 +1252,15 @@ func TestLeDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Le) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Le)
 
 	if get_op_code(instruction) != Le {
 		t.Error("Expected op code to be 'Le'")
@@ -1114,11 +1282,15 @@ func TestGeNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Ge) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1142,11 +1314,15 @@ func TestGeTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Ge) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1168,11 +1344,15 @@ func TestGeSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Ge) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1194,11 +1374,15 @@ func TestGeInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Ge) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1220,11 +1404,15 @@ func TestGeBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Ge) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1246,11 +1434,15 @@ func TestGeDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Ge) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1272,11 +1464,15 @@ func TestGeString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Ge) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1298,11 +1494,15 @@ func TestGeDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Ge) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Ge)
 
 	if get_op_code(instruction) != Ge {
 		t.Error("Expected op code to be 'Ge'")
@@ -1324,11 +1524,15 @@ func TestAndNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(And) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		And)
 
 	if get_op_code(instruction) != And {
 		t.Error("Expected op code to be 'And'")
@@ -1352,11 +1556,15 @@ func TestAndTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(And) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		And)
 
 	if get_op_code(instruction) != And {
 		t.Error("Expected op code to be 'And'")
@@ -1378,11 +1586,15 @@ func TestAndSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(And) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		And)
 
 	if get_op_code(instruction) != And {
 		t.Error("Expected op code to be 'And'")
@@ -1404,11 +1616,15 @@ func TestAndInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(And) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		And)
 
 	if get_op_code(instruction) != And {
 		t.Error("Expected op code to be 'And'")
@@ -1430,11 +1646,15 @@ func TestAndBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(And) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		And)
 
 	if get_op_code(instruction) != And {
 		t.Error("Expected op code to be 'And'")
@@ -1460,11 +1680,15 @@ func TestOrNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Or) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Or)
 
 	if get_op_code(instruction) != Or {
 		t.Error("Expected op code to be 'Or'")
@@ -1488,11 +1712,15 @@ func TestOrTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Or) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Or)
 
 	if get_op_code(instruction) != Or {
 		t.Error("Expected op code to be 'Or'")
@@ -1514,11 +1742,15 @@ func TestOrSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Or) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Or)
 
 	if get_op_code(instruction) != Or {
 		t.Error("Expected op code to be 'Or'")
@@ -1540,11 +1772,15 @@ func TestOrInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Or) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Or)
 
 	if get_op_code(instruction) != Or {
 		t.Error("Expected op code to be 'Or'")
@@ -1566,11 +1802,15 @@ func TestOrBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Or) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Or)
 
 	if get_op_code(instruction) != Or {
 		t.Error("Expected op code to be 'Or'")
@@ -1596,11 +1836,15 @@ func TestAddNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Add) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1624,11 +1868,15 @@ func TestAddTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Add) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1650,11 +1898,15 @@ func TestAddSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Add) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1676,11 +1928,15 @@ func TestAddInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Add) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1702,11 +1958,15 @@ func TestAddBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Add) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1728,11 +1988,15 @@ func TestAddDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Add) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1751,11 +2015,15 @@ func TestAddString(t *testing.T) {
 	m.Registers[0].Type = String
 	m.Registers[1].Type = String
 
-	instruction := uint64(Add) |
-		uint64(String)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			String),
+		Add)
 
 	if get_op_code(instruction) != Add {
 		t.Error("Expected op code to be 'Add'")
@@ -1776,11 +2044,15 @@ func TestSubNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Sub) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1804,11 +2076,15 @@ func TestSubTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Sub) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1830,11 +2106,15 @@ func TestSubSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Sub) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1856,11 +2136,15 @@ func TestSubInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Sub) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1882,11 +2166,15 @@ func TestSubBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Sub) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1908,11 +2196,15 @@ func TestSubDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Sub) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1933,11 +2225,15 @@ func TestSubDateTime(t *testing.T) {
 	m.Registers[0].Type = DateTime
 	m.Registers[1].Type = DateTime
 
-	instruction := uint64(Sub) |
-		uint64(DateTime)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			DateTime),
+		Sub)
 
 	if get_op_code(instruction) != Sub {
 		t.Error("Expected op code to be 'Sub'")
@@ -1956,11 +2252,15 @@ func TestMulNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Mul) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Mul)
 
 	if get_op_code(instruction) != Mul {
 		t.Error("Expected op code to be 'Mul'")
@@ -1984,11 +2284,15 @@ func TestMulTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Mul) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Mul)
 
 	if get_op_code(instruction) != Mul {
 		t.Error("Expected op code to be 'Mul'")
@@ -2010,11 +2314,15 @@ func TestMulSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Mul) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Mul)
 
 	if get_op_code(instruction) != Mul {
 		t.Error("Expected op code to be 'Mul'")
@@ -2036,11 +2344,15 @@ func TestMulInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Mul) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Mul)
 
 	if get_op_code(instruction) != Mul {
 		t.Error("Expected op code to be 'Mul'")
@@ -2062,11 +2374,15 @@ func TestMulBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Mul) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Mul)
 
 	if get_op_code(instruction) != Mul {
 		t.Error("Expected op code to be 'Mul'")
@@ -2088,11 +2404,15 @@ func TestMulDecimal(t *testing.T) {
 	m.Registers[0].Type = Decimal
 	m.Registers[1].Type = Decimal
 
-	instruction := uint64(Mul) |
-		uint64(Decimal)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Decimal),
+		Mul)
 
 	if get_op_code(instruction) != Mul {
 		t.Error("Expected op code to be 'Mul'")
@@ -2114,11 +2434,15 @@ func TestDivNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Div) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Div)
 
 	if get_op_code(instruction) != Div {
 		t.Error("Expected op code to be 'Div'")
@@ -2142,11 +2466,15 @@ func TestDivTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Div) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Div)
 
 	if get_op_code(instruction) != Div {
 		t.Error("Expected op code to be 'Div'")
@@ -2168,11 +2496,15 @@ func TestDivSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Div) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Div)
 
 	if get_op_code(instruction) != Div {
 		t.Error("Expected op code to be 'Div'")
@@ -2194,11 +2526,15 @@ func TestDivInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Div) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Div)
 
 	if get_op_code(instruction) != Div {
 		t.Error("Expected op code to be 'Div'")
@@ -2220,11 +2556,15 @@ func TestDivBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Div) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Div)
 
 	if get_op_code(instruction) != Div {
 		t.Error("Expected op code to be 'Div'")
@@ -2250,11 +2590,15 @@ func TestModNull(t *testing.T) {
 	m.Registers[0].Type = Null
 	m.Registers[1].Type = Null
 
-	instruction := uint64(Mod) |
-		uint64(Null)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Null),
+		Mod)
 
 	if get_op_code(instruction) != Mod {
 		t.Error("Expected op code to be 'Mod'")
@@ -2278,11 +2622,15 @@ func TestModTinyInteger(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Mod) |
-		uint64(TinyInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			TinyInteger),
+		Mod)
 
 	if get_op_code(instruction) != Mod {
 		t.Error("Expected op code to be 'Mod'")
@@ -2304,11 +2652,15 @@ func TestModSmallInteger(t *testing.T) {
 	m.Registers[0].Type = SmallInteger
 	m.Registers[1].Type = SmallInteger
 
-	instruction := uint64(Mod) |
-		uint64(SmallInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			SmallInteger),
+		Mod)
 
 	if get_op_code(instruction) != Mod {
 		t.Error("Expected op code to be 'Mod'")
@@ -2330,11 +2682,15 @@ func TestModInteger(t *testing.T) {
 	m.Registers[0].Type = Integer
 	m.Registers[1].Type = Integer
 
-	instruction := uint64(Mod) |
-		uint64(Integer)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			Integer),
+		Mod)
 
 	if get_op_code(instruction) != Mod {
 		t.Error("Expected op code to be 'Mod'")
@@ -2356,11 +2712,15 @@ func TestModBigInteger(t *testing.T) {
 	m.Registers[0].Type = BigInteger
 	m.Registers[1].Type = BigInteger
 
-	instruction := uint64(Mod) |
-		uint64(BigInteger)<<8 |
-		uint64(2)<<16 |
-		uint64(0)<<32 |
-		uint64(1)<<48
+	instruction := set_op_code(
+		set_op_type(
+			set_binop_dst_register(
+				set_binop_src1_register(
+					set_binop_src2_register(0, 1),
+					0),
+				2),
+			BigInteger),
+		Mod)
 
 	if get_op_code(instruction) != Mod {
 		t.Error("Expected op code to be 'Mod'")

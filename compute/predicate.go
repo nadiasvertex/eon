@@ -178,8 +178,10 @@ type BranchOp struct {
 	Offset   uint32
 }
 
+type Instruction uint64
+
 type Predicate struct {
-	Instructions       []uint64
+	Instructions       []Instruction
 	InstructionPointer int
 	RegisterFileSize   int
 	Data               []byte
@@ -195,25 +197,46 @@ type Machine struct {
 	Registers []Register
 }
 
-func get_op_code(instruction uint64) Opcode {
+func get_op_code(instruction Instruction) Opcode {
 	return Opcode(instruction)
 }
 
-func get_op_type(instruction uint64) ValueType {
+func get_op_type(instruction Instruction) ValueType {
 	return ValueType(instruction >> 8)
 }
 
-func get_binop_dst_register(instruction uint64) uint16 {
+func get_binop_dst_register(instruction Instruction) uint16 {
 	return uint16(instruction >> 16)
 }
 
-func get_binop_src1_register(instruction uint64) uint16 {
+func get_binop_src1_register(instruction Instruction) uint16 {
 	return uint16(instruction >> 32)
 }
 
-func get_binop_src2_register(instruction uint64) uint16 {
+func get_binop_src2_register(instruction Instruction) uint16 {
 	return uint16(instruction >> 48)
 }
+
+func set_op_code(instruction Instruction, opcode Opcode) Instruction {
+	return instruction | Instruction(opcode)
+}
+
+func set_op_type(instruction Instruction, op_type ValueType) Instruction {
+	return instruction | Instruction(op_type)<<8
+}
+
+func set_binop_dst_register(instruction Instruction, index uint16) Instruction {
+	return instruction | Instruction(index)<<16
+}
+
+func set_binop_src1_register(instruction Instruction, index uint16) Instruction {
+	return instruction | Instruction(index)<<32
+}
+
+func set_binop_src2_register(instruction Instruction, index uint16) Instruction {
+	return instruction | Instruction(index)<<48
+}
+
 
 func Execute(p *Predicate) {
 	m := new(Machine)

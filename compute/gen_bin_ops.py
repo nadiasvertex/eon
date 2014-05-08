@@ -8,7 +8,7 @@ import (
 	inf "speter.net/go/exp/math/dec/inf"
 )
 
-func exec_binop(instruction uint64, m *Machine) {
+func exec_binop(instruction Instruction, m *Machine) {
 	lvalue_type := get_op_type(instruction)
 	dst_reg_idx := get_binop_dst_register(instruction)
 	src1_reg_idx := get_binop_src1_register(instruction)
@@ -73,7 +73,7 @@ func exec_binop(instruction uint64, m *Machine) {
 				% elif go_op == '+':
 				${make_fetch(type, go_type, go_op)}
 				result := inf.NewDec(0, 0)
-				result.Add(v1, v2) 
+				result.Add(v1, v2)
 				dst_reg.Value = result
 				% elif go_op == '-':
 				${make_fetch(type, go_type, go_op)}
@@ -161,11 +161,15 @@ func Test${op}${type}(t *testing.T) {
 	m.Registers[0].Type = ${type}
 	m.Registers[1].Type = ${type}
 
-	instruction := uint64(${op}) |
-	               uint64(${type})<<8 |
-	               uint64(2)<<16 |
-	               uint64(0)<<32 |
-	               uint64(1)<<48
+	instruction := set_op_code(
+						  set_op_type(
+						  	set_binop_dst_register(
+						  	 set_binop_src1_register(
+						  	 	set_binop_src2_register(0,1),
+						  	 0),
+						  	2),
+						  ${type}),
+						${op})
 
 	if get_op_code(instruction) != ${op} {
 		t.Error("Expected op code to be '${op}'")

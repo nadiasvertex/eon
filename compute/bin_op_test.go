@@ -12,18 +12,18 @@ func TestSimpleEq(t *testing.T) {
 	m.Registers[0].Type = TinyInteger
 	m.Registers[1].Type = TinyInteger
 
-	instruction := uint64(Eq) | 
-	               uint64(TinyInteger)<<8 | 
-	               uint64(2)<<16 | 
-	               uint64(0)<<32 | 
-	               uint64(1)<<48
+	instruction := set_op_code(0, Eq);
+	instruction = set_op_type(instruction, TinyInteger)
+	instruction = set_binop_dst_register(instruction, 2)
+	instruction = set_binop_src1_register(instruction, 0)
+	instruction = set_binop_src2_register(instruction, 1)
 
 	if get_op_code(instruction) != Eq {
 		t.Error("Expected op code to be 'Eq'")
 	}
 
 	if get_op_type(instruction) != TinyInteger {
-		t.Error("Expected operation type to be TinyInteger")	
+		t.Error("Expected operation type to be TinyInteger")
 	}
 
 	if get_binop_dst_register(instruction) != 2 {
@@ -41,9 +41,9 @@ func TestSimpleEq(t *testing.T) {
 	exec_binop(instruction, m)
 
 	if m.Registers[2].Type != Bool {
-		t.Error("Expected result register type to be bool.")	
+		t.Error("Expected result register type to be bool.")
 	}
-	
+
 	if m.Registers[2].Value.(bool) == true {
 		t.Error("Expected equality test to yield false.")
 	}
