@@ -771,7 +771,9 @@ func exec_binop(instruction uint64, m *Machine) {
 				dst_reg.Type = Decimal
 
 
-				dst_reg.Value.(*inf.Dec).Add(v1, v2)
+				result := inf.NewDec(0, 0)
+				result.Add(v1, v2) 
+				dst_reg.Value = result
 
 				
 			case String:
@@ -853,7 +855,9 @@ func exec_binop(instruction uint64, m *Machine) {
 				dst_reg.Type = Decimal
 
 
-				dst_reg.Value.(*inf.Dec).Sub(v1, v2)
+				result := inf.NewDec(0, 0)
+				result.Sub(v1, v2)
+				dst_reg.Value = result
 
 				
 			case String:
@@ -935,7 +939,9 @@ func exec_binop(instruction uint64, m *Machine) {
 				dst_reg.Type = Decimal
 
 
-				dst_reg.Value.(*inf.Dec).Mul(v1, v2)
+				result := inf.NewDec(0, 0)
+				result.Mul(v1, v2)
+				dst_reg.Value = result
 
 				
 			case String:

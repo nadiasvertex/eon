@@ -72,13 +72,19 @@ func exec_binop(instruction uint64, m *Machine) {
 				dst_reg.Value = result ${go_op} 0
 				% elif go_op == '+':
 				${make_fetch(type, go_type, go_op)}
-				dst_reg.Value.(${go_type}).Add(v1, v2)
+				result := inf.NewDec(0, 0)
+				result.Add(v1, v2) 
+				dst_reg.Value = result
 				% elif go_op == '-':
 				${make_fetch(type, go_type, go_op)}
-				dst_reg.Value.(${go_type}).Sub(v1, v2)
+				result := inf.NewDec(0, 0)
+				result.Sub(v1, v2)
+				dst_reg.Value = result
 				% elif go_op == '*':
 				${make_fetch(type, go_type, go_op)}
-				dst_reg.Value.(${go_type}).Mul(v1, v2)
+				result := inf.NewDec(0, 0)
+				result.Mul(v1, v2)
+				dst_reg.Value = result
 				% else:
 				panic("Unsupported operation '${go_op}' on type '${type}'.")
 				% endif
@@ -130,6 +136,12 @@ import (
 
 % for op, go_op in binops:
 %   for type, go_type in types:
+%     if type=="Bool" and go_op in ("<", ">", "<=", ">=", "&", "|", "+", "-", "*", "/", "%") or \
+         type=="Decimal" and go_op in ("&", "|", "/", "%") or \
+         type=="String" and go_op in ("&", "|", "/", "-", "*", "%") or \
+         type=="DateTime" and go_op in ("&", "|", "/", "+", "*", "%"):
+//
+%     else:
 func Test${op}${type}(t *testing.T) {
 	m := new(Machine)
 	m.Registers = make([]Register, 3)
@@ -158,7 +170,10 @@ func Test${op}${type}(t *testing.T) {
 	if get_op_code(instruction) != ${op} {
 		t.Error("Expected op code to be '${op}'")
 	}
+
+	exec_binop(instruction, m)
 }
+%     endif
 %   endfor
 % endfor
 
