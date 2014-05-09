@@ -192,6 +192,7 @@ type InstructionEncoder interface {
 	EncodeLiteralLoadInt64(opr_type ValueType, dst uint16, value int64)
 	EncodeLiteralLoadDateTime(dst uint16, value *time.Time)
 	EncodeLiteralLoadDecimal(dst uint16, value *inf.Dec)
+	EncodeLiteralLoadString(dst uint16, value string)
 }
 
 type Instruction uint64
@@ -416,6 +417,12 @@ func (p *Predicate) EncodeLiteralLoadDecimal(dst uint16, value *inf.Dec) {
 	if err != nil {
 		panic(fmt.Sprintf("Unable to encode Decimal: %v", err))
 	}
+	write_literal_indirect_instruction(p, instruction, index, data, offset)
+}
+
+func (p *Predicate) EncodeLiteralLoadString(dst uint16, value string) {
+	index, offset, instruction := prepare_literal_indirect_instruction(p, String, dst)
+	data := []byte(value)
 	write_literal_indirect_instruction(p, instruction, index, data, offset)
 }
 

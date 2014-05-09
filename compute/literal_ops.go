@@ -42,7 +42,7 @@ func exec_literalop(instruction Instruction, p* Predicate, m *Machine) {
 			t := new(time.Time) 
 			length := uint32(p.Data[offset])
 			err := t.GobDecode(p.Data[offset+1:offset+1+length])
-			dst.Value = t;
+			dst.Value = t
 
 			if err!=nil {
 				panic(fmt.Sprintf("Unable to load DateTime: %v", err))
@@ -53,11 +53,16 @@ func exec_literalop(instruction Instruction, p* Predicate, m *Machine) {
 			v := inf.NewDec(0,0) 
 			length := uint32(p.Data[offset])
 			err := v.GobDecode(p.Data[offset+1:offset+1+length])
-			dst.Value = v;
+			dst.Value = v
 
 			if err!=nil {
 				panic(fmt.Sprintf("Unable to load Decimal: %v", err))
 			}
+
+		case String:
+			dst.Type = String
+			length := uint32(p.Data[offset])
+			dst.Value = string(p.Data[offset+1:offset+1+length])
 
 		default:
 			panic("Unable to load this type of data as indirect literal.")
