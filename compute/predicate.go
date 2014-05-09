@@ -1,5 +1,11 @@
 package compute
 
+import (
+	inf "speter.net/go/exp/math/dec/inf"
+	"fmt"
+	"time"
+)
+
 /*
   Predicate matching works like this:
 
@@ -178,6 +184,16 @@ type BranchOp struct {
 	Offset   uint32
 }
 
+type InstructionEncoder interface {
+	EncodeBinOp(code Opcode, opr_type ValueType, src1 uint16, src2 uint16, dst uint16)
+	EncodeLiteralLoadInt8(opr_type ValueType, dst uint16, value int8)
+	EncodeLiteralLoadInt16(opr_type ValueType, dst uint16, value int16)
+	EncodeLiteralLoadInt32(opr_type ValueType, dst uint16, value int32)
+	EncodeLiteralLoadInt64(opr_type ValueType, dst uint16, value int64)
+	EncodeLiteralLoadDateTime(opr_type ValueType, dst uint16, value *time.Time)
+	EncodeLiteralLoadDecimal(opr_type ValueType, dst uint16, value *inf.Dec)
+}
+
 type Instruction uint64
 
 type Predicate struct {
@@ -185,6 +201,7 @@ type Predicate struct {
 	InstructionPointer int
 	RegisterFileSize   int
 	Data               []byte
+	DataLength         int
 }
 
 type Register struct {
@@ -267,6 +284,138 @@ func set_litop_register(instruction Instruction, register uint16) Instruction {
 
 func set_litop_data_offset(instruction Instruction, offset uint32) Instruction {
 	return instruction | Instruction(offset)<<32
+}
+
+func set_litop_data_as_int8(instruction Instruction, value int8) Instruction {
+	return instruction | Instruction(value)<<32
+}
+
+func set_litop_data_as_int16(instruction Instruction, value int16) Instruction {
+	return instruction | Instruction(value)<<32
+}
+
+func set_litop_data_as_int32(instruction Instruction, value int32) Instruction {
+	return instruction | Instruction(value)<<32
+}
+
+func set_litop_data_as_int64(instruction Instruction, value int64) Instruction {
+	return instruction | Instruction(value)<<32
+}
+
+func grow_instruction_array(p *Predicate) int {
+	index := p.InstructionPointer
+	// Grow instruction array if needed.
+	if index >= cap(p.Instructions) {
+		new_instructions := make([]Instruction, cap(p.Instructions)*2)
+		copy(new_instructions, p.Instructions)
+		p.Instructions = new_instructions
+	}
+
+	return index
+}
+
+func grow_data_buffer(p *Predicate) int {
+	offset := p.DataLength
+	// Grow data buffer if needed.
+	if offset >= cap(p.Data) {
+		new_data := make([]byte, cap(p.Data)*2)
+		copy(new_data, p.Data)
+		p.Data = new_data
+	}
+
+	return offset
+}
+
+func prepare_literal_indirect_instruction(p *Predicate, opr_type ValueType, dst uint16) (int, int, Instruction) {
+	index := grow_instruction_array(p)
+	offset := grow_data_buffer(p)
+	instruction := Instruction(LoadLiteralIndirect) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+		Instruction(offset)<<32
+
+	return index, offset, instruction
+}
+
+func write_literal_indirect_instruction(p *Predicate, instruction Instruction, index int, data []byte, offset int) {
+	p.Instructions[index] = instruction
+	p.InstructionPointer += 1
+	copy(p.Data[offset:], data)
+	p.DataLength += len(data)
+}
+
+func (p *Predicate) EncodeBinOp(code Opcode, opr_type ValueType, src1 uint16, src2 uint16, dst uint16) {
+	index := grow_instruction_array(p)
+	instruction := Instruction(code) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+		Instruction(src1)<<32 | Instruction(src2)<<48
+
+	p.Instructions[index] = instruction
+	p.InstructionPointer += 1
+}
+
+func (p *Predicate) EncodeLiteralLoadInt8(opr_type ValueType, dst uint16, value int8) {
+	index := grow_instruction_array(p)
+	instruction := Instruction(LoadLiteral) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+		Instruction(value)<<32
+	p.Instructions[index] = instruction
+	p.InstructionPointer += 1
+}
+
+func (p *Predicate) EncodeLiteralLoadInt16(opr_type ValueType, dst uint16, value int16) {
+	index := grow_instruction_array(p)
+	instruction := Instruction(LoadLiteral) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+		Instruction(value)<<32
+	p.Instructions[index] = instruction
+	p.InstructionPointer += 1
+}
+
+func (p *Predicate) EncodeLiteralLoadInt32(opr_type ValueType, dst uint16, value int32) {
+	index := grow_instruction_array(p)
+	instruction := Instruction(LoadLiteral) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+		Instruction(value)<<32
+	p.Instructions[index] = instruction
+	p.InstructionPointer += 1
+}
+
+func (p *Predicate) EncodeLiteralLoadInt64(opr_type ValueType, dst uint16, value int64) {
+	index := grow_instruction_array(p)
+	if value >= -2147483648 && value <= 2147483647 {
+		instruction := Instruction(LoadLiteral) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+			Instruction(value)<<32
+		p.Instructions[index] = instruction
+	} else {
+		offset := grow_data_buffer(p)
+		instruction := Instruction(LoadLiteralIndirect) | Instruction(opr_type)<<8 | Instruction(dst)<<16 |
+			Instruction(offset)<<32
+		p.Instructions[index] = instruction
+		p.Data[offset] = uint8(value)
+		p.Data[offset+1] = uint8(value >> 8)
+		p.Data[offset+2] = uint8(value >> 16)
+		p.Data[offset+3] = uint8(value >> 24)
+		p.Data[offset+4] = uint8(value >> 32)
+		p.Data[offset+5] = uint8(value >> 40)
+		p.Data[offset+6] = uint8(value >> 48)
+		p.Data[offset+7] = uint8(value >> 56)
+		p.DataLength += 8
+	}
+
+	p.InstructionPointer += 1
+}
+
+func (p *Predicate) EncodeLiteralLoadDateTime(opr_type ValueType, dst uint16, value *time.Time) {
+	index, offset, instruction := prepare_literal_indirect_instruction(p, opr_type, dst)
+	data, err := value.GobEncode()
+	if err != nil {
+		panic(fmt.Sprintf("Unable to encode DateTime: %v", err))
+	}
+	write_literal_indirect_instruction(p, instruction, index, data, offset)
+}
+
+func (p *Predicate) EncodeLiteralLoadDecimal(opr_type ValueType, dst uint16, value *inf.Dec) {
+	index, offset, instruction := prepare_literal_indirect_instruction(p, opr_type, dst)
+	data, err := value.GobEncode()
+	if err != nil {
+		panic(fmt.Sprintf("Unable to encode Decimal: %v", err))
+	}
+	write_literal_indirect_instruction(p, instruction, index, data, offset)
 }
 
 func Execute(p *Predicate) {
