@@ -26,6 +26,10 @@ func TestEncodeDateTime(t *testing.T) {
 	m.Registers = make([]Register, 3)
 
 	exec_literalop(p.Instructions[0], p, m)
+
+	if !m.Registers[0].Value.(*time.Time).Equal(n) {
+		t.Error("Time loaded into virtual machine register does not match time encoded into instruction.")
+	}
 }
 
 func TestEncodeDecimal(t *testing.T) {
@@ -33,7 +37,8 @@ func TestEncodeDecimal(t *testing.T) {
 	p.Instructions = make([]Instruction, 8)
 	p.Data = make([]byte, 64)
 
-	p.EncodeLiteralLoadDecimal(0, inf.NewDec(37, 0))
+	d := inf.NewDec(37, 0)
+	p.EncodeLiteralLoadDecimal(0, d)
 
 	if p.InstructionPointer!=1 {
 		t.Error("There should be one and only one instruction in the array.")
@@ -47,4 +52,8 @@ func TestEncodeDecimal(t *testing.T) {
 	m.Registers = make([]Register, 3)
 
 	exec_literalop(p.Instructions[0], p, m)
+
+	if m.Registers[0].Value.(*inf.Dec).Cmp(d) != 0 {
+		t.Error("Value loaded into virtual machine register does not match decimal value encoded into instruction.")
+	}
 }
