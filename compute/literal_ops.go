@@ -2,6 +2,7 @@ package compute
 
 import (
 	//inf "speter.net/go/exp/math/dec/inf"
+	"fmt"
 	"time"
 )
 
@@ -39,8 +40,13 @@ func exec_literalop(instruction Instruction, p* Predicate, m *Machine) {
 		case DateTime:
 			dst.Type = DateTime
 			t := new(time.Time) 
-			_ = t.UnmarshalBinary(p.Data[offset:])
+			length := uint32(p.Data[offset])
+			err := t.UnmarshalBinary(p.Data[offset+1:offset+1+length])
 			dst.Value = t;
+
+			if err!=nil {
+				panic(fmt.Sprintf("Unable to load DateTime: %v", err))
+			}
 
 		default:
 			panic("Unable to load this type of data as indirect literal.")

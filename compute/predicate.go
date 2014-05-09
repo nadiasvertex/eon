@@ -265,6 +265,10 @@ func set_litop_register(instruction Instruction, register uint16) Instruction {
 	return instruction | Instruction(register)<<16
 }
 
+func set_litop_data_offset(instruction Instruction, offset uint32) Instruction {
+	return instruction | Instruction(offset)<<32
+}
+
 func Execute(p *Predicate) {
 	m := new(Machine)
 	m.Registers = make([]Register, p.RegisterFileSize)

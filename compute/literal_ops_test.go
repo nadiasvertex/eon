@@ -2,6 +2,7 @@ package compute
 
 import (
 	//inf "speter.net/go/exp/math/dec/inf"
+	"fmt"
 	"testing"
 	"time"
 )
@@ -19,20 +20,40 @@ func TestLoadLiteralIndirectDateTime(t *testing.T) {
 	p := new(Predicate)
 	instruction := set_op_code(
 		set_op_type(
-			set_litop_register(0, 0),
+			set_litop_register(
+				set_litop_data_offset(0, 2), 
+				0),
 			DateTime),
 		LoadLiteralIndirect)
+
+	if (get_op_code(instruction) != LoadLiteralIndirect) {
+		t.Error(fmt.Sprintf("Op code '%v' is not LoadLiteralIndirect.", get_op_code(instruction)))
+	}
+
+	if (get_op_type(instruction) != DateTime) {
+		t.Error(fmt.Sprintf("Op type '%v' is not DateTime", get_op_type(instruction)))
+	}
+
+	if (get_litop_register(instruction) != 0) {
+		t.Error("Target register is not 0.")
+	}
+
+	if (get_litop_data_offset(instruction)!=2) {
+		t.Error("Data offset is not 2.")
+	}
 
 	buffer := make([]byte, len(data)+64)
 	buffer[0] = 0
 	buffer[1] = 1
-	copy(buffer[2:], data)
+	buffer[2] = uint8(len(data))
+	copy(buffer[3:], data)
 
 	p.Data = buffer
 
 	exec_literalop(instruction, p, m)
 
-	if m.Registers[0].Value.(*time.Time).Equal(tm) == false {
-		t.Error("The loaded time value is not the same as the one stored.")
+	loaded_datetime := m.Registers[0].Value.(*time.Time)
+	if loaded_datetime.Equal(tm) == false {
+		t.Error(fmt.Sprintf("The loaded time value (%v) is not the same as the one stored (%v).", loaded_datetime, tm))
 	}
 }
