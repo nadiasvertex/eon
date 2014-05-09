@@ -84,3 +84,45 @@ func TestEncodeString(t *testing.T) {
 	}
 }
 
+func TestEncodeAll(t *testing.T) {
+	p := new(Predicate)
+	p.Instructions = make([]Instruction, 8)
+	p.Data = make([]byte, 64)
+
+	s := "a test string"
+	p.EncodeLiteralLoadString(0, s)
+
+	d := inf.NewDec(37, 0)
+	p.EncodeLiteralLoadDecimal(1, d)
+
+	n := time.Now()
+	p.EncodeLiteralLoadDateTime(2, &n)
+
+	if p.InstructionPointer!=3 {
+		t.Error("There should be three instructions in the array.")
+	}
+
+	if p.DataLength==0 {
+		t.Error("There should be data written to the buffer.")
+	}
+
+	m := new(Machine)
+	m.Registers = make([]Register, 3)
+
+	exec_literalop(p.Instructions[0], p, m)
+	exec_literalop(p.Instructions[1], p, m)
+	exec_literalop(p.Instructions[2], p, m)
+
+	if m.Registers[0].Value.(string) != s {
+		t.Error("Value loaded into virtual machine register does not match string value encoded into instruction.")
+	}
+
+	if m.Registers[1].Value.(*inf.Dec).Cmp(d) != 0 {
+		t.Error("Value loaded into virtual machine register does not match decimal value encoded into instruction.")
+	}
+
+	if !m.Registers[2].Value.(*time.Time).Equal(n) {
+		t.Error("Time loaded into virtual machine register does not match time encoded into instruction.")
+	}
+}
+
