@@ -168,7 +168,7 @@ type ContextOp struct {
 type LiteralOp struct {
 	Cmd        Opcode
 	Type       byte
-	Dst        uint16
+	Register   uint16
 	OffsetData uint32
 }
 
@@ -217,6 +217,30 @@ func get_binop_src2_register(instruction Instruction) uint16 {
 	return uint16(instruction >> 48)
 }
 
+func get_litop_register(instruction Instruction) uint16 {
+	return uint16(instruction >> 16)
+}
+
+func get_litop_data_as_int8(instruction Instruction) int8 {
+	return int8(instruction >> 32)
+}
+
+func get_litop_data_as_int16(instruction Instruction) int16 {
+	return int16(instruction >> 32)
+}
+
+func get_litop_data_as_int32(instruction Instruction) int32 {
+	return int32(instruction >> 32)
+}
+
+func get_litop_data_as_int64(instruction Instruction) int64 {
+	return int64(instruction >> 32)
+}
+
+func get_litop_data_offset(instruction Instruction) uint32 {
+	return uint32(instruction >> 32)
+}
+
 func set_op_code(instruction Instruction, opcode Opcode) Instruction {
 	return instruction | Instruction(opcode)
 }
@@ -237,6 +261,9 @@ func set_binop_src2_register(instruction Instruction, index uint16) Instruction 
 	return instruction | Instruction(index)<<48
 }
 
+func set_litop_register(instruction Instruction, register uint16) Instruction {
+	return instruction | Instruction(register)<<16
+}
 
 func Execute(p *Predicate) {
 	m := new(Machine)
