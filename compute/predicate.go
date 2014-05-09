@@ -190,8 +190,8 @@ type InstructionEncoder interface {
 	EncodeLiteralLoadInt16(opr_type ValueType, dst uint16, value int16)
 	EncodeLiteralLoadInt32(opr_type ValueType, dst uint16, value int32)
 	EncodeLiteralLoadInt64(opr_type ValueType, dst uint16, value int64)
-	EncodeLiteralLoadDateTime(opr_type ValueType, dst uint16, value *time.Time)
-	EncodeLiteralLoadDecimal(opr_type ValueType, dst uint16, value *inf.Dec)
+	EncodeLiteralLoadDateTime(dst uint16, value *time.Time)
+	EncodeLiteralLoadDecimal(dst uint16, value *inf.Dec)
 }
 
 type Instruction uint64
@@ -338,8 +338,9 @@ func prepare_literal_indirect_instruction(p *Predicate, opr_type ValueType, dst 
 func write_literal_indirect_instruction(p *Predicate, instruction Instruction, index int, data []byte, offset int) {
 	p.Instructions[index] = instruction
 	p.InstructionPointer += 1
-	copy(p.Data[offset:], data)
-	p.DataLength += len(data)
+	p.Data[offset] = byte(len(data))
+	copy(p.Data[offset+1:], data)
+	p.DataLength += len(data) + 1
 }
 
 func (p *Predicate) EncodeBinOp(code Opcode, opr_type ValueType, src1 uint16, src2 uint16, dst uint16) {
@@ -400,8 +401,8 @@ func (p *Predicate) EncodeLiteralLoadInt64(opr_type ValueType, dst uint16, value
 	p.InstructionPointer += 1
 }
 
-func (p *Predicate) EncodeLiteralLoadDateTime(opr_type ValueType, dst uint16, value *time.Time) {
-	index, offset, instruction := prepare_literal_indirect_instruction(p, opr_type, dst)
+func (p *Predicate) EncodeLiteralLoadDateTime(dst uint16, value *time.Time) {
+	index, offset, instruction := prepare_literal_indirect_instruction(p, DateTime, dst)
 	data, err := value.GobEncode()
 	if err != nil {
 		panic(fmt.Sprintf("Unable to encode DateTime: %v", err))
@@ -409,8 +410,8 @@ func (p *Predicate) EncodeLiteralLoadDateTime(opr_type ValueType, dst uint16, va
 	write_literal_indirect_instruction(p, instruction, index, data, offset)
 }
 
-func (p *Predicate) EncodeLiteralLoadDecimal(opr_type ValueType, dst uint16, value *inf.Dec) {
-	index, offset, instruction := prepare_literal_indirect_instruction(p, opr_type, dst)
+func (p *Predicate) EncodeLiteralLoadDecimal(dst uint16, value *inf.Dec) {
+	index, offset, instruction := prepare_literal_indirect_instruction(p, Decimal, dst)
 	data, err := value.GobEncode()
 	if err != nil {
 		panic(fmt.Sprintf("Unable to encode Decimal: %v", err))
