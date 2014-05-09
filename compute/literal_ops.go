@@ -1,7 +1,7 @@
 package compute
 
 import (
-	//inf "speter.net/go/exp/math/dec/inf"
+	inf "speter.net/go/exp/math/dec/inf"
 	"fmt"
 	"time"
 )
@@ -41,11 +41,22 @@ func exec_literalop(instruction Instruction, p* Predicate, m *Machine) {
 			dst.Type = DateTime
 			t := new(time.Time) 
 			length := uint32(p.Data[offset])
-			err := t.UnmarshalBinary(p.Data[offset+1:offset+1+length])
+			err := t.GobDecode(p.Data[offset+1:offset+1+length])
 			dst.Value = t;
 
 			if err!=nil {
 				panic(fmt.Sprintf("Unable to load DateTime: %v", err))
+			}
+
+		case Decimal:
+			dst.Type = Decimal
+			v := inf.NewDec(0,0) 
+			length := uint32(p.Data[offset])
+			err := v.GobDecode(p.Data[offset+1:offset+1+length])
+			dst.Value = v;
+
+			if err!=nil {
+				panic(fmt.Sprintf("Unable to load Decimal: %v", err))
 			}
 
 		default:
