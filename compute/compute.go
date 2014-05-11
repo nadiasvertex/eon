@@ -182,6 +182,9 @@ import (
 
  */
 
+type Evaluator interface {
+   Execute(steps int)
+}
 
 type Request struct {
    Cmd int

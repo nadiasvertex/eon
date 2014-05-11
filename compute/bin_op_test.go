@@ -33,7 +33,7 @@ func TestSimpleEq(t *testing.T) {
 	if get_binop_src1_register(instruction) != 0 {
 		t.Error("Expected src1 register == 0")
 	}
-
+	
 	if get_binop_src2_register(instruction) != 1 {
 		t.Error("Expected src2 register == 1")
 	}

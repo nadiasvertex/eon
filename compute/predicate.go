@@ -193,6 +193,8 @@ type InstructionEncoder interface {
 	EncodeLiteralLoadDateTime(dst uint16, value *time.Time)
 	EncodeLiteralLoadDecimal(dst uint16, value *inf.Dec)
 	EncodeLiteralLoadString(dst uint16, value string)
+
+	Finish()
 }
 
 type Instruction uint64
@@ -426,16 +428,40 @@ func (p *Predicate) EncodeLiteralLoadString(dst uint16, value string) {
 	write_literal_indirect_instruction(p, instruction, index, data, offset)
 }
 
-func Execute(p *Predicate) {
+func (p *Predicate) Finish() {
+	// Shrink the instruction array if needed
+	if cap(p.Instructions) > p.InstructionPointer {
+		new_instructions := make([]Instruction, p.InstructionPointer)
+		copy(new_instructions, p.Instructions[0:p.InstructionPointer-1])
+		p.Instructions = new_instructions
+	}
+
+	// Shrink the data buffer if needed
+	if cap(p.Data) > p.DataLength {
+		new_data := make([]byte, p.DataLength)
+		copy(new_data, p.Data[0:p.DataLength-1])
+		p.Data = new_data
+	}
+
+	// Reset instruction pointer
+	p.InstructionPointer = 0
+}
+
+func (p *Predicate) Execute(steps int) {
 	m := new(Machine)
 	m.Registers = make([]Register, p.RegisterFileSize)
 
-	for index := p.InstructionPointer; index < len(p.Instructions); index++ {
+	for index := p.InstructionPointer; index < p.InstructionPointer + steps && index < len(p.Instructions); index++ {
 		instruction := p.Instructions[index]
 		switch get_op_code(instruction) {
 		case Eq, Ne, Ge, Le, Gt, Lt,
 			And, Or, Add, Sub, Mul, Div, Mod:
 			exec_binop(instruction, m)
+			p.InstructionPointer++
+
+		case LoadLiteral, LoadLiteralIndirect:
+			exec_literalop(instruction, p, m)
+			p.InstructionPointer++
 		}
 	}
 }
