@@ -2,7 +2,6 @@ module Schema (Table, Column, ColumnType) where
 
 import Control.Monad.State
 import Data.List
-import Data.Maybe
 
 data ColumnType = TinyInteger
                |  SmallInteger
@@ -48,10 +47,11 @@ getColumnType name column_list =
    let the_column = getColumnByName name column_list
    in case the_column of
       Nothing   -> Nothing
-      otherwise -> Just (columnType (fromJust the_column))
+      Just column -> Just (columnType column)
 
 alterColumnType :: String -> ColumnType -> [Column] -> [Column]
 alterColumnType name new_column_type column_list = map (alter_column_type name new_column_type) column_list
 
 alterColumnName :: String -> String -> [Column] -> [Column]
 alterColumnName name new_column_name column_list = map (alter_column_name name new_column_name) column_list
+
