@@ -1,10 +1,8 @@
 module Compute where
 
-import Schema
-
 data ColumnRefInfo = ColumnRefInfo {
-	table	:: Schema.Table,
-	column  :: Schema.Column
+	table	:: String,
+	column  :: String
 }
 
 data ComputeVal = ColumnRef ColumnRefInfo
