@@ -7,29 +7,69 @@ import Text.ParserCombinators.Parsec
 -- Eon modules
 import Compute
 
-primitives = [("+", (BinOpNode Add)),
-              ("-", (BinOpNode Sub)),
-              ("*", (BinOpNode Mul)),
-              ("/", (BinOpNode Div)),
-              ("!=", (BinOpNode Ne)),
-              ("<=", (BinOpNode Le)),
-              (">=", (BinOpNode Ge)),
-              ("=", (BinOpNode Eq)),
-              ("<", (BinOpNode Lt)),
-              (">", (BinOpNode Gt))]
+op_ne :: Parser (Node -> Node -> BinOpNode)
+op_ne = do
+   string "!="
+   return $ (BinOpNode Ne)
 
-operation :: Parser String
-operation =    (try string "!=")
-           <|> (try string "<=")
-           <|> (try string ">=")
+op_le :: Parser (Node -> Node -> BinOpNode)
+op_le = do
+   string "<="
+   return $ (BinOpNode Le)
+
+op_ge :: Parser (Node -> Node -> BinOpNode)
+op_ge = do
+   string ">="
+   return $ (BinOpNode Ge)
+
+op_gt :: Parser (Node -> Node -> BinOpNode)
+op_gt = do
+   char '>'
+   return $ (BinOpNode Gt)
+
+op_lt :: Parser (Node -> Node -> BinOpNode)
+op_lt = do
+   char '<'
+   return $ (BinOpNode Lt)
+
+op_eq :: Parser (Node -> Node -> BinOpNode)
+op_eq = do
+   char '='
+   return $ (BinOpNode Eq)
+
+op_add :: Parser (Node -> Node -> BinOpNode)
+op_add = do
+   char '+'
+   return $ (BinOpNode Add)
+
+op_sub :: Parser (Node -> Node -> BinOpNode)
+op_sub = do
+   char '-'
+   return $ (BinOpNode Sub)
+
+op_mul :: Parser (Node -> Node -> BinOpNode)
+op_mul = do
+   char '+'
+   return $ (BinOpNode Mul)
+
+op_div :: Parser (Node -> Node -> BinOpNode)
+op_div = do
+   char '/'
+   return $ (BinOpNode Div)
+
+operation :: Parser (Node -> Node -> BinOpNode)
+operation = try op_ne <|> try op_le <|> try op_ge
+        <|> try op_lt <|> try op_gt <|> try op_eq
+        <|> try op_add <|> try op_sub <|> try op_mul
+        <|> op_div
 
 parseBinaryExpr :: Parser Node
-parseBinaryExpr  = 
+parseBinaryExpr  =
   do
     left  <- parseExpr
     op    <- operation
     right <- parseExpr
-    return BinOp $ op left right
+    return $ BinOp (op left right)
 
 symbol :: Parser Char
 symbol = oneOf "_"
@@ -83,6 +123,7 @@ parseLeaf = parseString
 
 parseExpr :: Parser Node
 parseExpr = liftM Leaf parseLeaf
+        <|> parseBinaryExpr
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "query" input of
