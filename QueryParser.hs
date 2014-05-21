@@ -123,6 +123,7 @@ parseLeaf = parseString
 
 parseExpr :: Parser Node
 parseExpr = liftM Leaf parseLeaf
+        <|> parseBinaryExpr
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "query" input of
