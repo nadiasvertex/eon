@@ -7,10 +7,29 @@ import Text.ParserCombinators.Parsec
 -- Eon modules
 import Compute
 
-{-
-operation :: Parser Char
-operation = oneOf "%&|*+-/"
--}
+primitives = [("+", (BinOpNode Add)),
+              ("-", (BinOpNode Sub)),
+              ("*", (BinOpNode Mul)),
+              ("/", (BinOpNode Div)),
+              ("!=", (BinOpNode Ne)),
+              ("<=", (BinOpNode Le)),
+              (">=", (BinOpNode Ge)),
+              ("=", (BinOpNode Eq)),
+              ("<", (BinOpNode Lt)),
+              (">", (BinOpNode Gt))]
+
+operation :: Parser String
+operation =    (try string "!=")
+           <|> (try string "<=")
+           <|> (try string ">=")
+
+parseBinaryExpr :: Parser Node
+parseBinaryExpr  = 
+  do
+    left  <- parseExpr
+    op    <- operation
+    right <- parseExpr
+    return BinOp $ op left right
 
 symbol :: Parser Char
 symbol = oneOf "_"
@@ -57,12 +76,15 @@ parseString =
 		x  <- liftM (foldl1 (++)) $ many1 parseStringEl
 		return $ String x
 
-parseExpr :: Parser ComputeVal
-parseExpr = parseString
+parseLeaf :: Parser ComputeVal
+parseLeaf = parseString
         <|> parseNumber
         <|> parseColumnRef
+
+parseExpr :: Parser Node
+parseExpr = liftM Leaf parseLeaf
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "query" input of
     Left err -> "No match: " ++ show err
-    Right val -> "Found value"
+    Right val -> "Found " ++ show val
