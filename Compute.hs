@@ -7,12 +7,15 @@ data BoolExpr   = BoolConst Bool
                 deriving (Show)
 
 data BoolBinOp  = And
-                | Or deriving (Show)
+                | Or
+                deriving (Show)
 
 data RelBinOp   = GreaterThan
                 | LessThan
                 | GreaterOrEqual
                 | LessOrEqual
+                | JustEqual
+                | NotEqual
                 deriving (Show)
 
 data ArithExpr  = ColumnRef String String
@@ -26,3 +29,18 @@ data ArithBinOp = Add
                 | Multiply
                 | Divide
                 deriving (Show)
+
+data TableRef   = TableRef {
+   table :: String,
+   alias :: String
+} deriving (Show)
+
+data JoinExpr   = JoinExpr JoinKind TableRef BoolExpr deriving(Show)
+data FromClause = FromClause TableRef [JoinExpr] deriving(Show)
+
+data JoinKind   = InnerJoin
+                | OuterJoin
+                | NaturalJoin
+                | CrossJoin
+                deriving (Show)
+

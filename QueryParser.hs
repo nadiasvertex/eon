@@ -19,8 +19,8 @@ languageDef =
       Token.identLetter          = alphaNum,
 
       Token.reservedNames        = [ "from", "where", "select", "update", "insert",
-                                     "values", "inner", "outer", "join", "in", "between",
-                                     "and", "or", "not",
+                                     "values", "inner", "outer", "join", "as",
+                                     "in", "between", "and", "or", "not",
                                      "create", "drop", "alter", "table", "column", "grant",
                                      "true", "false"],
 
@@ -68,10 +68,13 @@ bool_term = parens bool_expr
      <|> (reserved "false" >> return (BoolConst False))
      <|> rel_expr
 
-relation = (reserved_op ">" >> return GreaterThan)
+relation = (reserved_op "=" >> return JustEqual)
+       <|> (reserved_op ">" >> return GreaterThan)
        <|> (reserved_op "<" >> return LessThan)
        <|> (reserved_op "<=" >> return LessOrEqual)
        <|> (reserved_op ">=" >> return GreaterOrEqual)
+       <|> (reserved_op "!=" >> return NotEqual)
+       <|> (reserved_op "<>" >> return NotEqual)
 
 arith_expr :: Parser ArithExpr
 arith_expr = buildExpressionParser arith_operators arith_term
@@ -85,6 +88,33 @@ rel_expr =
       op <- relation
       a2 <- arith_expr
       return $ RelBinary op a1 a2
+
+table_ref =
+   do
+      table <- identifier
+      alias <- option "" (
+         do
+            reserved "as"
+            alias_name <- identifier
+            return alias_name
+                         )
+      return $ TableRef table alias
+
+join_kind = (reserved "inner" >> optional (reserved "join") >> return InnerJoin)
+
+join_expr =
+   do
+      kind <- join_kind
+      tr   <- table_ref
+      cond <- bool_expr
+      return $ JoinExpr kind tr cond
+
+from_clause =
+   do
+      reserved "from"
+      tr    <- table_ref
+      joins <- many join_expr
+      return $ FromClause tr joins
 
 whileParser :: Parser BoolExpr
 whileParser = white_space >> bool_expr
