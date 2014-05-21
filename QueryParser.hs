@@ -87,7 +87,7 @@ rel_expr =
       return $ RelBinary op a1 a2
 
 whileParser :: Parser BoolExpr
-whileParser = white_space >> rel_expr
+whileParser = white_space >> bool_expr
 
 parseString :: String -> BoolExpr
 parseString str =
