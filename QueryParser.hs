@@ -22,7 +22,8 @@ languageDef =
                                      "values", "inner", "outer", "join", "as", "on",
                                      "in", "between", "and", "or", "not",
                                      "create", "drop", "alter", "table", "column", "grant",
-                                     "true", "false"],
+                                     "true", "false"
+                                   ],
 
       Token.reservedOpNames      = ["+", "-", "*", "/", ">", "<", "=", "<>", "!=", "<=", ">="]
 }
@@ -53,28 +54,28 @@ bool_operators = [
 
 qualified_identifier =
    do
-      table <- identifier
+      table  <- identifier
       char '.'
       column <- identifier
       return $ ColumnRef table column
 
 arith_term = parens arith_expr
-     <|> try qualified_identifier
-     <|> liftM (ColumnRef "") identifier
-     <|> liftM IntConst integer
+         <|> try qualified_identifier
+         <|> liftM (ColumnRef "") identifier
+         <|> liftM IntConst integer
 
-bool_term = parens bool_expr
-     <|> (reserved "true"  >> return (BoolConst True ))
-     <|> (reserved "false" >> return (BoolConst False))
-     <|> rel_expr
+bool_term  = parens bool_expr
+         <|> (reserved "true"  >> return (BoolConst True ))
+         <|> (reserved "false" >> return (BoolConst False))
+         <|> rel_expr
 
-relation = (reserved_op "=" >> return JustEqual)
-       <|> (reserved_op ">" >> return GreaterThan)
-       <|> (reserved_op "<" >> return LessThan)
-       <|> (reserved_op "<=" >> return LessOrEqual)
-       <|> (reserved_op ">=" >> return GreaterOrEqual)
-       <|> (reserved_op "!=" >> return NotEqual)
-       <|> (reserved_op "<>" >> return NotEqual)
+relation   = (reserved_op "="  >> return JustEqual)
+         <|> (reserved_op ">"  >> return GreaterThan)
+         <|> (reserved_op "<"  >> return LessThan)
+         <|> (reserved_op "<=" >> return LessOrEqual)
+         <|> (reserved_op ">=" >> return GreaterOrEqual)
+         <|> (reserved_op "!=" >> return NotEqual)
+         <|> (reserved_op "<>" >> return NotEqual)
 
 arith_expr :: Parser ArithExpr
 arith_expr = buildExpressionParser arith_operators arith_term
@@ -97,10 +98,12 @@ table_ref =
             reserved "as"
             alias_name <- identifier
             return alias_name
-                         )
+         )
       return $ TableRef table alias
 
 join_kind = (reserved "inner" >> optional (reserved "join") >> return InnerJoin)
+        <|> (reserved "outer" >> optional (reserved "join") >> return OuterJoin)
+        <|> (reserved "cross" >> optional (reserved "join") >> return CrossJoin)
 
 join_expr =
    do
