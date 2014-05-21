@@ -4,7 +4,7 @@ data BoolExpr   = BoolConst Bool
                 | Not BoolExpr
                 | BoolBinary BoolBinOp BoolExpr BoolExpr
                 | RelBinary RelBinOp ArithExpr ArithExpr
-                deriving (Show)
+		deriving (Show)
 
 data BoolBinOp  = And
                 | Or
@@ -50,4 +50,3 @@ data Query = Query {
    from  :: FromClause,
    pred  :: Maybe WhereClause
 } deriving (Show)
-
