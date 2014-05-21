@@ -15,8 +15,8 @@ languageDef =
       Token.commentStart         = "/*",
       Token.commentEnd           = "*/",
       Token.commentLine          = "--",
-      Token.identStart           = letter,
-      Token.identLetter          = alphaNum,
+      Token.identStart           = letter   <|> char '_',
+      Token.identLetter          = alphaNum <|> char '_',
 
       Token.reservedNames        = [ "from", "where", "select", "update", "insert",
                                      "values", "inner", "outer", "join", "as", "on",
