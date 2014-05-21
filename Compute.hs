@@ -1,55 +1,28 @@
 module Compute where
 
-data Op = Nop
-		| Add
-		| Sub
-		| Mul
-		| Div
-		| Eq
-		| Ne
-		| Gt
-		| Lt
-		| Ge
-		| Le
-		deriving (Show)
+data BoolExpr   = BoolConst Bool
+                | Not BoolExpr
+                | BoolBinary BoolBinOp BoolExpr BoolExpr
+                | RelBinary RelBinOp ArithExpr ArithExpr
+                deriving (Show)
 
-data ColumnRefInfo = ColumnRefInfo {
-	table	:: String,
-	column  :: String
-}
+data BoolBinOp  = And
+                | Or deriving (Show)
 
-data ComputeVal = ColumnRef ColumnRefInfo
-             | List [ComputeVal]
-             | Number Integer
-             | String String
-             | Bool Bool
+data RelBinOp   = GreaterThan
+                | LessThan
+                | GreaterOrEqual
+                | LessOrEqual
+                deriving (Show)
 
-data BinOpNode = BinOpNode {
-	binop :: Op,
-	left  :: Node,
-	right :: Node
-}
+data ArithExpr  = ColumnRef String String
+                | IntConst Integer
+                | Neg ArithExpr
+                | ArithBinary ArithBinOp ArithExpr ArithExpr
+                deriving (Show)
 
-data UnOpNode = UnOpNode {
-	unop  :: Op,
-	child :: Node
-}
-
-data Node = NodeError
-		  | Leaf ComputeVal
-		  | BinOp BinOpNode
-		  | UnOp UnOpNode
-
-showComputeVal :: ComputeVal -> String
-showComputeVal (String contents) = "'" ++ contents ++ "'"
-showComputeVal (Number contents) = show contents
-showComputeVal (Bool contents) = show contents
-showComputeVal (ColumnRef (ColumnRefInfo table column)) = table ++ "." ++ column
-
-showNode :: Node -> String
-showNode (Leaf contents) = show contents
-showNode (BinOp (BinOpNode op left right)) = (show left) ++ (show op) ++ (show right)
-showNode (UnOp (UnOpNode op child)) = (show op) ++ (show child)
-
-instance Show ComputeVal where show = showComputeVal
-instance Show Node where show = showNode
+data ArithBinOp = Add
+                | Subtract
+                | Multiply
+                | Divide
+                deriving (Show)
