@@ -32,7 +32,7 @@ data ArithBinOp = Add
 
 data TableRef   = TableRef {
    table :: String,
-   alias :: String
+   alias :: Maybe String
 } deriving (Show)
 
 data JoinExpr   = JoinExpr JoinKind TableRef BoolExpr deriving(Show)
@@ -43,4 +43,11 @@ data JoinKind   = InnerJoin
                 | NaturalJoin
                 | CrossJoin
                 deriving (Show)
+
+data WhereClause = WhereClause BoolExpr deriving(Show)
+
+data Query = Query {
+   from  :: FromClause,
+   pred  :: Maybe WhereClause
+} deriving (Show)
 

@@ -19,7 +19,7 @@ languageDef =
       Token.identLetter          = alphaNum,
 
       Token.reservedNames        = [ "from", "where", "select", "update", "insert",
-                                     "values", "inner", "outer", "join", "as",
+                                     "values", "inner", "outer", "join", "as", "on",
                                      "in", "between", "and", "or", "not",
                                      "create", "drop", "alter", "table", "column", "grant",
                                      "true", "false"],
@@ -92,7 +92,7 @@ rel_expr =
 table_ref =
    do
       table <- identifier
-      alias <- option "" (
+      alias <- optionMaybe (
          do
             reserved "as"
             alias_name <- identifier
@@ -106,6 +106,7 @@ join_expr =
    do
       kind <- join_kind
       tr   <- table_ref
+      reserved "on"
       cond <- bool_expr
       return $ JoinExpr kind tr cond
 
@@ -116,16 +117,28 @@ from_clause =
       joins <- many join_expr
       return $ FromClause tr joins
 
-whileParser :: Parser BoolExpr
-whileParser = white_space >> bool_expr
+where_clause =
+   do
+      reserved "where"
+      pred  <- bool_expr
+      return $ WhereClause pred
 
-parseString :: String -> BoolExpr
+query =
+   do
+      fc <- from_clause
+      wc <- optionMaybe where_clause
+      return $ Query fc wc
+
+whileParser :: Parser Query
+whileParser = white_space >> query
+
+parseString :: String -> Query
 parseString str =
   case parse whileParser "" str of
     Left  e  -> error $ show e
     Right r -> r
 
-parseFile :: String -> IO BoolExpr
+parseFile :: String -> IO Query
 parseFile file =
   do program  <- readFile file
      case parse whileParser "" program of
