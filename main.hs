@@ -3,6 +3,6 @@ import Compute
 import QueryParser
 
 main :: IO ()
-main = do 
+main = do
          args <- getArgs
-         putStrLn (readExpr (args !! 0))
+         putStrLn $ show (parseString (args !! 0))

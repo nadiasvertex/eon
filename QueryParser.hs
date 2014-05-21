@@ -3,129 +3,101 @@ module QueryParser where
 -- System modules
 import Control.Monad
 import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec.Expr
+import Text.ParserCombinators.Parsec.Language
+import qualified Text.ParserCombinators.Parsec.Token as Token
 
 -- Eon modules
 import Compute
 
-op_ne :: Parser (Node -> Node -> BinOpNode)
-op_ne = do
-   string "!="
-   return $ (BinOpNode Ne)
+languageDef =
+   emptyDef {
+      Token.commentStart         = "/*",
+      Token.commentEnd           = "*/",
+      Token.commentLine          = "--",
+      Token.identStart           = letter,
+      Token.identLetter          = alphaNum,
 
-op_le :: Parser (Node -> Node -> BinOpNode)
-op_le = do
-   string "<="
-   return $ (BinOpNode Le)
+      Token.reservedNames        = [ "from", "where", "select", "update", "insert",
+                                     "values", "inner", "outer", "join", "in", "between",
+                                     "and", "or", "not",
+                                     "create", "drop", "alter", "table", "column", "grant",
+                                     "true", "false"],
 
-op_ge :: Parser (Node -> Node -> BinOpNode)
-op_ge = do
-   string ">="
-   return $ (BinOpNode Ge)
+      Token.reservedOpNames      = ["+", "-", "*", "/", ">", "<", "=", "<>", "!=", "<=", ">="]
+}
 
-op_gt :: Parser (Node -> Node -> BinOpNode)
-op_gt = do
-   char '>'
-   return $ (BinOpNode Gt)
+lexer = Token.makeTokenParser languageDef
 
-op_lt :: Parser (Node -> Node -> BinOpNode)
-op_lt = do
-   char '<'
-   return $ (BinOpNode Lt)
+identifier   = Token.identifier lexer  -- parses an identifier
+reserved     = Token.reserved   lexer  -- parses a reserved name
+reserved_op  = Token.reservedOp lexer  -- parses an operator
+parens       = Token.parens     lexer  -- parses surrounding parenthesis
+integer      = Token.integer    lexer  -- parses an integer
+semi         = Token.semi       lexer  -- parses a semicolon
+white_space  = Token.whiteSpace lexer  -- parses whitespace
 
-op_eq :: Parser (Node -> Node -> BinOpNode)
-op_eq = do
-   char '='
-   return $ (BinOpNode Eq)
+arith_operators = [
+   [Prefix (reserved_op "-"   >> return (Neg                 ))          ],
+   [Infix  (reserved_op "*"   >> return (ArithBinary Multiply)) AssocLeft],
+   [Infix  (reserved_op "/"   >> return (ArithBinary Divide  )) AssocLeft],
+   [Infix  (reserved_op "+"   >> return (ArithBinary Add     )) AssocLeft],
+   [Infix  (reserved_op "-"   >> return (ArithBinary Subtract)) AssocLeft]
+                  ]
 
-op_add :: Parser (Node -> Node -> BinOpNode)
-op_add = do
-   char '+'
-   return $ (BinOpNode Add)
+bool_operators = [
+   [Prefix (reserved_op "not" >> return (Not                ))          ],
+   [Infix  (reserved_op "and" >> return (BoolBinary And     )) AssocLeft],
+   [Infix  (reserved_op "or"  >> return (BoolBinary Or      )) AssocLeft]
+                 ]
 
-op_sub :: Parser (Node -> Node -> BinOpNode)
-op_sub = do
-   char '-'
-   return $ (BinOpNode Sub)
-
-op_mul :: Parser (Node -> Node -> BinOpNode)
-op_mul = do
-   char '+'
-   return $ (BinOpNode Mul)
-
-op_div :: Parser (Node -> Node -> BinOpNode)
-op_div = do
-   char '/'
-   return $ (BinOpNode Div)
-
-operation :: Parser (Node -> Node -> BinOpNode)
-operation = try op_ne <|> try op_le <|> try op_ge
-        <|> try op_lt <|> try op_gt <|> try op_eq
-        <|> try op_add <|> try op_sub <|> try op_mul
-        <|> op_div
-
-parseBinaryExpr :: Parser Node
-parseBinaryExpr  =
-  do
-    left  <- parseExpr
-    op    <- operation
-    right <- parseExpr
-    return $ BinOp (op left right)
-
-symbol :: Parser Char
-symbol = oneOf "_"
-
-parseIdent :: Parser String
-parseIdent =
+qualified_identifier =
    do
-      first <- letter <|> symbol
-      rest <- many (letter <|> digit <|> symbol)
-      let ident = first:rest
-      return $ ident
-
-parseSimpleRef :: Parser ComputeVal
-parseSimpleRef =
-   do
-      c <- parseIdent
-      return $ ColumnRef $ ColumnRefInfo "" c
-
-parseFullyQualifiedRef :: Parser ComputeVal
-parseFullyQualifiedRef =
-   do
-      t <- parseIdent
+      table <- identifier
       char '.'
-      c <- parseIdent
-      return $ ColumnRef $ ColumnRefInfo t c
+      column <- identifier
+      return $ ColumnRef table column
 
-parseColumnRef :: Parser ComputeVal
-parseColumnRef = try parseFullyQualifiedRef <|> parseSimpleRef
+arith_term = parens arith_expr
+     <|> try qualified_identifier
+     <|> liftM (ColumnRef "") identifier
+     <|> liftM IntConst integer
 
-parseNumber :: Parser ComputeVal
-parseNumber = liftM (Number . read) $ many1 digit
+bool_term = parens bool_expr
+     <|> (reserved "true"  >> return (BoolConst True ))
+     <|> (reserved "false" >> return (BoolConst False))
+     <|> rel_expr
 
-parseStringEl :: Parser String
-parseStringEl =
-	do
-      char '\''
-      x <- many (noneOf "'")
-      char '\''
-      return x
+relation = (reserved_op ">" >> return GreaterThan)
+       <|> (reserved_op "<" >> return LessThan)
+       <|> (reserved_op "<=" >> return LessOrEqual)
+       <|> (reserved_op ">=" >> return GreaterOrEqual)
 
-parseString :: Parser ComputeVal
-parseString =
-	do
-		x  <- liftM (foldl1 (++)) $ many1 parseStringEl
-		return $ String x
+arith_expr :: Parser ArithExpr
+arith_expr = buildExpressionParser arith_operators arith_term
 
-parseLeaf :: Parser ComputeVal
-parseLeaf = parseString
-        <|> parseNumber
-        <|> parseColumnRef
+bool_expr :: Parser BoolExpr
+bool_expr = buildExpressionParser bool_operators bool_term
 
-parseExpr :: Parser Node
-parseExpr = liftM Leaf parseLeaf
-        <|> parseBinaryExpr
+rel_expr =
+   do
+      a1 <- arith_expr
+      op <- relation
+      a2 <- arith_expr
+      return $ RelBinary op a1 a2
 
-readExpr :: String -> String
-readExpr input = case parse parseExpr "query" input of
-    Left err -> "No match: " ++ show err
-    Right val -> "Found " ++ show val
+whileParser :: Parser BoolExpr
+whileParser = white_space >> rel_expr
+
+parseString :: String -> BoolExpr
+parseString str =
+  case parse whileParser "" str of
+    Left  e  -> error $ show e
+    Right r -> r
+
+parseFile :: String -> IO BoolExpr
+parseFile file =
+  do program  <- readFile file
+     case parse whileParser "" program of
+       Left  e -> print e >> fail "parse error"
+       Right r -> return r
