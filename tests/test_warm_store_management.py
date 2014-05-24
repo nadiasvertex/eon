@@ -7,6 +7,7 @@ from eon.manager.warm_store import ManagementDriver
 
 DATABASE_NAME = "test"
 
+
 class TestWarmStoreManagement(unittest.TestCase):
     def setUp(self):
         self.driver = ManagementDriver()

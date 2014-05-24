@@ -6,7 +6,8 @@ class Field:
 
 
 class KeyField(Field):
-    pass
+    def __init__(self, distribution_key=False):
+        self.is_distribution_key = distribution_key
 
 
 class IntegerField(Field):
