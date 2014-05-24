@@ -5,6 +5,11 @@ __pycache__/
 # C extensions
 *.so
 
+# Haskell build
+*.o
+*.hi
+eon.exe
+
 # Distribution / packaging
 .Python
 env/
@@ -52,3 +57,5 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Cabal distribution
+dist/
