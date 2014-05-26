@@ -1,0 +1,58 @@
+name:                eon
+
+-- The package version.  See the Haskell package versioning policy (PVP) 
+-- for standards guiding when and how versions should be incremented.
+-- http://www.haskell.org/haskellwiki/Package_versioning_policy
+-- PVP summary:      +-+------- breaking API changes
+--                   | | +----- non-breaking API additions
+--                   | | | +--- code changes with no API change
+version:             0.1.0.0
+
+-- A short (one-line) description of the package.
+synopsis:            A horizontally scalable, distributed database and application server.
+
+-- A longer description of the package.
+description:         Eon is designed to do the the hard stuff for horizontally
+     scalable applications that require a database. It transparently scales your application without any special effort on the part of the application programmer. As long as the programmer uses the framework, everything else is taken care of.
+
+-- URL for the project homepage or repository.
+homepage:            http://github.com/nadiasvertex/eon
+
+-- The license under which the package is released.
+license:             GPL-3
+
+-- The file containing the license text.
+license-file:        LICENSE
+
+-- The package author(s).
+author:              Christopher Nelson
+
+-- An email address to which users can send suggestions, bug reports, and 
+-- patches.
+maintainer:          nadiasvertex@gmail.com
+
+-- A copyright notice.
+copyright:           (C)opyright 2014 Christopher Nelson
+
+category:            Database
+
+build-type:          Simple
+
+-- Constraint on the version of Cabal needed to build this package.
+cabal-version:       >=1.8
+
+
+executable eon
+  -- .hs or .lhs file containing the Main module.
+  main-is: 			 main.hs
+  
+  -- Modules included in this executable, other than Main.
+  other-modules:     Compute, Compute.RowStore, QueryParser, Schema     
+  
+  -- Other library packages from which modules are imported.
+  build-depends:     base ==4.6.*, mtl ==2.1.*, parsec ==3.1.*
+
+source-repository head
+  type:     git
+  location: http://github.com/nadiasvertex/eon
+  branch:   haskell

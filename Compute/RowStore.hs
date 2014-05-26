@@ -29,4 +29,3 @@ processQuery input = forever (
       msg <- claim input readChannel
       writeChannel (out msg) "test"
    )
-
