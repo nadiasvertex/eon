@@ -24,6 +24,10 @@ data Table = Table {
    columns    :: [Column]
 } deriving (Eq, Show)
 
+data Database = Database {
+   tables     :: [Table]
+}
+
 is_column_name :: String -> Column -> Bool
 is_column_name name column = (columnName column) == name
 

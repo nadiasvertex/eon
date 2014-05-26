@@ -1,6 +1,8 @@
 import System.Environment
 import Compute
+import Compute.RowStore
 import QueryParser
+
 
 main :: IO ()
 main = do
