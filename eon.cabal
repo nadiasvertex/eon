@@ -1,6 +1,6 @@
 name:                eon
 
--- The package version.  See the Haskell package versioning policy (PVP) 
+-- The package version.  See the Haskell package versioning policy (PVP)
 -- for standards guiding when and how versions should be incremented.
 -- http://www.haskell.org/haskellwiki/Package_versioning_policy
 -- PVP summary:      +-+------- breaking API changes
@@ -27,7 +27,7 @@ license-file:        LICENSE
 -- The package author(s).
 author:              Christopher Nelson
 
--- An email address to which users can send suggestions, bug reports, and 
+-- An email address to which users can send suggestions, bug reports, and
 -- patches.
 maintainer:          nadiasvertex@gmail.com
 
@@ -45,12 +45,15 @@ cabal-version:       >=1.8
 executable eon
   -- .hs or .lhs file containing the Main module.
   main-is: 			 main.hs
-  
+
   -- Modules included in this executable, other than Main.
-  other-modules:     Compute, Compute.RowStore, QueryParser, Schema     
-  
+  other-modules:     Compute, Compute.RowStore, QueryParser, Schema
+
   -- Other library packages from which modules are imported.
   build-depends:     base ==4.6.*, mtl ==2.1.*, parsec ==3.1.*
+
+  -- Custom flags for compilers
+  ghc-options:       -XDeriveDataTypeable -XDeriveGeneric -fllvm
 
 source-repository head
   type:     git

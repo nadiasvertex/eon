@@ -1,31 +1,52 @@
 module Compute.RowStore where
 
-import Control.Concurrent.CHP
+-- System modules
+import Control.Distributed.Process
+import Control.Distributed.Process.Node
 import Control.Monad
+import Control.Monad.IO.Class       (liftIO)
+import Control.Monad.Trans.Resource (release)
+import Data.Binary
+import Data.Typeable
+import Database.LevelDB
+import Generics.Deriving
+import Network.Transport.TCP        (createTransport, defaultTCPParameters)
 
-import qualified Control.Concurrent.CHP.Common as CHP
-
+-- Eon modules
 import Compute
 
-data EvaluateMsg = EvaluateMsg {
-   out      :: Chanout String,
-   query    :: Query,
-   database :: Database
-}
+data QueryMsg = QueryMsg {
+   query  :: Query,
+   sender :: ProcessId
+} deriving (Typeable, Generic)
 
-evaluate :: Query
+instance Binary QueryMsg
 
-{-
-   Evaluates the predicate portion of queries written into
-   this channel. Also processes join conditions. When a
-   query is written in it, should also be accompanied by
-   an output channel. Tuples which match the predicate are
-   written to the output channel for further processing.
-                                                            -}
-
-processQuery :: Shared Chanin EvaluateMsg -> CHP ()
-processQuery input = forever (
+handleQuery :: QueryMsg -> Process ()
+handleQuery msg =
    do
-      msg <- claim input readChannel
-      writeChannel (out msg) "test"
-   )
+      reply "received"
+   where
+      reply = (send (sender msg))
+
+
+dataProcessor :: IO ()
+dataProcessor =
+   do
+      --log_debug "binding network transport"
+      Right transport <- createTransport "127.0.0.1" "10501" defaultTCPParameters
+      node            <- newLocalNode transport initRemoteTable
+
+      --log_debug "reading database metadata"
+      db              <- open "metadata.db"
+                              defaultOptions { createIfMissing = True }
+
+      forkProcess node $
+         do
+            receiveWait [match handleQuery]
+            return ()
+
+      return ()
+
+   where
+      log_debug msg = say ("debug:" ++ msg)
