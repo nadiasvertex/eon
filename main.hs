@@ -7,4 +7,4 @@ import QueryParser
 main :: IO ()
 main = do
          args <- getArgs
-         putStrLn $ show (parseString (args !! 0))
+         print (parseString (head args))

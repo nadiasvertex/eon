@@ -10,6 +10,7 @@ import Control.Monad
 import Control.Monad.IO.Class       (liftIO)
 import Control.Monad.Trans.Resource (release)
 import Data.Binary
+import Data.Monoid
 import Data.Typeable
 import Database.LevelDB
 import Generics.Deriving
@@ -27,19 +28,16 @@ instance Binary QueryMsg
 
 handleQuery :: QueryMsg -> Process ()
 handleQuery msg =
-   do
-      reply "received"
+   reply "received"
    where
-      reply = (send (sender msg))
+      reply = send (sender msg)
 
 
 initDatabase :: IO DB
 initDatabase = runResourceT $
-   do
-      --log_debug "reading database metadata"
-      db              <- open "metadata.db"
-                              defaultOptions { createIfMissing = True }
-      return db
+   --log_debug "reading database metadata"
+    open "metadata.db"
+         defaultOptions { createIfMissing = True }
 
 
 dataProcessor :: IO ()
@@ -59,4 +57,4 @@ dataProcessor =
       return ()
 
    where
-      log_debug msg = say ("debug:" ++ msg)
+      log_debug msg = say ("debug:" `mappend` msg)

@@ -29,22 +29,22 @@ data Database = Database {
 }
 
 is_column_name :: String -> Column -> Bool
-is_column_name name column = (columnName column) == name
+is_column_name name column = columnName column == name
 
 alter_column_type :: String -> ColumnType -> Column -> Column
 alter_column_type name new_column_type column =
-   case (is_column_name name column) of
-      True  -> Column (columnId column) (columnName column) new_column_type
-      False -> column
+   if is_column_name name column then
+      Column (columnId column) (columnName column) new_column_type else
+      column
 
 alter_column_name :: String -> String -> Column -> Column
 alter_column_name name new_column_name column =
-   case (is_column_name name column) of
-      True  -> Column (columnId column) new_column_name (columnType column)
-      False -> column
+   if is_column_name name column then
+      Column (columnId column) new_column_name (columnType column) else
+      column
 
 getColumnByName :: String -> [Column] -> Maybe Column
-getColumnByName name column_list = find (is_column_name name) column_list
+getColumnByName name = find (is_column_name name)
 
 getColumnType :: String -> [Column] -> Maybe ColumnType
 getColumnType name column_list =
@@ -54,8 +54,7 @@ getColumnType name column_list =
       Just column -> Just (columnType column)
 
 alterColumnType :: String -> ColumnType -> [Column] -> [Column]
-alterColumnType name new_column_type column_list = map (alter_column_type name new_column_type) column_list
+alterColumnType name new_column_type = fmap (alter_column_type name new_column_type)
 
 alterColumnName :: String -> String -> [Column] -> [Column]
-alterColumnName name new_column_name column_list = map (alter_column_name name new_column_name) column_list
-
+alterColumnName name new_column_name = fmap (alter_column_name name new_column_name)
