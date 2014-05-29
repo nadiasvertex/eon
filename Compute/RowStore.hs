@@ -33,6 +33,15 @@ handleQuery msg =
       reply = (send (sender msg))
 
 
+initDatabase :: IO DB
+initDatabase = runResourceT $
+   do
+      --log_debug "reading database metadata"
+      db              <- open "metadata.db"
+                              defaultOptions { createIfMissing = True }
+      return db
+
+
 dataProcessor :: IO ()
 dataProcessor =
    do
@@ -40,9 +49,7 @@ dataProcessor =
       Right transport <- createTransport "127.0.0.1" "10501" defaultTCPParameters
       node            <- newLocalNode transport initRemoteTable
 
-      --log_debug "reading database metadata"
-      db              <- open "metadata.db"
-                              defaultOptions { createIfMissing = True }
+      db              <- initDatabase
 
       forkProcess node $
          do

@@ -59,7 +59,7 @@ executable eon
                      distributed-process == 0.4.*, network-transport-tcp == 0.3.*, leveldb-haskell == 0.2.*
 
   -- Custom flags for compilers
-  ghc-options:       -fllvm
+  --ghc-options:       -fllvm
 
 source-repository head
   type:              git
