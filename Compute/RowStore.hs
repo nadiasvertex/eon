@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE DeriveDataTypeable, DeriveGeneric, OverloadedStrings #-}
 
 module Compute.RowStore where
 
@@ -35,9 +34,13 @@ handleQuery msg =
 
 initDatabase :: IO DB
 initDatabase = runResourceT $
-   --log_debug "reading database metadata"
-    open "metadata.db"
-         defaultOptions { createIfMissing = True }
+    --log_debug "reading database metadata"
+   db <- open "metadata.db"
+           defaultOptions { createIfMissing = True }
+
+   table_names <- get db def "table_names"
+
+   return db
 
 
 dataProcessor :: IO ()
