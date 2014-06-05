@@ -47,7 +47,7 @@ data ClusterState = ClusterState {
    logData       :: Log
 }
 
-type TheClusterState = ST.State ClusterState
+type TheClusterState = ST.StateT ClusterState
 
 data Rpc = AppendEntries LogEntry
          | RequestVote
@@ -57,10 +57,14 @@ instance Binary Command
 instance Binary LogEntry
 instance Binary Rpc
 
-start :: RoleState
-start = RoleState {currentTerm   = 0,
-                   currentRole   = Follower,
-                   currentLeader = Nothing}
+start :: ClusterState
+start = ClusterState {
+            role = RoleState {currentTerm   = 0,
+                              currentRole   = Follower,
+                              currentLeader = Nothing},
+            logData = Log    {currentIndex  = 0,
+                              entries       = []}
+         }
 
 beginElection :: RoleState -> RoleState
 beginElection state =
@@ -76,13 +80,25 @@ appendEntry (ClusterState r (Log cur_idx old_entries)) entry =
                   }
    }
 
-processRpc :: Rpc -> Process (TheClusterState ())
-processRpc (AppendEntries entry) =
+
+processAppendEntry :: LogEntry -> TheClusterState Process ()
+processAppendEntry entry =
    do
       st <- ST.get
       ST.put $ appendEntry st entry
 
-processRpc rpc@RequestVote = undefined
+processRpc :: Rpc -> TheClusterState Process ()
+processRpc (AppendEntries entry) =
+   processAppendEntry entry
+
+processRpc RequestVote = undefined
+
+listenLoop :: TheClusterState Process ()
+listenLoop =
+   do
+      msg <- ST.lift expect
+      processRpc msg
+      listenLoop
 
 process :: String -> String -> IO ()
 process address port =
@@ -91,7 +107,6 @@ process address port =
       node <- newLocalNode t initRemoteTable
 
       _ <- forkProcess node $ do
-         my_pid <- spawnLocal $ forever $ do
-            receiveWait [match processRpc]
+         my_pid <- spawnLocal $ ST.evalStateT listenLoop start
          return ()
       return ()
