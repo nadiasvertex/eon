@@ -3,22 +3,24 @@
 module Consensus where
 
 import Data.Binary
-import Data.ByteString
-import Data.Serialize
 import Data.Typeable
 
 import Control.Distributed.Process
 import Control.Distributed.Process.Node
-import Control.Monad (forever, liftM)
 import qualified Control.Monad.State as ST
 
-import Generics.Deriving
+import GHC.Generics (Generic)
 
 import Network.Transport.TCP (createTransport, defaultTCPParameters)
+
+data Rpc = AppendEntries LogEntry
+         | RequestVote
+         deriving (Typeable, Generic)
 
 data Role = Follower
           | Candidate
           | Leader
+          deriving (Typeable, Generic)
 
 data Command = BeginTransaction Int
              | RollbackTransaction Int
@@ -34,24 +36,20 @@ data LogEntry = LogEntry {
 data Log = Log{
    currentIndex  :: Int,
    entries       :: [LogEntry]
-}
+} deriving (Typeable, Generic)
 
 data RoleState = RoleState {
    currentTerm   :: Int,
    currentRole   :: Role,
    currentLeader :: Maybe NodeId
-}
+} deriving (Typeable, Generic)
 
 data ClusterState = ClusterState {
    role          :: RoleState,
    logData       :: Log
-}
+} deriving (Typeable, Generic)
 
 type TheClusterState = ST.StateT ClusterState
-
-data Rpc = AppendEntries LogEntry
-         | RequestVote
-         deriving (Typeable, Generic)
 
 instance Binary Command
 instance Binary LogEntry
