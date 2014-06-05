@@ -31,7 +31,7 @@ data LogEntry = LogEntry {
    index         :: Int
 } deriving (Typeable, Generic)
 
-data Log = Log {
+data Log = Log{
    currentIndex  :: Int,
    entries       :: [LogEntry]
 }
@@ -80,7 +80,6 @@ appendEntry (ClusterState r (Log cur_idx old_entries)) entry =
                   }
    }
 
-
 processAppendEntry :: LogEntry -> TheClusterState Process ()
 processAppendEntry entry =
    do
@@ -108,5 +107,6 @@ process address port =
 
       _ <- forkProcess node $ do
          my_pid <- spawnLocal $ ST.evalStateT listenLoop start
+         liftIO $ print my_pid
          return ()
       return ()

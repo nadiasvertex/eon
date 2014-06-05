@@ -1,3 +1,5 @@
+module Main (main) where
+
 import System.Environment
 import Compute
 import Compute.RowStore

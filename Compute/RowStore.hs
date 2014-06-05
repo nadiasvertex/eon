@@ -12,7 +12,7 @@ import Data.Binary
 import Data.Monoid
 import Data.Typeable
 import Database.LevelDB
-import Generics.Deriving
+import GHC.Generics
 import Network.Transport.TCP        (createTransport, defaultTCPParameters)
 
 -- Eon modules
@@ -33,12 +33,12 @@ handleQuery msg =
 
 
 initDatabase :: IO DB
-initDatabase = runResourceT $
-    --log_debug "reading database metadata"
+initDatabase = runResourceT $ do
+   --log_debug "reading database metadata"
    db <- open "metadata.db"
            defaultOptions { createIfMissing = True }
 
-   table_names <- get db def "table_names"
+   table_names <- Database.LevelDB.get db def "table_names"
 
    return db
 
