@@ -13,32 +13,32 @@ import GHC.Generics (Generic)
 
 import Network.Transport.TCP (createTransport, defaultTCPParameters)
 
-data Rpc = AppendEntries LogEntry
-         | RequestVote
-         deriving (Typeable, Generic)
+data Rpc     = AppendEntries LogEntry
+ | RequestVote
+ deriving (Typeable, Generic)
 
-data Role = Follower
-          | Candidate
-          | Leader
-          deriving (Typeable, Generic)
+data Role    = Follower
+ | Candidate
+ | Leader
+ deriving (Typeable, Generic)
 
 data Command = BeginTransaction Int
-             | RollbackTransaction Int
-             | CommitTransaction Int
-             deriving (Typeable, Generic)
+ | RollbackTransaction Int
+ | CommitTransaction Int
+ deriving (Typeable, Generic)
 
-data LogEntry = LogEntry {
+data LogEntry     = LogEntry {
    cmd           :: Command,
    term          :: Int,
    index         :: Int
 } deriving (Typeable, Generic)
 
-data Log = Log{
+data Log          = Log{
    currentIndex  :: Int,
    entries       :: [LogEntry]
 } deriving (Typeable, Generic)
 
-data RoleState = RoleState {
+data RoleState    = RoleState {
    currentTerm   :: Int,
    currentRole   :: Role,
    currentLeader :: Maybe NodeId
@@ -75,7 +75,7 @@ appendEntry (ClusterState r (Log cur_idx old_entries)) entry =
    ClusterState { role    = r,
                   logData = Log { currentIndex = cur_idx+1,
                                   entries = entry:old_entries
-                  }
+                }
    }
 
 processAppendEntry :: LogEntry -> TheClusterState Process ()
@@ -101,7 +101,7 @@ process :: String -> String -> IO ()
 process address port =
    do
       Right t <- createTransport address port defaultTCPParameters
-      node <- newLocalNode t initRemoteTable
+      node    <- newLocalNode t initRemoteTable
 
       _ <- forkProcess node $ do
          my_pid <- spawnLocal $ ST.evalStateT listenLoop start

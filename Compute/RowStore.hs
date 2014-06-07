@@ -5,6 +5,7 @@ module Compute.RowStore where
 -- System modules
 import Control.Distributed.Process
 import Control.Distributed.Process.Node
+import Control.Distributed.Process.Serializable
 import Control.Monad
 import Control.Monad.IO.Class       (liftIO)
 import Control.Monad.Trans.Resource (release)
@@ -12,25 +13,19 @@ import Data.Binary
 import Data.Monoid
 import Data.Typeable
 import Database.LevelDB
-import GHC.Generics
+import GHC.Generics                 (Generic)
 import Network.Transport.TCP        (createTransport, defaultTCPParameters)
 
 -- Eon modules
 import Compute
 
 data QueryMsg = QueryMsg {
-   query  :: Query,
-   sender :: ProcessId
+   query  :: Query
 } deriving (Typeable, Generic)
 
 instance Binary QueryMsg
 
-handleQuery :: QueryMsg -> Process ()
-handleQuery msg =
-   reply "received"
-   where
-      reply = send (sender msg)
-
+def = defaultReadOptions
 
 initDatabase :: IO DB
 initDatabase = runResourceT $ do
@@ -54,7 +49,6 @@ dataProcessor =
 
       forkProcess node $
          do
-            receiveWait [match handleQuery]
             return ()
 
       return ()
