@@ -34,8 +34,8 @@ runLoop = do
   threadDelay 1000000
   runLoop  
   
-main :: IO ()
-main = do
+main    :: IO ()
+main    = do
   s <- $initHFlags "eon v0.1"
   when (flags_version) version
   uncurry C.process $ get_address_args flags_listen

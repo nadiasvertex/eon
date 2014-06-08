@@ -6,12 +6,12 @@ import Data.Binary
 import Data.Typeable
 
 import Control.Distributed.Process
-import Control.Distributed.Process.Node
+import Control.Distributed.Process.Node (initRemoteTable, forkProcess)
+import Control.Distributed.Process.Backend.SimpleLocalnet
+import Control.Monad (mapM_, liftM)
 import qualified Control.Monad.State as ST
 
 import GHC.Generics (Generic)
-
-import Network.Transport.TCP (createTransport, defaultTCPParameters)
 
 data Rpc     = AppendEntries LogEntry
  | RequestVote
@@ -97,14 +97,20 @@ listenLoop =
       processRpc msg
       listenLoop
 
+dumpPeers :: Backend -> Process ()
+dumpPeers backend = do
+   peers <- liftIO $ findPeers backend 1000
+   liftIO $ print peers
+
 process :: String -> String -> IO ()
 process address port =
    do
-      Right t <- createTransport address port defaultTCPParameters
-      node    <- newLocalNode t initRemoteTable
+      backend <- initializeBackend address port initRemoteTable
+      node    <- newLocalNode backend
 
       _ <- forkProcess node $ do
          my_pid <- spawnLocal $ ST.evalStateT listenLoop start
          liftIO $ print my_pid
+         dumpPeers backend
          return ()
       return ()

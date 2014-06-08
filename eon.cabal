@@ -56,7 +56,8 @@ executable eon
   -- Other library packages from which modules are imported.
   build-depends:     base ==4.6.*, binary >= 0.6.3 && < 0.7, mtl ==2.1.*, parsec ==3.1.*,
                      resourcet == 0.4.*, generic-deriving == 1.6.*, transformers == 0.3.*,
-                     distributed-process == 0.4.*, network-transport-tcp >= 0.3.1,  
+                     distributed-process == 0.4.*, network-transport-tcp >= 0.3.1,
+                     distributed-process-simplelocalnet >= 0.2,  
                      leveldb-haskell == 0.2.*, hflags >= 0.4
 
   -- Custom flags for compilers
