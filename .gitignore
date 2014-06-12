@@ -9,6 +9,7 @@ __pycache__/
 *.o
 *.hi
 eon.exe
+eon
 
 # Distribution / packaging
 .Python
@@ -38,6 +39,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+report.html
 
 # Translations
 *.mo
@@ -46,6 +48,7 @@ coverage.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.idea
 
 # Rope
 .ropeproject

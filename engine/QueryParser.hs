@@ -39,7 +39,7 @@ semi         = Token.semi       lexer  -- parses a semicolon
 white_space  = Token.whiteSpace lexer  -- parses whitespace
 
 arith_operators = [
-   [Prefix (reserved_op "-"   >> return (Neg                 ))          ],
+   [Prefix (reserved_op "-"   >> return  Neg                  )          ],
    [Infix  (reserved_op "*"   >> return (ArithBinary Multiply)) AssocLeft],
    [Infix  (reserved_op "/"   >> return (ArithBinary Divide  )) AssocLeft],
    [Infix  (reserved_op "+"   >> return (ArithBinary Add     )) AssocLeft],
@@ -47,7 +47,7 @@ arith_operators = [
                   ]
 
 bool_operators = [
-   [Prefix (reserved_op "not" >> return (Not                ))          ],
+   [Prefix (reserved_op "not" >> return  Not                 )          ],
    [Infix  (reserved_op "and" >> return (BoolBinary And     )) AssocLeft],
    [Infix  (reserved_op "or"  >> return (BoolBinary Or      )) AssocLeft]
                  ]
@@ -61,8 +61,8 @@ qualified_identifier =
 
 arith_term = parens arith_expr
          <|> try qualified_identifier
-         <|> liftM (ColumnRef "") identifier
-         <|> liftM IntConst integer
+         <|> fmap (ColumnRef "") identifier
+         <|> fmap IntConst integer
 
 bool_term  = parens bool_expr
          <|> (reserved "true"  >> return (BoolConst True ))
