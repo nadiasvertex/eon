@@ -1,17 +1,14 @@
 __author__ = 'Christopher Nelson'
 
-import argparse
 import json
 import struct
 from datetime import datetime
 from enum import Enum
-from functools import partial
-
-import lmdb
 
 import msgpack
-import zmq
-from zmq.eventloop import ioloop
+
+
+META_DATABASE = ".meta_database".encode("utf-8")
 
 
 class Schema(Enum):
@@ -32,13 +29,13 @@ def get_seq_key(table_name):
     return (".seq.%s" % table_name).encode("utf-8")
 
 
-def get_column_presence(all, present):
+def get_column_presence(all_columns, present_columns):
     present_indexes = []
-    for pn in present:
-        for i, an in enumerate(all):
+    for pn in present_columns:
+        for i, an in enumerate(all_columns):
             if pn != an:
                 continue
-            present.append(i)
+            present_columns.append(i)
             break
     return present_indexes
 
@@ -59,21 +56,23 @@ def cmd_create_table(db, cmd):
     table_name = cmd["name"]
     table_key = get_schema_key(Schema.table, "", table_name)
 
-    with db.open_db(".metadatabase", create=True) as meta_db:
-        # See if it already exists.
-        with db.begin(db=meta_db) as txn:
-            if txn.get(table_key) is not None:
-                return {"error": "Unable to create table '%s' because it already exists." % table_name}
+    meta_db = db.open_db(META_DATABASE, create=True)
 
-        with db.begin(db=meta_db, write=True) as txn:
-            info = {"created": datetime.now().isoformat(), "columns": [c["name"] for c in cmd["columns"]]}
-            txn.put(table_key, json.dump(info).encode("utf-8"))
+    # See if it already exists.
+    with db.begin(db=meta_db) as txn:
+        if txn.get(table_key) is not None:
+            return {"error": "Unable to create table '%s' because it already exists." % table_name}
 
-            for column in cmd["columns"]:
-                column_key = get_schema_key(Schema.column, table_name, column["name"])
-                txn.put(column_key, column.encode("utf-8"))
+    with db.begin(db=meta_db, write=True) as txn:
+        info = {"created": datetime.now().isoformat(), "columns": [c["name"] for c in cmd["columns"]]}
+        packed = msgpack.packb(info)
+        txn.put(table_key, packed)
 
-            txn.commit()
+        for column in cmd["columns"]:
+            column_key = get_schema_key(Schema.column, table_name, column["name"])
+            txn.put(column_key, msgpack.packb(column))
+
+        txn.commit()
 
 
 def cmd_drop_table(db, cmd):
@@ -91,7 +90,7 @@ def cmd_drop_table(db, cmd):
     table_name = cmd["name"]
     table_key = get_schema_key(Schema.table, "", table_name)
 
-    with db.open_db(".metadatabase", create=True) as meta_db:
+    with db.open_db(META_DATABASE, create=True) as meta_db:
         # See if it already exists.
         with db.begin(db=meta_db) as txn:
             schema = txn.get(table_key)
@@ -124,7 +123,7 @@ def cmd_put(db, cmd):
     table_name = cmd["name"]
     table_key = get_schema_key(Schema.table, "", table_name)
 
-    with db.open_db(".metadatabase") as meta_db:
+    with db.open_db(META_DATABASE, create=True) as meta_db:
         # See if it already exists.
         with db.begin(db=meta_db) as txn:
             schema = txn.get(table_key)
@@ -169,44 +168,10 @@ dispatch_table = {
     5: cmd_update
 }
 
+
 def dispatch_command(db, cmd):
     cmd_processor = dispatch_table.get(cmd["cmd"])
     if cmd_processor:
         return cmd_processor(db, cmd)
     return {"error": "Unknown command."}
 
-
-def reply_handler(db, sock, events):
-    msg = sock.recv_json()
-    reply = dispatch_command(msg)
-    sock.send_json(reply)
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Process some integers.')
-
-    parser.add_argument('--listen', dest='listen', action='store',
-                        default="tcp://127.0.0.1:10001",
-                        help='Listen on the requested port. default=%(default)s')
-
-    parser.add_argument('--database', dest='db', action='store',
-                        required=True,
-                        help='Use the specified database file.')
-
-    args = parser.parse_args()
-
-    db = lmdb.open(args.db, lock=False, max_dbs=32768)
-
-    loop = ioloop.IOLoop.instance()
-
-    ctx = zmq.Context.instance()
-
-    s = ctx.socket(zmq.REP)
-    s.bind(args.listen)
-
-    loop.add_handler(s, partial(reply_handler, db), zmq.POLLIN)
-    loop.start()
-
-
-if __name__ == "__main__":
-    main()
