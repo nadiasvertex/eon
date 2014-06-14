@@ -1,6 +1,5 @@
 __author__ = 'Christopher Nelson'
 
-import json
 import struct
 from datetime import datetime
 from enum import Enum
@@ -61,7 +60,7 @@ def cmd_create_table(db, cmd):
     # See if it already exists.
     with db.begin(db=meta_db) as txn:
         if txn.get(table_key) is not None:
-            return {"error": "Unable to create table '%s' because it already exists." % table_name}
+            return {"status": False, "error": "Unable to create table '%s' because it already exists." % table_name}
 
     with db.begin(db=meta_db, write=True) as txn:
         info = {"created": datetime.now().isoformat(), "columns": [c["name"] for c in cmd["columns"]]}
@@ -72,7 +71,7 @@ def cmd_create_table(db, cmd):
             column_key = get_schema_key(Schema.column, table_name, column["name"])
             txn.put(column_key, msgpack.packb(column))
 
-        txn.commit()
+    return {"status": True}
 
 
 def cmd_drop_table(db, cmd):
@@ -90,20 +89,20 @@ def cmd_drop_table(db, cmd):
     table_name = cmd["name"]
     table_key = get_schema_key(Schema.table, "", table_name)
 
-    with db.open_db(META_DATABASE, create=True) as meta_db:
-        # See if it already exists.
-        with db.begin(db=meta_db) as txn:
-            schema = txn.get(table_key)
-            if schema is None:
-                return {"error": "Unable to delete table '%s' because it doesn't exist." % table_name}
+    meta_db = db.open_db(META_DATABASE, create=True)
+    # See if it already exists.
+    with db.begin(db=meta_db) as txn:
+        schema = txn.get(table_key)
+        if schema is None:
+            return {"status": False, "error": "Unable to delete table '%s' because it doesn't exist." % table_name}
 
-        schema = json.load(schema.decode("utf-8"))
-        with db.begin(db=meta_db, write=True) as txn:
-            for name in schema["columns"]:
-                column_key = get_schema_key(Schema.column, table_name, name)
-                txn.put(column_key, name.encode("utf-8"))
+    schema = msgpack.unpackb(schema)
+    with db.begin(db=meta_db, write=True) as txn:
+        for name in schema[b'columns']:
+            column_key = get_schema_key(Schema.column, table_name, name)
+            txn.delete(column_key)
 
-            txn.commit()
+    return {"status": True}
 
 
 def cmd_put(db, cmd):
@@ -123,33 +122,36 @@ def cmd_put(db, cmd):
     table_name = cmd["name"]
     table_key = get_schema_key(Schema.table, "", table_name)
 
-    with db.open_db(META_DATABASE, create=True) as meta_db:
-        # See if it already exists.
-        with db.begin(db=meta_db) as txn:
-            schema = txn.get(table_key)
-            if schema is None:
-                return {"error": "Unable to write to table '%s' because it doesn't exist." % table_name}
+    meta_db = db.open_db(META_DATABASE, create=True)
+    # See if it already exists.
+    with db.begin(db=meta_db) as txn:
+        schema = txn.get(table_key)
+        if schema is None:
+            return {"status": False,
+                    "error": "Unable to write to table '%s' because it doesn't exist." % table_name}
+
+    schema = msgpack.unpackb(schema)
 
     # See if we referenced columns that don't exist.
-    present_columns = cmd["columns"]
-    all_columns = schema["columns"]
+    present_columns = [name.encode("utf8") for name in cmd["columns"]]
+    all_columns = schema[b'columns']
     unknown_columns = set(present_columns) - set(all_columns)
-    if unknown_columns != 0:
-        return {"error": "Unable to write to table '%s' because column(s) %s do not exist" % (
+    if len(unknown_columns) != 0:
+        return {"status": False, "error": "Unable to write to table '%s' because column(s) %s do not exist" % (
             table_name, ",".join(unknown_columns))}
 
     present_indexes = get_column_presence(all_columns, present_columns)
-    with db.open_db(table_name, create=True) as table:
-        # Write the data
-        st = db.stat(table)
+    table = db.open_db(table_name.encode("utf8"), create=True)  # Write the data
+    with db.begin(db=table, write=True, buffers=True) as txn:
+        st = txn.stat(table)
         next_id = st["entries"]
-        with db.begin(db=table, write=True, buffers=True) as txn:
-            for value in cmd["values"]:
-                txn.put(struct.pack("Q", next_id),
-                        msgpack.packb([present_indexes, value]),
-                        append=True)
-                next_id += 1
-            txn.commit()
+        for value in cmd["values"]:
+            txn.put(struct.pack("Q", next_id),
+                    msgpack.packb([present_indexes, value]),
+                    append=True)
+            next_id += 1
+
+    return {"status": True}
 
 
 def cmd_get(db, cmd):
