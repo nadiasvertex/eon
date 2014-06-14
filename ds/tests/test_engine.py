@@ -31,6 +31,7 @@ class TestEngine(unittest.TestCase):
         self.assertTrue(result["status"], result.get("error"))
 
     def test_drop_table(self):
+        # Should not be able to drop table
         result = dispatch_command(
             self.db,
             {"cmd": 2,
@@ -42,6 +43,7 @@ class TestEngine(unittest.TestCase):
 
         self.test_create_table()
 
+        # Should be able to drop table
         result = dispatch_command(
             self.db,
             {"cmd": 2,
@@ -51,6 +53,16 @@ class TestEngine(unittest.TestCase):
 
         self.assertTrue(result["status"], result.get("error"))
 
+        # Should not be able to drop table
+        result = dispatch_command(
+            self.db,
+            {"cmd": 2,
+             "name": "my_test_table"
+            }
+        )
+
+        self.assertTrue(result["status"], "Table should not exist after drop.")
+
     def test_put(self):
         self.test_create_table()
 
@@ -59,10 +71,28 @@ class TestEngine(unittest.TestCase):
             {"cmd": 3,
              "name": "my_test_table",
              "columns": ["test_col_1"],
-             "values": [[1],[2],[3],[4],[7],[-1]]
+             "values": [[1], [110], [97], [2], [3], [4], [7], [-1]]
             }
         )
 
         self.assertTrue(result["status"], result.get("error"))
 
+    def test_get(self):
+        self.test_put()
+
+        result = dispatch_command(
+            self.db,
+            {"cmd": 4,
+             "name": "my_test_table",
+             "predicates": [
+                 {"op": "lt", "args": [
+                     [0, "test_col_1"],
+                     [1, 4]
+                 ]}
+             ]
+            }
+        )
+
+        self.assertTrue(result["status"], result.get("error"))
+        self.assertEqual(4, len(result["data"]), "Data should have matched 4 rows.")
 

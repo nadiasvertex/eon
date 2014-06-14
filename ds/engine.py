@@ -1,11 +1,17 @@
 __author__ = 'Christopher Nelson'
 
+# system modules
+import bisect
+import io
 import struct
 from datetime import datetime
 from enum import Enum
 
+# support modules
 import msgpack
 
+# eon modules
+from ds import compute
 
 META_DATABASE = ".meta_database".encode("utf-8")
 
@@ -28,15 +34,32 @@ def get_seq_key(table_name):
     return (".seq.%s" % table_name).encode("utf-8")
 
 
+def get_column_index(all_columns, column):
+    """
+    Locate the column in the sorted list of all_columns.
+    """
+    i = bisect.bisect_left(all_columns, column)
+    if i != len(all_columns) and all_columns[i] == column:
+        return i
+    return None
+
+
 def get_column_presence(all_columns, present_columns):
     present_indexes = []
     for pn in present_columns:
-        for i, an in enumerate(all_columns):
-            if pn != an:
-                continue
-            present_columns.append(i)
-            break
+        idx = get_column_index(all_columns, pn)
+        if idx is not None:
+            present_indexes.append(idx)
     return present_indexes
+
+
+def check_table_presence(db, table_key):
+    meta_db = db.open_db(META_DATABASE, create=True)
+    # See if it already exists.
+    with db.begin(db=meta_db) as txn:
+        schema = txn.get(table_key)
+
+    return None if schema is None else msgpack.unpackb(schema)
 
 
 def cmd_create_table(db, cmd):
@@ -63,7 +86,7 @@ def cmd_create_table(db, cmd):
             return {"status": False, "error": "Unable to create table '%s' because it already exists." % table_name}
 
     with db.begin(db=meta_db, write=True) as txn:
-        info = {"created": datetime.now().isoformat(), "columns": [c["name"] for c in cmd["columns"]]}
+        info = {"created": datetime.now().isoformat(), "columns": sorted([c["name"] for c in cmd["columns"]])}
         packed = msgpack.packb(info)
         txn.put(table_key, packed)
 
@@ -122,15 +145,10 @@ def cmd_put(db, cmd):
     table_name = cmd["name"]
     table_key = get_schema_key(Schema.table, "", table_name)
 
-    meta_db = db.open_db(META_DATABASE, create=True)
-    # See if it already exists.
-    with db.begin(db=meta_db) as txn:
-        schema = txn.get(table_key)
-        if schema is None:
-            return {"status": False,
-                    "error": "Unable to write to table '%s' because it doesn't exist." % table_name}
-
-    schema = msgpack.unpackb(schema)
+    schema = check_table_presence(db, table_key)
+    if schema is None:
+        return {"status": False,
+                "error": "Unable to write to table '%s' because it doesn't exist." % table_name}
 
     # See if we referenced columns that don't exist.
     present_columns = [name.encode("utf8") for name in cmd["columns"]]
@@ -155,7 +173,76 @@ def cmd_put(db, cmd):
 
 
 def cmd_get(db, cmd):
-    pass
+    """
+    We expect the command form for get to be:
+    {
+     "cmd"       : 4,
+     "name"      : "some_table_name"
+     "predicates":[
+        {"op":"lt", "args":[[0, "test_col_1], [1, 5]},
+        ["op":"eq", "args":[[0,"test_col_2"], [1, "dog"]]}
+     ]
+    }
+
+    :param db: The database to read/write to.
+    :param cmd: The command to process.
+    :return: An indication of success or failure.
+    """
+    table_name = cmd["name"]
+    table_key = get_schema_key(Schema.table, "", table_name)
+
+    schema = check_table_presence(db, table_key)
+    if schema is None:
+        return {"status": False,
+                "error": "Unable to read from table '%s' because it doesn't exist." % table_name}
+
+    columns = schema[b'columns']
+    predicates = cmd["predicates"]
+
+    # Process the column names into integers, also perform error
+    # checking.
+    for p in predicates:
+        for arg in p["args"]:
+            # If argument is a column
+            if arg[0] == 0:
+                idx = get_column_index(columns, arg[1].encode("utf8"))
+                if idx is None:
+                    return {"status": False,
+                            "error": "Unable to read from table '%s' because column '%s' doesn't exist." % (
+                            table_name, arg[1])}
+                arg[1] = idx
+
+    rows = []
+
+    # We don't have indexes, fall back to a table scan.
+    table = db.open_db(table_name.encode("utf8"), create=True)  # Write the data
+    with db.begin(db=table, buffers=True) as txn:
+        cursor = txn.cursor()
+        for item in iter(cursor):
+            row_id = struct.unpack_from("Q", cursor.key())
+
+            # Use a streaming unpacker to avoid having to copy
+            # bytes from the database.
+            u = msgpack.Unpacker(io.BytesIO(cursor.value()))
+            data = u.unpack()
+
+            # Get the present index for this row, and the stored
+            # data.
+            present = data[0]
+            value = data[1]
+
+            # Process each predicate
+            for p in predicates:
+                op = getattr(compute, p["op"])
+                args = p["args"]
+                processed_args = [compute.get_value(present, value, arg)
+                                  for arg in args]
+                if not op(*processed_args):
+                    break
+            else:
+                rows.append(row_id)
+
+    return {"status": True, "data": rows}
 
 
 def cmd_update(db, cmd):
