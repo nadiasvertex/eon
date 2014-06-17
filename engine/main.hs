@@ -12,8 +12,7 @@ import HFlags
 
 -- Eon modules
 import Compute
-import Compute.RowStore
-import QueryParser
+import Parse.Query
 
 import qualified Consensus as C
 

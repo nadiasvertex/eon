@@ -177,10 +177,12 @@ def cmd_get(db, cmd):
     We expect the command form for get to be:
     {
      "cmd"       : 4,
-     "name"      : "some_table_name"
+     "name"      : "some_table_name",
+     "joins"     : ["some_other_table_name", "yet_another_table"],
      "predicates":[
         {"op":"lt", "args":[[0, "test_col_1], [1, 5]},
-        ["op":"eq", "args":[[0,"test_col_2"], [1, "dog"]]}
+        {"op":"eq", "args":[[0,"test_col_2"], [1, "dog"]},
+        {"op":"inner_join" : args:[[0, "test_col_1", "my_test_table'], [0, "test_col_1", "my_other_table"]}
      ]
     }
 
@@ -188,15 +190,19 @@ def cmd_get(db, cmd):
     :param cmd: The command to process.
     :return: An indication of success or failure.
     """
-    table_name = cmd["name"]
-    table_key = get_schema_key(Schema.table, "", table_name)
+    primary_table_name = cmd["name"]
+    primary_table_key = get_schema_key(Schema.table, "", primary_table_name)
 
-    schema = check_table_presence(db, table_key)
-    if schema is None:
-        return {"status": False,
-                "error": "Unable to read from table '%s' because it doesn't exist." % table_name}
+    all_tables = {name: check_table_presence(db, get_schema_key(Schema.table, "", name)) for name in cmd["joins"]}
+    all_tables[primary_table_name] = check_table_presence(db, primary_table_key)
 
-    columns = schema[b'columns']
+    for name, schema in all_tables.items():
+        if schema is None:
+            return {"status": False,
+                    "error": "Unable to read from table '%s' because it doesn't exist." % name}
+
+    primary_schema = all_tables[primary_table_name]
+    primary_columns = primary_schema[b'columns']
     predicates = cmd["predicates"]
 
     # Process the column names into integers, also perform error
@@ -205,17 +211,18 @@ def cmd_get(db, cmd):
         for arg in p["args"]:
             # If argument is a column
             if arg[0] == 0:
-                idx = get_column_index(columns, arg[1].encode("utf8"))
+
+                idx = get_column_index(primary_columns, arg[1].encode("utf8"))
                 if idx is None:
                     return {"status": False,
                             "error": "Unable to read from table '%s' because column '%s' doesn't exist." % (
-                            table_name, arg[1])}
+                                primary_table_name, arg[1])}
                 arg[1] = idx
 
     rows = []
 
     # We don't have indexes, fall back to a table scan.
-    table = db.open_db(table_name.encode("utf8"), create=True)  # Write the data
+    table = db.open_db(primary_table_name.encode("utf8"), create=True)  # Write the data
     with db.begin(db=table, buffers=True) as txn:
         cursor = txn.cursor()
         for item in iter(cursor):

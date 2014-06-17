@@ -1,4 +1,4 @@
-module QueryParser where
+module Parse.Query where
 
 -- System modules
 import Control.Monad

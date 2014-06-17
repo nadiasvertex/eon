@@ -13,7 +13,7 @@ import           Data.Typeable
 import           Control.Distributed.Process
 import           Control.Distributed.Process.Backend.SimpleLocalnet
 import           Control.Distributed.Process.Node                   (forkProcess, initRemoteTable)
-import           Control.Exception.Base                             (bracket)
+import qualified Control.Exception.Base                             as E
 
 import           GHC.Generics                                       (Generic)
 
@@ -78,11 +78,9 @@ def_write = DB.defaultWriteOptions
 
 --with_database ::  (f -> DB.DB) -> DB.DB ()
 with_database operations =
-  bracket Res.createInternalState Res.closeInternalState $ \resource_state -> do
+  E.bracket Res.createInternalState Res.closeInternalState $ \resource_state -> do
     Res.runInternalState action resource_state
-    where action = do
-        db <- DB.open "consensus_log.db" def
-        operations db
+    where action =  DB.open "consensus_log.db" def >>= operations
 
 -- Creates a new start state for the cluster.
 start :: ClusterState
@@ -147,8 +145,7 @@ listen_loop         :: Backend -> TheClusterState Process ()
 listen_loop backend =
    do
      evaluate_peers backend
-     msg <- ST.lift $ expectTimeout 500
-     check_rpc msg
+     expectTimeout 500 >>= check_rpc
      listen_loop backend
 
 evaluate_peers :: Backend -> TheClusterState Process ()
