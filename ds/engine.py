@@ -179,6 +179,7 @@ def cmd_get(db, cmd):
      "cmd"       : 4,
      "name"      : "some_table_name",
      "joins"     : ["some_other_table_name", "yet_another_table"],
+     "peers"     : ["tcp://127.0.0.1:1923", "tcp://127.0.0.1:1924"],
      "predicates":[
         {"op":"lt", "args":[[0, "test_col_1], [1, 5]},
         {"op":"eq", "args":[[0,"test_col_2"], [1, "dog"]},
@@ -193,7 +194,9 @@ def cmd_get(db, cmd):
     primary_table_name = cmd["name"]
     primary_table_key = get_schema_key(Schema.table, "", primary_table_name)
 
-    all_tables = {name: check_table_presence(db, get_schema_key(Schema.table, "", name)) for name in cmd["joins"]}
+
+
+    all_tables = {name: check_table_presence(db, get_schema_key(Schema.table, "", name)) for name in cmd.get("joins", [])}
     all_tables[primary_table_name] = check_table_presence(db, primary_table_key)
 
     for name, schema in all_tables.items():
