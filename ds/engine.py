@@ -12,6 +12,7 @@ import msgpack
 
 # eon modules
 from ds import compute
+from ds.remote import JoinManager
 
 META_DATABASE = ".meta_database".encode("utf-8")
 
@@ -194,15 +195,17 @@ def cmd_get(db, cmd):
     primary_table_name = cmd["name"]
     primary_table_key = get_schema_key(Schema.table, "", primary_table_name)
 
-
-
-    all_tables = {name: check_table_presence(db, get_schema_key(Schema.table, "", name)) for name in cmd.get("joins", [])}
+    all_tables = {name: check_table_presence(db, get_schema_key(Schema.table, "", name)) for name in
+                  cmd.get("joins", [])}
     all_tables[primary_table_name] = check_table_presence(db, primary_table_key)
 
     for name, schema in all_tables.items():
         if schema is None:
             return {"status": False,
                     "error": "Unable to read from table '%s' because it doesn't exist." % name}
+
+    # If we have a join, create a join manager for the peer nodes.
+    jm = JoinManager(cmd["peers"]) if "joins" in cmd else None
 
     primary_schema = all_tables[primary_table_name]
     primary_columns = primary_schema[b'columns']
@@ -243,12 +246,18 @@ def cmd_get(db, cmd):
 
             # Process each predicate
             for p in predicates:
-                op = getattr(compute, p["op"])
                 args = p["args"]
-                processed_args = [compute.get_value(present, value, arg)
-                                  for arg in args]
-                if not op(*processed_args):
-                    break
+                predicate_op = p["op"]
+                if predicate_op == "inner_join":
+                    column_value = compute.get_value(present, value, args[0])
+                    request = (row_id, column_value, args[1])
+                    jm.fetch_row_scan(request)
+                else:
+                    op = getattr(compute, predicate_op)
+                    processed_args = [compute.get_value(present, value, arg)
+                                      for arg in args]
+                    if not op(*processed_args):
+                        break
             else:
                 rows.append(row_id)
 

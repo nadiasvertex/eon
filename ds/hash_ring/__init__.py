@@ -1,1 +1,1 @@
-from ds.hash_ring import HashRing
+from ds.hash_ring.hash_ring import HashRing
