@@ -85,7 +85,8 @@ class SetProcessor:
             # The row was found, initiate deferred processing.
             rp = self.deferred[row_id]
             del self.deferred[row_id]
-            
+
+            # Determine row inclusion.
             self._process_results(rp, rp.resume())
 
     def _process_results(self, rp, results):
@@ -110,13 +111,17 @@ class SetProcessor:
             # Use a streaming unpacker to avoid having to copy
             # bytes from the database.
             u = msgpack.Unpacker(io.BytesIO(cursor.value()))
-            data = u.unpack()
+            present, value = u.unpack()
 
             # Get the present index for this row, and the stored
             # data.
-            present = data[0]
-            value = data[1]
+            #present = data[0]
+            #value = data[1]
+
 
             rp = RowProcessor(row_id, present, value, self.predicates, self.jm)
             self._process_results(rp, rp.process())
+
+    def get_matching_rows(self):
+        return self.accepted
 

@@ -1,6 +1,8 @@
 __author__ = 'Christopher Nelson'
 
+import io
 import queue
+import struct
 
 import msgpack
 import zmq
@@ -8,11 +10,14 @@ from zmq.eventloop import ioloop
 
 from ds.hash_ring import HashRing
 
+
 REQ_FETCH_INDEXED = 0
 REQ_FETCH_SCAN = 1
 
 REP_NOT_FOUND = 0
 REP_FOUND = 1
+REP_UNKNOWN_COMMAND = 0x0f
+
 
 class JoinManager:
     def __init__(self, peers):
@@ -72,3 +77,75 @@ class JoinManager:
         """
         for s in self.sockets.values():
             s.send(msgpack.packb((REQ_FETCH_SCAN, request)))
+
+
+def cmd_fetch_scan(db, cmd, request):
+    """
+    Perform a scan of the table and find all the rows that match a given value.
+
+    :param db:
+    :param cmd:
+    :param request:
+    :return:
+    """
+    remote_row_id, target_column_value, schema_info = request
+    _, column_idx, table_name = schema_info
+
+    rows = []
+
+    # Scan the table looking for rows with the value specified.
+    table = db.open_db(table_name.encode("utf8"), create=True)  # Read the data
+    with db.begin(db=table, buffers=True) as txn:
+        cursor = txn.cursor()
+        for item in iter(cursor):
+            # Use a streaming unpacker to avoid having to copy
+            # bytes from the database.
+            u = msgpack.Unpacker(io.BytesIO(cursor.value()))
+            present, value = u.unpack()
+
+            if column_idx not in present:
+                continue
+
+            idx = present.index(column_idx)
+            column_value = value[idx]
+            if target_column_value == column_value:
+                rows.append(struct.unpack_from("Q", cursor.key()))
+
+    return (REP_FOUND, (remote_row_id, rows)) if rows else (REP_NOT_FOUND, remote_row_id)
+
+
+def dispatch_command(db, msg):
+    """
+    Here we handle the very simple 'find row with this value in this column' commands from other engines.
+
+    :param db: The database to use.
+    :param msg: The message to process
+    :return: A response to the remote process.
+    """
+    cmd, request = msg
+    if cmd == REQ_FETCH_SCAN:
+        return cmd_fetch_scan(db, cmd, request)
+
+    return [REP_UNKNOWN_COMMAND]
+
+
+def reply_handler(db, sock, events):
+    msg = msgpack.unpackb(sock.recv())
+    reply = dispatch_command(db, msg)
+    sock.send(msgpack.packb(reply))
+
+
+def start(db, ctx, loop, listen_address):
+    """
+    This function starts the remote engine response processor. This processor is used by the system to process
+    engine to engine traffic for things like distributed joins and distributed index management.
+
+    :param ctx: The ZMQ context.
+    :param loop: The run loop.
+    :param listen_address: The address the engine response processor should listen on.
+    :return: None
+    """
+    s = ctx.socket(zmq.REP)
+    s.bind(listen_address)
+
+    loop.add_handler(s, partial(reply_handler, db), zmq.POLLIN)

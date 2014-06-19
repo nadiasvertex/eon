@@ -2,7 +2,6 @@ __author__ = 'Christopher Nelson'
 
 # system modules
 import bisect
-import io
 import struct
 from datetime import datetime
 from enum import Enum
@@ -11,8 +10,8 @@ from enum import Enum
 import msgpack
 
 # eon modules
-from ds import compute
 from ds.remote import JoinManager
+from ds.processor import SetProcessor
 
 META_DATABASE = ".meta_database".encode("utf-8")
 
@@ -225,43 +224,13 @@ def cmd_get(db, cmd):
                                 primary_table_name, arg[1])}
                 arg[1] = idx
 
-    rows = []
-
     # We don't have indexes, fall back to a table scan.
-    table = db.open_db(primary_table_name.encode("utf8"), create=True)  # Write the data
+    table = db.open_db(primary_table_name.encode("utf8"), create=True)  # Read the data
     with db.begin(db=table, buffers=True) as txn:
-        cursor = txn.cursor()
-        for item in iter(cursor):
-            row_id = struct.unpack_from("Q", cursor.key())
+        sp = SetProcessor(txn, predicates, jm)
+        sp.process()
 
-            # Use a streaming unpacker to avoid having to copy
-            # bytes from the database.
-            u = msgpack.Unpacker(io.BytesIO(cursor.value()))
-            data = u.unpack()
-
-            # Get the present index for this row, and the stored
-            # data.
-            present = data[0]
-            value = data[1]
-
-            # Process each predicate
-            for p in predicates:
-                args = p["args"]
-                predicate_op = p["op"]
-                if predicate_op == "inner_join":
-                    column_value = compute.get_value(present, value, args[0])
-                    request = (row_id, column_value, args[1])
-                    jm.fetch_row_scan(request)
-                else:
-                    op = getattr(compute, predicate_op)
-                    processed_args = [compute.get_value(present, value, arg)
-                                      for arg in args]
-                    if not op(*processed_args):
-                        break
-            else:
-                rows.append(row_id)
-
-    return {"status": True, "data": rows}
+    return {"status": True, "data": sp.get_matching_rows()}
 
 
 def cmd_update(db, cmd):
