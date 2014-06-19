@@ -8,9 +8,11 @@ from zmq.eventloop import ioloop
 
 from ds.hash_ring import HashRing
 
-FETCH_INDEXED = 0
-FETCH_SCAN = 1
+REQ_FETCH_INDEXED = 0
+REQ_FETCH_SCAN = 1
 
+REP_NOT_FOUND = 0
+REP_FOUND = 1
 
 class JoinManager:
     def __init__(self, peers):
@@ -57,7 +59,7 @@ class JoinManager:
         s = self.sockets.get(owner)
 
         # Send the request.
-        s.send(msgpack.packb(request))
+        s.send(msgpack.packb((REQ_FETCH_INDEXED, request)))
 
     def fetch_row_scan(self, request):
         """
@@ -69,4 +71,4 @@ class JoinManager:
         by the remote to fetch the row.
         """
         for s in self.sockets.values():
-            s.send(msgpack.packb(request))
+            s.send(msgpack.packb((REQ_FETCH_SCAN, request)))

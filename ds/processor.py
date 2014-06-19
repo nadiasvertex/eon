@@ -1,7 +1,12 @@
 __author__ = 'Christopher Nelson'
+
+import io
+import struct
 from enum import Enum
 
-from ds import compute
+import msgpack
+
+from ds import compute, remote
 
 
 class ResultStatus(Enum):
@@ -50,7 +55,68 @@ class RowProcessor:
             # to be handled by the next layer.
             return result
 
+    def resume(self):
+        self.current_predicate += 1
+        return self.process()
+
 
 class SetProcessor:
-    def __init__(self):
-        pass
+    def __init__(self, txn, predicates, jm):
+        self.txn = txn
+        self.predicates = predicates
+        self.jm = jm
+
+        self.deferred = {}
+        self.accepted = []
+
+    def _process_deferred(self):
+        while True:
+            msg = self.jm.get_response()
+            # No message, no work.
+            if msg is None:
+                return
+
+            status, row_id = msg
+            # If this row was not found, then we need to delete the deferred processor from our
+            # dictionary. Clearly we won't be selecting that row.
+            if status == remote.REP_NOT_FOUND:
+                del self.deferred[row_id]
+
+            # The row was found, initiate deferred processing.
+            rp = self.deferred[row_id]
+            del self.deferred[row_id]
+            
+            self._process_results(rp, rp.resume())
+
+    def _process_results(self, rp, results):
+        row_id = rp.row_id
+        if results == ResultStatus.rejected:
+            return
+        if results == ResultStatus.accepted:
+            self.accepted.append(row_id)
+        elif results == ResultStatus.pending:
+            self.deferred[row_id] = rp
+
+    def process(self):
+        cursor = self.txn.cursor()
+        for item in iter(cursor):
+            # Check to see if any of our deferred rows have received their last value yet.
+            if len(self.deferred) > 0:
+                self._process_deferred()
+
+            # Proceed with processing this row.
+            row_id = struct.unpack_from("Q", cursor.key())
+
+            # Use a streaming unpacker to avoid having to copy
+            # bytes from the database.
+            u = msgpack.Unpacker(io.BytesIO(cursor.value()))
+            data = u.unpack()
+
+            # Get the present index for this row, and the stored
+            # data.
+            present = data[0]
+            value = data[1]
+
+            rp = RowProcessor(row_id, present, value, self.predicates, self.jm)
+            self._process_results(rp, rp.process())
+
