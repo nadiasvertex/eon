@@ -43,10 +43,26 @@ class TestArityCompressedStore(unittest.TestCase):
                     row_id += 1
 
         with self.store.begin(write=False) as txn:
-            self.assertEqual(100, len(txn.unique()))
-            self.assertEqual(row_id-1, txn.count())
+            values = [x for x in txn.unique()]
+            self.assertEqual(100, len(values))
+            self.assertEqual(row_id - 1, txn.count())
 
+    def test_filter(self):
+        row_id = 0
+        with self.store.begin(write=True) as txn:
+            for i in range(0, 100):
+                value = b'test' + struct.pack("=B", i)
+                for j in range(0, 100):
+                    txn.put(row_id, value)
+                    row_id += 1
 
+        with self.store.begin(write=False) as txn:
+            sentinel = memoryview(value)
+            def cmp_stuff(k):
+                return k == sentinel
+
+            values = [x for x in txn.filter(cmp_stuff)]
+            self.assertEqual(100, len(values))
 
 
 if __name__ == '__main__':

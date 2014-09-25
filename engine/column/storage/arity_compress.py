@@ -72,7 +72,8 @@ class ArityTransaction:
     def unique(self):
         with self.mapped_indexes_txn.cursor() as cursor:
             cursor.first()
-            return [bytes(key) for key in cursor.iternext(keys=True, values=False)]
+            for key in cursor.iternext(keys=True, values=False):
+                yield bytes(key)
 
     def count(self):
         with self.row_map_txn.cursor() as cursor:
@@ -82,6 +83,18 @@ class ArityTransaction:
                 entry_count += 1
 
         return entry_count
+
+    def filter(self, predicate):
+        with self.mapped_indexes_txn.cursor() as cursor:
+            cursor.first()
+            keepers = {bytes(v) for k, v in cursor if predicate(k)}
+
+        with self.row_map_txn.cursor() as cursor:
+            cursor.first()
+            for k, v in cursor:
+                vb = bytes(v)
+                if vb in keepers:
+                    yield struct.unpack_from("=B", k)
 
 
 class ArityCompressedStore:
@@ -105,7 +118,7 @@ class ArityCompressedStore:
 
         # This database maps the column values to a row. For a given row we only store a byte
         # indicating which index into the unique_values dictionary it is.
-        self.row_map = lmdb.open(self.row_map_path, map_size=1 << 45)
+        self.row_map = lmdb.open(self.row_map_path, map_size=1 << 40)
 
     def begin(self, write=False):
         return ArityTransaction(self.indexed_values.begin(write=write, buffers=True),
