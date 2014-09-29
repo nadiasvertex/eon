@@ -96,6 +96,29 @@ class ArityTransaction:
                 if vb in keepers:
                     yield struct.unpack_from("=B", k)
 
+    def iter(self):
+        """
+        Iterates over the column, returning the row id and the fully expanded column value.
+
+        :return: A generator that provides (row_id, value)
+        """
+        with self.row_map_txn.cursor() as cursor:
+            cursor.first()
+            for k, v in cursor:
+                row_id = struct.unpack_from("=B", k)
+                value = self.indexed_values_txn.get(bytes(v))
+                yield row_id, value
+
+    def join(self, other):
+        """
+        Join this column to another column. The column is provided in 'other'. We create a value index on this column
+        when it's used in a join condition. This allows future queries to be very fast.
+
+        :param other:
+        :return:
+        """
+        pass
+
 
 class ArityCompressedStore:
     def __init__(self, name, table_path):
