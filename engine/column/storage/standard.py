@@ -1,18 +1,19 @@
 import os
 import struct
 import rocksdb
+import bisect
 
 __author__ = 'Christopher Nelson'
-
 
 class StandardTransaction:
     def __init__(self, store, writeable):
         self.store = store
         self.writeable = writeable
         self.snapshot = store.warehouse.snapshot()
-
-        self.tws = rocksdb.DB(os.path.join(store.column_path, "txn" + str(id(self))),
-                              store.db_options)
+        self.target_options = rocksdb.Options(create_if_missing=True)
+        self.write_store = rocksdb.DB(os.path.join(store.column_path, "txn" + str(id(self))),
+                                      self.target_options)
+        self.indexed_store = None
 
         self.tombstone = set()
 
@@ -24,12 +25,18 @@ class StandardTransaction:
             self.abort()
         self.commit()
 
+    def commit(self):
+        pass
+
+    def abort(self):
+        pass
+
     def put(self, row_id, value):
-        self.tws.put(struct.pack("=Q", row_id), value)
+        self.write_store.put(struct.pack("=Q", row_id), value)
 
     def get(self, row_id):
         row_key = struct.pack("=Q", row_id)
-        value = self.tws.get(row_key)
+        value = self.write_store.get(row_key)
         if value is not None:
             return value
 
@@ -40,8 +47,7 @@ class StandardTransaction:
 
         return self.store.get(row_key, snapshot=self.snapshot)
 
-
-
+    def unique(self):
 
 
 class StandardStore:
