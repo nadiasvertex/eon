@@ -45,15 +45,16 @@ class StandardTransaction:
             if value is not None:
                 return value
 
-        return self.store.get(row_id)
+        return self.store.warehouse.get(row_id)
 
     def unique(self):
-        if self.store.warehouse.index is None:
-            self.store.warehouse.create_index()
-
+        self.store.warehouse.create_index()
         for value in self.store.warehouse.values():
             yield value
 
+    def filter(self, predicate):
+        self.store.warehouse.create_index()
+        return self.store.warehouse.filter(predicate)
 
 class Warehouse:
     def __init__(self, name, column_path):
@@ -71,8 +72,7 @@ class Warehouse:
             [] if row_intervals_packed is None else \
                 pickle.loads(row_intervals_packed)
         Interval.insert(row_intervals, row_id)
-        self.index.put(value, pickle.dumps(row_intervals))
-
+        self.index.put(value, pickle.dumps(row_intervals, protocol=pickle.HIGHEST_PROTOCOL))
 
     def put(self, row_id, value):
         self.warehouse.put(struct.pack("=Q", row_id), value)
@@ -85,10 +85,27 @@ class Warehouse:
         return self.warehouse.get(row_key)
 
     def values(self):
-        it = self.warehouse.itervalues()
+        """
+        Provides a generator that iterates over the unique values in the database. This requires that 'create_index'
+        has already been called.
+        """
+        it = self.index.iterkeys()
         it.seek_to_first()
         for value in list(it):
             yield value
+
+    def filter(self, predicate):
+        """
+        Provides a generator that iterates over the unique values in the database that match the predicate. This
+        requires that 'create_index' has already been called.
+
+        :param predicate: A function that returns True if the value matches, False otherwise.
+        """
+        it = self.index.iterkeys()
+        it.seek_to_first()
+        for value in list(it):
+            if predicate(value):
+                yield value
 
     def create_index(self):
         """
