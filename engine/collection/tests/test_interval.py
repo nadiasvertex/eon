@@ -40,6 +40,6 @@ class TestStandardStore(unittest.TestCase):
             for i in range(j, j + 10):
                 Interval.insert(a, i)
 
-        self.assertEqual([(0, 9)], a)
+        self.assertEqual([(j,j+9) for j in range(0, 1000, 20)], a)
 
 
