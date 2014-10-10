@@ -13,7 +13,7 @@ class StandardTransaction:
         self.store = store
         self.writeable = writeable
 
-        self.txn_warehouse = Warehouse("txn" + str(id(self)), store.column_path) if writeable else None
+        self.txn = Warehouse("txn" + str(id(self)), store.column_path) if writeable else None
         self.tombstone = set()
 
 
@@ -32,11 +32,11 @@ class StandardTransaction:
         pass
 
     def put(self, row_id, value):
-        self.txn_warehouse.put(row_id, value)
+        self.txn.put(row_id, value)
 
     def get(self, row_id):
-        if self.txn_warehouse is not None:
-            value = self.txn_warehouse.get(row_id)
+        if self.txn is not None:
+            value = self.txn.get(row_id)
             if value is not None:
                 return value
 
@@ -48,13 +48,47 @@ class StandardTransaction:
         return self.store.warehouse.get(row_id)
 
     def unique(self):
+        self.txn.create_index()
         self.store.warehouse.create_index()
-        for value in self.store.warehouse.values():
-            yield value
+
+        wg = self.store.warehouse.values()
+        tg = self.txn.values()
+
+        last_w = None
+        last_t = None
+        while True:
+            if last_w is None:
+                last_w = next(wg)
+
+            if last_t is None:
+                last_t = next(tg)
+
+            if last_w is None and last_t is None:
+                return
+
+            if last_w is None:
+                yield last_t
+                last_t = None
+
+            if last_t is None:
+                yield last_w
+                last_w = None
+
+            if last_t < last_w:
+                yield last_t
+                last_t = None
+            elif last_t > last_w:
+                yield last_w
+                last_w = None
+            else:
+                yield last_t
+                last_t = last_w = None
+
 
     def filter(self, predicate):
         self.store.warehouse.create_index()
         return self.store.warehouse.filter(predicate)
+
 
 class Warehouse:
     def __init__(self, name, column_path):
