@@ -24,7 +24,6 @@ class TestStandardStore(unittest.TestCase):
             value = txn.get(1)
             self.assertEqual(b'test', bytes(value))
 
-
     def test_select(self):
         with self.store.begin(write=True) as txn:
             txn.put(1, b'test')
@@ -63,11 +62,28 @@ class TestStandardStore(unittest.TestCase):
 
         with self.store.begin(write=False) as txn:
             sentinel = bytes(value)
+
             def cmp_stuff(k):
                 return k == sentinel
 
             values = [x for x in txn.filter(cmp_stuff)]
             self.assertEqual(100, len(values))
+
+    def test_select_version(self):
+        with self.store.begin(write=True) as txn:
+            txn.put(1, b'test')
+
+            with self.store.begin(write=False) as txn2:
+                with self.store.begin(write=True) as txn3:
+                    txn3.put(1, b'test2')
+
+                value = txn2.get(1)
+                self.assertEqual(b'test', bytes(value))
+
+        with self.store.begin(write=False) as txn:
+            # Now check in later transaction
+            value = txn.get(1)
+            self.assertEqual(b'test2', bytes(value))
 
 
 if __name__ == '__main__':
