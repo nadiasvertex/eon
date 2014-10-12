@@ -45,7 +45,7 @@ class TestArityCompressedStore(unittest.TestCase):
         with self.store.begin(write=False) as txn:
             values = [x for x in txn.unique()]
             self.assertEqual(100, len(values))
-            self.assertEqual(row_id - 1, txn.count())
+            self.assertEqual(row_id, txn.count())
 
     def test_filter(self):
         row_id = 0

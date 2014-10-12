@@ -43,14 +43,14 @@ class TestStandardStore(unittest.TestCase):
         with self.store.begin(write=True) as txn:
             for i in range(0, 100):
                 value = b'test' + struct.pack("=B", i)
-                for j in range(0, random.randint(1, 10000)):
+                for j in range(0, random.randint(1, 1000)):
                     txn.put(row_id, value)
                     row_id += 1
 
         with self.store.begin(write=False) as txn:
             values = [x for x in txn.unique()]
             self.assertEqual(100, len(values))
-            self.assertEqual(row_id - 1, txn.count())
+            self.assertEqual(row_id, txn.count())
 
     def test_filter(self):
         row_id = 0
@@ -62,7 +62,7 @@ class TestStandardStore(unittest.TestCase):
                     row_id += 1
 
         with self.store.begin(write=False) as txn:
-            sentinel = memoryview(value)
+            sentinel = bytes(value)
             def cmp_stuff(k):
                 return k == sentinel
 

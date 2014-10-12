@@ -51,7 +51,7 @@ class StandardTransaction:
 
     def filter(self, predicate):
         self.store.warehouse.create_index()
-        return self.store.warehouse.filter(predicate)
+        return self.store.warehouse.filter(self.version, predicate)
 
 
 class Warehouse:
@@ -120,18 +120,49 @@ class Warehouse:
         for value in list(it):
             yield value
 
-    def filter(self, predicate):
+    def filter(self, version, predicate):
         """
-        Provides a generator that iterates over the unique values in the database that match the predicate. This
-        requires that 'create_index' has already been called.
+        Iterate over the unique values in the column and return the row_id of every row with the matching value.
+        Requires that :func:create_index has already been called.
 
-        :param predicate: A function that returns True if the value matches, False otherwise.
+        :param version: The version of the row to use.
+        :param predicate: The function which indicates if a value matches.
+        :return: A generator which will yield every matching row_id.
         """
         it = self.index.iterkeys()
         it.seek_to_first()
         for value in list(it):
-            if predicate(value):
-                yield value
+            if not predicate(value):
+                continue
+
+            packed_row_id_array = self.index.get(value)
+
+            # Decode row/version items in packed row id array
+            position = 0
+            rows = []
+            while position < len(packed_row_id_array):
+                row_id, position = varint.decode(packed_row_id_array, position)
+                row_version, position = varint.decode(packed_row_id_array, position)
+                rows.append((row_id, version))
+
+            # TODO: persist the sorted array so we don't have to do this every time.
+
+            # Sort row id/version data so we can count rows correctly in view of multiple versions. This makes
+            # sure that we don't accidentally yield each row more than once.
+            rows.sort()
+
+            # Find the "best row" for each set of versioned rows, and yield that.
+            best_row = None
+            for row_id, row_version in rows:
+                if row_id != best_row:
+                    if best_row != None:
+                        yield best_row
+
+                best_row = row_id if row_version <= version else None
+            else:
+                if best_row != None:
+                    yield best_row
+
 
     def count(self, version):
         """
@@ -170,7 +201,7 @@ class Warehouse:
         it.seek_to_first()
 
         # Go through the warehouse and insert each value as a key in the index. Map the keys to the rows they
-        # come from. If a key is found more than once it will map to an interval list, so the key will appear only
+        # come from. If a key is found more than once it will map to a row list, so the key will appear only
         # once in the data.
         for row_key, value in list(it):
             row_id, version = struct.unpack_from("=QQ", row_key)

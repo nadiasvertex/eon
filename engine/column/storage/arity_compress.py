@@ -78,13 +78,19 @@ class ArityTransaction:
     def count(self):
         with self.row_map_txn.cursor() as cursor:
             cursor.first()
-            entry_count = 0
+            entry_count = 1
             while cursor.next():
                 entry_count += 1
 
         return entry_count
 
     def filter(self, predicate):
+        """
+        Iterate over the unique values in the column and return the row_id of every row with the matching value.
+
+        :param predicate: The function which indicates if a value matches.
+        :return: A generator which will yield every matching row_id.
+        """
         with self.mapped_indexes_txn.cursor() as cursor:
             cursor.first()
             keepers = {bytes(v) for k, v in cursor if predicate(k)}
@@ -94,7 +100,7 @@ class ArityTransaction:
             for k, v in cursor:
                 vb = bytes(v)
                 if vb in keepers:
-                    yield struct.unpack_from("=B", k)
+                    yield struct.unpack_from("=Q", k)
 
     def iter(self):
         """
@@ -133,10 +139,10 @@ class ArityCompressedStore:
         # The following databases keep track of the unique values in the database.
         #
 
-        # This database maps the values by index.
+        # This database maps the values by index. e.g. 1: dog
         self.indexed_values = lmdb.open(self.indexed_values_path)
 
-        # This database maps the values to their index.
+        # This database maps the values to their index. e.g. dog: 1
         self.mapped_indexes = lmdb.open(self.mapped_indexes_path)
 
         # This database maps the column values to a row. For a given row we only store a byte
