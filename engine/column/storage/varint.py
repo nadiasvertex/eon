@@ -43,15 +43,13 @@ def _varint_decoder(mask):
     decoder returns a (value, new_pos) pair.
     """
 
-    local_ord = ord
-
     def decode_varint(buffer, pos):
         result = 0
         shift = 0
         while 1:
             if pos > len(buffer) - 1:
                 raise NotEnoughDataError("Not enough data to decode varint")
-            b = local_ord(buffer[pos])
+            b = buffer[pos]
             result |= ((b & 0x7f) << shift)
             pos += 1
             if not (b & 0x80):
@@ -67,15 +65,13 @@ def _varint_decoder(mask):
 def _signed_varint_decoder(mask):
     """Like _varint_decoder() but decodes signed values."""
 
-    local_ord = ord
-
     def decode_varint(buffer, pos):
         result = 0
         shift = 0
         while 1:
             if pos > len(buffer) - 1:
                 raise NotEnoughDataError("Not enough data to decode varint")
-            b = local_ord(buffer[pos])
+            b = buffer[pos]
             result |= ((b & 0x7f) << shift)
             pos += 1
             if not (b & 0x80):
@@ -133,16 +129,14 @@ def signed_varint_size(value):
 def _varint_encoder():
     """Return an encoder for a basic varint value."""
 
-    local_chr = chr
-
     def encode_varint(write, value):
         bits = value & 0x7f
         value >>= 7
         while value:
-            write(local_chr(0x80 | bits))
+            write(0x80 | bits)
             bits = value & 0x7f
             value >>= 7
-        return write(local_chr(bits))
+        return write(bits)
 
     return encode_varint
 
@@ -150,18 +144,16 @@ def _varint_encoder():
 def _signed_varint_encoder():
     """Return an encoder for a basic signed varint value."""
 
-    local_chr = chr
-
     def encode_signed_varint(write, value):
         if value < 0:
             value += (1 << 64)
         bits = value & 0x7f
         value >>= 7
         while value:
-            write(local_chr(0x80 | bits))
+            write(0x80 | bits)
             bits = value & 0x7f
             value >>= 7
-        return write(local_chr(bits))
+        return write(bits)
 
     return encode_signed_varint
 

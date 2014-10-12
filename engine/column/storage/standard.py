@@ -9,13 +9,11 @@ __author__ = 'Christopher Nelson'
 
 
 class StandardTransaction:
-    def __init__(self, store, writeable):
+    def __init__(self, store, version, writeable):
         self.store = store
         self.writeable = writeable
-
-        self.txn = Warehouse("txn" + str(id(self)), store.column_path) if writeable else None
+        self.version = version
         self.tombstone = set()
-
 
     def __enter__(self):
         return self
@@ -32,58 +30,20 @@ class StandardTransaction:
         pass
 
     def put(self, row_id, value):
-        self.txn.put(row_id, value)
+        self.store.warehouse.put(self.version, row_id, value)
 
     def get(self, row_id):
-        if self.txn is not None:
-            value = self.txn.get(row_id)
-            if value is not None:
-                return value
-
-        for txn in reversed(self.store.committed):
-            value = txn.get(row_id)
-            if value is not None:
-                return value
-
-        return self.store.warehouse.get(row_id)
+        return self.store.warehouse.get(self.version, row_id)
 
     def unique(self):
-        self.txn.create_index()
         self.store.warehouse.create_index()
-
         wg = self.store.warehouse.values()
-        tg = self.txn.values()
 
-        last_w = None
-        last_t = None
         while True:
-            if last_w is None:
-                last_w = next(wg)
-
-            if last_t is None:
-                last_t = next(tg)
-
-            if last_w is None and last_t is None:
+            v = next(wg)
+            if v is None:
                 return
-
-            if last_w is None:
-                yield last_t
-                last_t = None
-
-            if last_t is None:
-                yield last_w
-                last_w = None
-
-            if last_t < last_w:
-                yield last_t
-                last_t = None
-            elif last_t > last_w:
-                yield last_w
-                last_w = None
-            else:
-                yield last_t
-                last_t = last_w = None
-
+            yield v
 
     def filter(self, predicate):
         self.store.warehouse.create_index()
@@ -108,15 +68,30 @@ class Warehouse:
         Interval.insert(row_intervals, row_id)
         self.index.put(value, pickle.dumps(row_intervals, protocol=pickle.HIGHEST_PROTOCOL))
 
-    def put(self, row_id, value):
-        self.warehouse.put(struct.pack("=Q", row_id), value)
+    def put(self, version, row_id, value):
+        self.warehouse.put(struct.pack("=QQ", row_id, version), value)
         if self.index is None:
             return
         self._update_index(row_id, value)
 
-    def get(self, row_id):
-        row_key = struct.pack("=Q", row_id)
-        return self.warehouse.get(row_key)
+    def get(self, version, row_id):
+        row_key = struct.pack("=QQ", row_id, version)
+        it = self.warehouse.iteritems()
+
+        # Position the iterator at or just past the row+version we want. If we are right there, return
+        # the value. Otherwise we check to see if we need to backup to a previous item.
+        it.seek(row_key)
+        for k, v in reversed(it):
+            if k == row_key:
+                return v
+
+            item_row_id, item_version = struct.unpack_from("=QQ", k)
+            if item_row_id != row_id:
+                continue
+            if item_version > version:
+                continue
+
+            return v
 
     def values(self):
         """
@@ -161,7 +136,7 @@ class Warehouse:
         # come from. If a key is found more than once it will map to an interval list, so the key will appear only
         # once in the data.
         for row_key, value in list(it):
-            row_id = struct.unpack_from("=Q", row_key)
+            row_id, version = struct.unpack_from("=QQ", row_key)
             self._update_index(row_id, value)
 
 
@@ -171,13 +146,10 @@ class StandardStore:
         if not os.path.exists(self.column_path):
             os.makedirs(self.column_path)
 
+        self.current_version = 0
         self.warehouse = Warehouse("warehouse", self.column_path)
 
-        # Holds committed transactions. These are moved into the warehouse in the
-        # background, but until they are fully transferred they live here. The
-        # earliest transactions are at the front, the latest at the back.
-        self.committed = []
-
-
     def begin(self, write=False):
-        return StandardTransaction(self, write)
+        self.current_version += 1
+        version = self.current_version
+        return StandardTransaction(self, version, write)
