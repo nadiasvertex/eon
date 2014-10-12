@@ -4,6 +4,7 @@ import struct
 import rocksdb
 import bisect
 from engine.collection.interval import Interval
+from engine.column.storage import varint
 
 __author__ = 'Christopher Nelson'
 
@@ -60,13 +61,22 @@ class Warehouse:
 
         self.index = None
 
-    def _update_index(self, row_id, value):
-        row_intervals_packed = self.index.get(value)
-        row_intervals = \
-            [] if row_intervals_packed is None else \
-                pickle.loads(row_intervals_packed)
-        Interval.insert(row_intervals, row_id)
-        self.index.put(value, pickle.dumps(row_intervals, protocol=pickle.HIGHEST_PROTOCOL))
+    def _update_index(self, version, row_id, value):
+        """
+        Update the index by finding the value in the database, and then appending this row id and version onto a list
+        of versioned rows. This indicates rows where this value shows up. The row and version data is compressed using
+        the varint encoding scheme.
+
+        :param row_id: A row where this value shows up.
+        :param value: The version of the row where this value shows up.
+        """
+        row_packed_data = self.index.get(value)
+        row_array = \
+            bytearray() if row_packed_data is None else \
+                bytearray(row_packed_data)
+        varint.encode(row_array.append, row_id)
+        varint.encode(row_array.append, version)
+        self.index.put(value, bytes(row_array))
 
     def put(self, version, row_id, value):
         self.warehouse.put(struct.pack("=QQ", row_id, version), value)
@@ -137,7 +147,7 @@ class Warehouse:
         # once in the data.
         for row_key, value in list(it):
             row_id, version = struct.unpack_from("=QQ", row_key)
-            self._update_index(row_id, value)
+            self._update_index(version, row_id, value)
 
 
 class StandardStore:
