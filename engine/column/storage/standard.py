@@ -36,6 +36,9 @@ class StandardTransaction:
     def get(self, row_id):
         return self.store.warehouse.get(self.version, row_id)
 
+    def count(self):
+        return self.store.warehouse.count(self.version)
+
     def unique(self):
         self.store.warehouse.create_index()
         wg = self.store.warehouse.values()
@@ -82,26 +85,30 @@ class Warehouse:
         self.warehouse.put(struct.pack("=QQ", row_id, version), value)
         if self.index is None:
             return
-        self._update_index(row_id, value)
+        self._update_index(version, row_id, value)
 
     def get(self, version, row_id):
-        row_key = struct.pack("=QQ", row_id, version)
+        row_key = struct.pack("=QQ", row_id, 0)
         it = self.warehouse.iteritems()
 
-        # Position the iterator at or just past the row+version we want. If we are right there, return
-        # the value. Otherwise we check to see if we need to backup to a previous item.
+        # Position the iterator near the item we want. We may be right there ut probably we will need to
+        # iterate through the list to find the right version.
         it.seek(row_key)
-        for k, v in reversed(it):
+        last_value = None
+        for k, v in list(it):
             if k == row_key:
                 return v
 
             item_row_id, item_version = struct.unpack_from("=QQ", k)
             if item_row_id != row_id:
-                continue
-            if item_version > version:
-                continue
+                return None
 
-            return v
+            if item_version > version:
+                return last_value
+
+            last_value = v
+        else:
+            return last_value
 
     def values(self):
         """
@@ -125,6 +132,26 @@ class Warehouse:
         for value in list(it):
             if predicate(value):
                 yield value
+
+    def count(self, version):
+        """
+        Counts the number of rows in the database. This counts each row once, even if there are multiple versions
+        of the row in the database.
+
+        :param version: The version to consider when deciding whether an entry exists.
+        :returns: The number of rows.
+        """
+        it = self.warehouse.iterkeys()
+        it.seek_to_first()
+        row_count = 0
+        current_row_id = None
+        for row_key in list(it):
+            row_id, row_version = struct.unpack_from("=QQ", row_key)
+            if row_id != current_row_id and row_version <= version:
+                row_count += 1
+                current_row_id = row_id
+
+        return row_count
 
     def create_index(self):
         """

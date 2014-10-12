@@ -29,7 +29,12 @@ class TestStandardStore(unittest.TestCase):
         with self.store.begin(write=True) as txn:
             txn.put(1, b'test')
 
+            # First check in same transaction
+            value = txn.get(1)
+            self.assertEqual(b'test', bytes(value))
+
         with self.store.begin(write=False) as txn:
+            # Now check in later transaction
             value = txn.get(1)
             self.assertEqual(b'test', bytes(value))
 
