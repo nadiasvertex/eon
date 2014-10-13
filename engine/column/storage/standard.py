@@ -25,10 +25,12 @@ class StandardTransaction:
         self.commit()
 
     def commit(self):
-        pass
+        if self.writeable:
+            self.store.warehouse.uncomitted.remove(self.version)
 
     def abort(self):
-        pass
+        if self.writeable:
+            self.store.warehouse.garbage.add(self.version)
 
     def put(self, row_id, value):
         self.store.warehouse.put(self.version, row_id, value)
@@ -63,6 +65,19 @@ class Warehouse:
                                     db_options)
 
         self.index = None
+        self.uncomitted = set()
+        self.garbage = set()
+
+    def _version_visible(self, row_version, txn_version):
+        """
+        Determines if a particular row is visible by comparing it's write version with the current transaction's
+        version. It also considers other concurrent transactions which are not committed.
+
+        :param row_version: The last version this column of this row was written in.
+        :param txn_version: The version of the transaction performing the operation.
+        :return: True if the row version is visible, False otherwise.
+        """
+        return row_version == txn_version or (row_version < txn_version and row_version not in self.uncomitted)
 
     def _update_index(self, version, row_id, value):
         """
@@ -87,7 +102,7 @@ class Warehouse:
             return
         self._update_index(version, row_id, value)
 
-    def get(self, version, row_id):
+    def get(self, txn_version, row_id):
         row_key = struct.pack("=QQ", row_id, 0)
         it = self.warehouse.iteritems()
 
@@ -103,10 +118,11 @@ class Warehouse:
             if item_row_id != row_id:
                 return None
 
-            if item_version > version:
+            if item_version > txn_version:
                 return last_value
 
-            last_value = v
+            if self._version_visible(item_version, txn_version):
+                last_value = v
         else:
             return last_value
 
@@ -120,12 +136,12 @@ class Warehouse:
         for value in list(it):
             yield value
 
-    def filter(self, version, predicate):
+    def filter(self, txn_version, predicate):
         """
         Iterate over the unique values in the column and return the row_id of every row with the matching value.
         Requires that :func:create_index has already been called.
 
-        :param version: The version of the row to use.
+        :param txn_version: The version of the row to use.
         :param predicate: The function which indicates if a value matches.
         :return: A generator which will yield every matching row_id.
         """
@@ -143,7 +159,7 @@ class Warehouse:
             while position < len(packed_row_id_array):
                 row_id, position = varint.decode(packed_row_id_array, position)
                 row_version, position = varint.decode(packed_row_id_array, position)
-                rows.append((row_id, version))
+                rows.append((row_id, row_version))
 
             # TODO: persist the sorted array so we don't have to do this every time.
 
@@ -158,18 +174,18 @@ class Warehouse:
                     if best_row != None:
                         yield best_row
 
-                best_row = row_id if row_version <= version else None
+                best_row = row_id if self._version_visible(row_version, txn_version) else None
             else:
                 if best_row != None:
                     yield best_row
 
 
-    def count(self, version):
+    def count(self, txn_version):
         """
         Counts the number of rows in the database. This counts each row once, even if there are multiple versions
         of the row in the database.
 
-        :param version: The version to consider when deciding whether an entry exists.
+        :param txn_version: The version to consider when deciding whether an entry exists.
         :returns: The number of rows.
         """
         it = self.warehouse.iterkeys()
@@ -178,7 +194,7 @@ class Warehouse:
         current_row_id = None
         for row_key in list(it):
             row_id, row_version = struct.unpack_from("=QQ", row_key)
-            if row_id != current_row_id and row_version <= version:
+            if row_id != current_row_id and self._version_visible(row_version, txn_version):
                 row_count += 1
                 current_row_id = row_id
 
@@ -220,4 +236,6 @@ class StandardStore:
     def begin(self, write=False):
         self.current_version += 1
         version = self.current_version
+        if write:
+            self.warehouse.uncomitted.add(version)
         return StandardTransaction(self, version, write)

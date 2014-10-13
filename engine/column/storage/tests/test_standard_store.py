@@ -78,8 +78,8 @@ class TestStandardStore(unittest.TestCase):
                     txn3.put(1, b'test2')
 
                 value = txn2.get(1)
-                self.assertEqual(b'test', bytes(value))
-
+                self.assertIsNone(value)
+                
         with self.store.begin(write=False) as txn:
             # Now check in later transaction
             value = txn.get(1)
