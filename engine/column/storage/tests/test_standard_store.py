@@ -5,6 +5,7 @@ import tempfile
 import struct
 
 from engine.column.storage import standard
+from engine.schema.isolation import Level
 
 
 __author__ = 'Christopher Nelson'
@@ -85,9 +86,43 @@ class TestStandardStore(unittest.TestCase):
             value = txn.get(1)
             self.assertEqual(b'test2', bytes(value))
 
-    def test_select_version2(self):
+    def test_select_snapshot(self):
         txn1 = self.store.begin(write=True)
         txn2 = self.store.begin(write=False)
+
+        txn1.put(1, b'test')
+        self.assertEqual(b'test', txn1.get(1))
+        self.assertIsNone(txn2.get(1))
+
+        txn1.commit()
+        self.assertIsNone(txn2.get(1))
+        txn2.commit()
+
+        with self.store.begin(write=False) as txn:
+            # Now check in later transaction
+            value = txn.get(1)
+            self.assertEqual(b'test', bytes(value))
+
+    def test_select_dirty(self):
+        txn1 = self.store.begin(write=True)
+        txn2 = self.store.begin(write=False, isolation_level=Level.read_dirty)
+
+        txn1.put(1, b'test')
+        self.assertEqual(b'test', txn1.get(1))
+        self.assertEqual(b'test', txn2.get(1))
+
+        txn1.commit()
+        self.assertEqual(b'test', txn2.get(1))
+        txn2.commit()
+
+        with self.store.begin(write=False) as txn:
+            # Now check in later transaction
+            value = txn.get(1)
+            self.assertEqual(b'test', bytes(value))
+
+    def test_select_repeatable(self):
+        txn1 = self.store.begin(write=True)
+        txn2 = self.store.begin(write=False, isolation_level=Level.read_committed)
 
         txn1.put(1, b'test')
         self.assertEqual(b'test', txn1.get(1))

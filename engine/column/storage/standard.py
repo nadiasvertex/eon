@@ -1,20 +1,30 @@
+from copy import copy
+
 import os
-import pickle
 import struct
 import rocksdb
-import bisect
-from engine.collection.interval import Interval
+
 from engine.column.storage import varint
+from engine.schema.isolation import Level
 
 __author__ = 'Christopher Nelson'
 
 
 class StandardTransaction:
-    def __init__(self, store, version, writeable):
+    def __init__(self, store, version, writeable, isolation_level=Level.snapshot):
         self.store = store
         self.writeable = writeable
         self.version = version
-        self.tombstone = set()
+        self.warehouse = store.warehouse
+        self.db = store.warehouse.db
+        self.index = store.warehouse.index
+
+        if isolation_level == Level.read_dirty:
+            self.uncommitted = set()
+        elif isolation_level == Level.read_committed:
+            self.uncommitted = store.warehouse.uncommitted
+        else:
+            self.uncommitted = copy(store.warehouse.uncommitted)
 
     def __enter__(self):
         return self
@@ -24,26 +34,32 @@ class StandardTransaction:
             self.abort()
         self.commit()
 
+    def _version_visible(self, row_version):
+        """
+        Determines if a particular row is visible by comparing it's write version with the current transaction's
+        version. It also considers other concurrent transactions which are not committed.
+
+        :param row_version: The last version this column of this row was written in.
+        :return: True if the row version is visible, False otherwise.
+        """
+        txn_version = self.version
+        return row_version == txn_version or (row_version < txn_version and row_version not in self.uncommitted)
+
+
     def commit(self):
         if self.writeable:
-            self.store.warehouse.uncomitted.remove(self.version)
+            self.warehouse.uncommitted.remove(self.version)
 
     def abort(self):
         if self.writeable:
-            self.store.warehouse.garbage.add(self.version)
-
-    def put(self, row_id, value):
-        self.store.warehouse.put(self.version, row_id, value)
-
-    def get(self, row_id):
-        return self.store.warehouse.get(self.version, row_id)
-
-    def count(self):
-        return self.store.warehouse.count(self.version)
+            self.warehouse.garbage.add(self.version)
 
     def unique(self):
-        self.store.warehouse.create_index()
-        wg = self.store.warehouse.values()
+        if self.index is None:
+            self.warehouse.create_index()
+            self.index = self.warehouse.index
+
+        wg = self.values()
 
         while True:
             v = next(wg)
@@ -51,60 +67,15 @@ class StandardTransaction:
                 return
             yield v
 
-    def filter(self, predicate):
-        self.store.warehouse.create_index()
-        return self.store.warehouse.filter(self.version, predicate)
-
-
-class Warehouse:
-    def __init__(self, name, column_path):
-        self.column_path = column_path
-        self.name = name
-        db_options = rocksdb.Options(create_if_missing=True)
-        self.warehouse = rocksdb.DB(os.path.join(self.column_path, name),
-                                    db_options)
-
-        self.index = None
-        self.uncomitted = set()
-        self.garbage = set()
-
-    def _version_visible(self, row_version, txn_version):
-        """
-        Determines if a particular row is visible by comparing it's write version with the current transaction's
-        version. It also considers other concurrent transactions which are not committed.
-
-        :param row_version: The last version this column of this row was written in.
-        :param txn_version: The version of the transaction performing the operation.
-        :return: True if the row version is visible, False otherwise.
-        """
-        return row_version == txn_version or (row_version < txn_version and row_version not in self.uncomitted)
-
-    def _update_index(self, version, row_id, value):
-        """
-        Update the index by finding the value in the database, and then appending this row id and version onto a list
-        of versioned rows. This indicates rows where this value shows up. The row and version data is compressed using
-        the varint encoding scheme.
-
-        :param row_id: A row where this value shows up.
-        :param value: The version of the row where this value shows up.
-        """
-        row_packed_data = self.index.get(value)
-        row_array = \
-            bytearray() if row_packed_data is None else \
-                bytearray(row_packed_data)
-        varint.encode(row_array.append, row_id)
-        varint.encode(row_array.append, version)
-        self.index.put(value, bytes(row_array))
-
-    def put(self, version, row_id, value):
-        self.warehouse.put(struct.pack("=QQ", row_id, version), value)
+    def put(self, row_id, value):
+        self.db.put(struct.pack("=QQ", row_id, self.version), value)
         if self.index is None:
             return
-        self._update_index(version, row_id, value)
+        self.store.update_index(self.version, row_id, value)
 
-    def get(self, txn_version, row_id):
+    def get(self, row_id):
         row_key = struct.pack("=QQ", row_id, 0)
-        it = self.warehouse.iteritems()
+        it = self.db.iteritems()
 
         # Position the iterator near the item we want. We may be right there ut probably we will need to
         # iterate through the list to find the right version.
@@ -118,25 +89,28 @@ class Warehouse:
             if item_row_id != row_id:
                 return None
 
-            if item_version > txn_version:
+            if item_version > self.version:
                 return last_value
 
-            if self._version_visible(item_version, txn_version):
+            if self._version_visible(item_version):
                 last_value = v
         else:
             return last_value
 
     def values(self):
         """
-        Provides a generator that iterates over the unique values in the database. This requires that 'create_index'
-        has already been called.
+        Provides a generator that iterates over the unique values in the database.
         """
+        if self.index is None:
+            self.warehouse.create_index()
+            self.index = self.warehouse.index
+
         it = self.index.iterkeys()
         it.seek_to_first()
         for value in list(it):
             yield value
 
-    def filter(self, txn_version, predicate):
+    def filter(self, predicate):
         """
         Iterate over the unique values in the column and return the row_id of every row with the matching value.
         Requires that :func:create_index has already been called.
@@ -145,6 +119,10 @@ class Warehouse:
         :param predicate: The function which indicates if a value matches.
         :return: A generator which will yield every matching row_id.
         """
+        if self.index is None:
+            self.warehouse.create_index()
+            self.index = self.warehouse.index
+
         it = self.index.iterkeys()
         it.seek_to_first()
         for value in list(it):
@@ -174,31 +152,62 @@ class Warehouse:
                     if best_row != None:
                         yield best_row
 
-                best_row = row_id if self._version_visible(row_version, txn_version) else None
+                best_row = row_id if self._version_visible(row_version) else None
             else:
                 if best_row != None:
                     yield best_row
 
 
-    def count(self, txn_version):
+    def count(self):
         """
         Counts the number of rows in the database. This counts each row once, even if there are multiple versions
         of the row in the database.
 
-        :param txn_version: The version to consider when deciding whether an entry exists.
         :returns: The number of rows.
         """
-        it = self.warehouse.iterkeys()
+        it = self.db.iterkeys()
         it.seek_to_first()
         row_count = 0
         current_row_id = None
         for row_key in list(it):
             row_id, row_version = struct.unpack_from("=QQ", row_key)
-            if row_id != current_row_id and self._version_visible(row_version, txn_version):
+            if row_id != current_row_id and self._version_visible(row_version):
                 row_count += 1
                 current_row_id = row_id
 
         return row_count
+
+
+
+class Warehouse:
+    def __init__(self, name, column_path):
+        self.column_path = column_path
+        self.name = name
+        db_options = rocksdb.Options(create_if_missing=True)
+        self.db = rocksdb.DB(os.path.join(self.column_path, name),
+                                    db_options)
+
+        self.index = None
+        self.uncommitted = set()
+        self.garbage = set()
+
+    def update_index(self, version, row_id, value):
+        """
+        Update the index by finding the value in the database, and then appending this row id and version onto a list
+        of versioned rows. This indicates rows where this value shows up. The row and version data is compressed using
+        the varint encoding scheme.
+
+        :param version: The version of the row where this value appears.
+        :param row_id: A row where this value shows up.
+        :param value: The version of the row where this value shows up.
+        """
+        row_packed_data = self.index.get(value)
+        row_array = \
+            bytearray() if row_packed_data is None else \
+                bytearray(row_packed_data)
+        varint.encode(row_array.append, row_id)
+        varint.encode(row_array.append, version)
+        self.index.put(value, bytes(row_array))
 
     def create_index(self):
         """
@@ -213,7 +222,7 @@ class Warehouse:
         self.index = rocksdb.DB(os.path.join(self.column_path, self.name + "-index"),
                                 db_options)
 
-        it = self.warehouse.iteritems()
+        it = self.db.iteritems()
         it.seek_to_first()
 
         # Go through the warehouse and insert each value as a key in the index. Map the keys to the rows they
@@ -221,7 +230,7 @@ class Warehouse:
         # once in the data.
         for row_key, value in list(it):
             row_id, version = struct.unpack_from("=QQ", row_key)
-            self._update_index(version, row_id, value)
+            self.update_index(version, row_id, value)
 
 
 class StandardStore:
@@ -233,9 +242,9 @@ class StandardStore:
         self.current_version = 0
         self.warehouse = Warehouse("warehouse", self.column_path)
 
-    def begin(self, write=False):
+    def begin(self, write=False, isolation_level=Level.snapshot):
         self.current_version += 1
         version = self.current_version
         if write:
-            self.warehouse.uncomitted.add(version)
-        return StandardTransaction(self, version, write)
+            self.warehouse.uncommitted.add(version)
+        return StandardTransaction(self, version, write, isolation_level)
