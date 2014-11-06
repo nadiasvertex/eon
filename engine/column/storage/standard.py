@@ -1,7 +1,7 @@
 from copy import copy
-
 import os
 import struct
+
 import rocksdb
 
 from engine.column.storage import varint
@@ -53,6 +53,22 @@ class StandardTransaction:
     def abort(self):
         if self.writeable:
             self.warehouse.garbage.add(self.version)
+
+    def unique(self):
+	"""
+        Provides a generator that iterates over the unique values in the database.
+        """
+        if self.index is None:
+            self.warehouse.create_index()
+            self.index = self.warehouse.index
+
+        wg = self.values()
+
+        while True:
+            v = next(wg)
+            if v is None:
+                return
+            yield v
 
     def put(self, row_id, value):
         """
@@ -109,25 +125,12 @@ class StandardTransaction:
         for value in list(it):
             yield value
 
-    def unique(self):
-        """
-        Provides a generator that iterates over the unique values in the database.
-        """
-
-        wg = self.values()
-
-        while True:
-            v = next(wg)
-            if v is None:
-                return
-            yield v
-
-
-    def filter(self, predicate):
+   def filter(self, predicate):
         """
         Iterate over the unique values in the column and return the row_id of every row with the matching value.
         Requires that :func:create_index has already been called.
 
+        :param txn_version: The version of the row to use.
         :param predicate: The function which indicates if a value matches.
         :return: A generator which will yield every matching row_id.
         """
@@ -189,6 +192,21 @@ class StandardTransaction:
 
         return row_count
 
+
+class Garbage:
+    def __init__(self, column_path):
+        self.column_path = column_path
+        self.db = None
+        self.garbage = {}
+
+    def _switch_to_disk(self):
+        db_options = rocksdb.Options(create_if_missing=True)
+        self.db = rocksdb.DB(os.path.join(self.column_path, "garbage"),
+                             db_options)
+
+    def delete(self, version, row_id):
+        rows = self.garbage.setdefault(version, [])
+        rows.append(row_id)
 
 class Warehouse:
     def __init__(self, name, column_path):
