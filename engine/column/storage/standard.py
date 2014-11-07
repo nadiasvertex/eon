@@ -7,6 +7,7 @@ import rocksdb
 from engine.column.storage import varint
 from engine.schema.isolation import Level
 
+
 __author__ = 'Christopher Nelson'
 
 
@@ -55,9 +56,9 @@ class StandardTransaction:
             self.warehouse.garbage.add(self.version)
 
     def unique(self):
-	"""
-        Provides a generator that iterates over the unique values in the database.
         """
+            Provides a generator that iterates over the unique values in the database.
+            """
         if self.index is None:
             self.warehouse.create_index()
             self.index = self.warehouse.index
@@ -125,7 +126,7 @@ class StandardTransaction:
         for value in list(it):
             yield value
 
-   def filter(self, predicate):
+    def filter(self, predicate):
         """
         Iterate over the unique values in the column and return the row_id of every row with the matching value.
         Requires that :func:create_index has already been called.
@@ -207,6 +208,7 @@ class Garbage:
     def delete(self, version, row_id):
         rows = self.garbage.setdefault(version, [])
         rows.append(row_id)
+
 
 class Warehouse:
     def __init__(self, name, column_path):
