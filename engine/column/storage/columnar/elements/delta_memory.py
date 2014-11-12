@@ -1,8 +1,8 @@
 import bisect
+import sys
 
-from array import array
 from engine.column.storage.columnar.memory import ResultType
-
+from engine.column.storage import varint
 
 __author__ = 'Christopher Nelson'
 
@@ -10,12 +10,38 @@ __author__ = 'Christopher Nelson'
 class Element:
     def __init__(self, membase):
         self.membase = membase
-        self.values = array(membase.typecode)
-        self.rowids = array('Q')
+        self.values = bytearray()
+        self.rowids = []
         self.value_query_count = 0
+        self.last_value = 0
+
+    def _enumerate_values(self):
+        """
+        Provides a generator which will enumerate all of the values in the store.
+        :return: Each yield provides the index of the item in the system and the value.
+        """
+        pos = 0
+        last_value = 0
+        for i in range(0, len(self.rowids)):
+            value, pos = varint.decode_signed(self.values, pos)
+            value += last_value
+            last_value = value
+
+            yield (i, value)
+
+    def _rowid_at_index(self, index):
+        """
+        This very slow function returns the rowid that correspond to some index.
+
+        :param index: The index to find.
+        :return: The corresponding index.
+        """
+        for rowid, rid in self.rowids:
+            if rid == index:
+                return rowid
 
     def storage_size(self):
-        return (len(self.rowids) * self.rowids.itemsize) + (len(self.values) * self.values.itemsize)
+        return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
 
     def put(self, rowid, value):
         """
@@ -23,15 +49,19 @@ class Element:
         :param rowid: The row id where the value should go.
         :param value: The value to store.
         """
-        if len(self.rowids) == 0:
-            self.rowids.append(rowid)
-            self.values.append(value)
+        index = len(self.rowids)
+        varint.encode_signed(self.values.append, value - self.last_value)
+        self.last_value = value
+
+        row_index = bisect.bisect_right(self.rowids, (rowid, 0))
+        if len(self.rowids) == 0 or row_index >= len(self.rowids):
+            self.rowids.append((rowid, index))
             return
 
-        row_index = bisect.bisect_right(self.rowids, rowid)
-
-        self.rowids.insert(row_index, rowid)
-        self.values.insert(row_index, value)
+        if self.rowids[row_index][0] == rowid:
+            self.rowids[row_index] = (rowid, index)
+        else:
+            self.rowids.insert(row_index, (rowid, index))
 
     def get(self, rowid):
         """
@@ -40,12 +70,15 @@ class Element:
         :param rowid: The row to get the value from.
         :return: The value, or None if there is no value stored there.
         """
-        row_index = bisect.bisect_left(self.rowids, rowid)
+        row_index = bisect.bisect_left(self.rowids, (rowid, 0))
         if row_index >= len(self.rowids):
             return None
 
-        if self.rowids[row_index] == rowid:
-            return self.values[row_index]
+        rid, index = self.rowids[row_index]
+        if rid == rowid:
+            for i, value in self._enumerate_values():
+                if i == index:
+                    return value
 
         return None
 
@@ -67,7 +100,11 @@ class Element:
         self.value_query_count += 1
         # TODO: When this value exceeds some threshold:
         # move to a representation that can more efficiently answer these kinds of queries.
-        return value in self.values
+        for index, value in self._enumerate_values():
+            if value == value:
+                return True
+        else:
+            return False
 
     def where(self, predicate, want=ResultType.ROW_ID):
         """
@@ -78,12 +115,12 @@ class Element:
         :param want: Determines if you want row ids or column ids.
         :return: A generator that provides the values for which predicate returns True.
         """
-        for i, v in enumerate(self.values):
-            if not predicate(v):
+        for i, value in self._enumerate_values():
+            if not predicate(value):
                 continue
 
-            yield self.rowids[i] if want == ResultType.ROW_ID \
-                else v
+            yield self._rowid_at_index(i) if want == ResultType.ROW_ID \
+                else value
 
     def range(self, low, high, want=ResultType.ROW_ID):
         """
@@ -106,7 +143,7 @@ class Element:
         # is O(1), and the sort runs in place. Whereas creating a sorted list
         # incurs an O(n) for every insert. Plus you have to start the search
         # from the beginning on every insert.)
-        values = [(v, i) for i, v in enumerate(self.values)]
+        values = [(v, i) for i, v in self._enumerate_values()]
         values.sort()
 
         value_index = bisect.bisect_left(values, (low, 0))
@@ -118,5 +155,5 @@ class Element:
             if value > high:
                 return
 
-            yield self.rowids[index] if want == ResultType.ROW_ID \
+            yield self._rowid_at_index(index) if want == ResultType.ROW_ID \
                 else value
