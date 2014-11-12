@@ -1,5 +1,4 @@
 import bisect
-from array import array
 from engine.schema.datatype import DataType
 
 __author__ = 'Christopher Nelson'
