@@ -4,6 +4,7 @@ import unittest
 from engine.column.storage.columnar import memory
 from engine.column.storage.columnar.elements import compact_memory
 from engine.column.storage.columnar.memory import ResultType
+from engine.schema.datatype import DataType
 
 
 __author__ = 'Christopher Nelson'
@@ -12,7 +13,7 @@ __author__ = 'Christopher Nelson'
 class TestElement(unittest.TestCase):
     def setUp(self):
         self.table_path = tempfile.mkdtemp()
-        self.mb = memory.Membase("i")
+        self.mb = memory.Membase(DataType.i32)
 
     def test_put(self):
         e = compact_memory.Element(self.mb)

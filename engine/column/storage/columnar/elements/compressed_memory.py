@@ -1,30 +1,85 @@
 import bisect
+import sys
 
-from array import array
 from engine.column.storage.columnar.memory import ResultType
+from engine.column.storage import varint
 
 
 __author__ = 'Christopher Nelson'
 
 
 class Element:
-    def __init__(self, membase):
+    def __init__(self, membase, existing_element, compressor_factory, decompressor_factory):
         self.membase = membase
-        self.values = array(membase.typecode)
-        self.rowids = array('Q')
-        self.value_query_count = 0
+        self.values = bytearray()
+        self.rowids = []
+        self.offsets = []
+        self.df = decompressor_factory
+        self.cf = compressor_factory
 
-    def __iter__(self):
-        """
-        Provides a way to access all of the items in the element.
+        self._store_int(existing_element)
 
-        :return: A generator over all of the items in the element. Yields a tuple of (rowid, value)
+    def _store_int(self, existing_element):
         """
-        for i, v in enumerate(self.values):
-            yield self.rowids[i], v
+        Stores integers in a very compact format, from which they can easily be recovered.
+
+        :param existing_element: The existing element to fetch the data from.
+        """
+        self._get_rowids(existing_element)
+
+        compacted_values = bytearray()
+
+        # Second pass, store the values in row order.
+        for rowid in self.rowids:
+            self.offsets.append(len(compacted_values))
+            varint.encode_signed(compacted_values.append, d[rowid])
+
+        c = self.cf()
+
+        # Third pass, compress the whole thing.
+        self.values.append(c.compress(compacted_values))
+        self.values.append(c.flush())
+
+    def _get_rowids(self, existing_element):
+        d = {}
+        # First pass, create a sorted array for the rowids.
+        for rowid, value in iter(existing_element):
+            d[rowid] = value
+            self.rowids.append(rowid)
+        self.rowids.sort()
+
+    def _store_fixed(self, existing_element):
+        """
+        Stores fixed-sized data in an efficient format.
+
+        :param existing_element: The existing element to fetch the data from.
+        """
+        self._get_rowids(existing_element)
+
+        c = self.cf()
+
+        # Second pass, store the values in row order.
+        for rowid in self.rowids:
+            pass
+
+
+
+
+    def _enumerate_values(self):
+        """
+        Provides a generator which will enumerate all of the values in the store.
+        :return: Each yield provides the index of the item in the system and the value.
+        """
+        last_value = 0
+        for i in range(0, len(self.rowids)):
+            value, pos = varint.decode_signed(self.values, pos)
+            value += last_value
+            last_value = value
+
+            yield (i, value)
 
     def storage_size(self):
-        return (len(self.rowids) * self.rowids.itemsize) + (len(self.values) * self.values.itemsize)
+        return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
 
     def put(self, rowid, value):
         """
@@ -32,15 +87,7 @@ class Element:
         :param rowid: The row id where the value should go.
         :param value: The value to store.
         """
-        if len(self.rowids) == 0:
-            self.rowids.append(rowid)
-            self.values.append(value)
-            return
-
-        row_index = bisect.bisect_right(self.rowids, rowid)
-
-        self.rowids.insert(row_index, rowid)
-        self.values.insert(row_index, value)
+        raise RuntimeError("A compressed element is not updateable. Elements can be deleted, but never changed.")
 
     def get(self, rowid):
         """
@@ -49,12 +96,15 @@ class Element:
         :param rowid: The row to get the value from.
         :return: The value, or None if there is no value stored there.
         """
-        row_index = bisect.bisect_left(self.rowids, rowid)
+        row_index = bisect.bisect_left(self.rowids, (rowid, 0))
         if row_index >= len(self.rowids):
             return None
 
-        if self.rowids[row_index] == rowid:
-            return self.values[row_index]
+        rid, index = self.rowids[row_index]
+        if rid == rowid:
+            for i, value in self._enumerate_values():
+                if i == index:
+                    return value
 
         return None
 
@@ -76,7 +126,11 @@ class Element:
         self.value_query_count += 1
         # TODO: When this value exceeds some threshold:
         # move to a representation that can more efficiently answer these kinds of queries.
-        return value in self.values
+        for index, value in self._enumerate_values():
+            if value == value:
+                return True
+        else:
+            return False
 
     def where(self, predicate, want=ResultType.ROW_ID):
         """
@@ -87,12 +141,12 @@ class Element:
         :param want: Determines if you want row ids or column ids.
         :return: A generator that provides the values for which predicate returns True.
         """
-        for i, v in enumerate(self.values):
-            if not predicate(v):
+        for i, value in self._enumerate_values():
+            if not predicate(value):
                 continue
 
-            yield self.rowids[i] if want == ResultType.ROW_ID \
-                else v
+            yield self._rowid_at_index(i) if want == ResultType.ROW_ID \
+                else value
 
     def range(self, low, high, want=ResultType.ROW_ID):
         """
@@ -115,7 +169,7 @@ class Element:
         # is O(1), and the sort runs in place. Whereas creating a sorted list
         # incurs an O(n) for every insert. Plus you have to start the search
         # from the beginning on every insert.)
-        values = [(v, i) for i, v in enumerate(self.values)]
+        values = [(v, i) for i, v in self._enumerate_values()]
         values.sort()
 
         value_index = bisect.bisect_left(values, (low, 0))
@@ -127,5 +181,5 @@ class Element:
             if value > high:
                 return
 
-            yield self.rowids[index] if want == ResultType.ROW_ID \
+            yield self._rowid_at_index(index) if want == ResultType.ROW_ID \
                 else value

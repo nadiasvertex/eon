@@ -4,6 +4,7 @@ import sys
 from engine.column.storage.columnar.memory import ResultType
 from engine.column.storage import varint
 
+
 __author__ = 'Christopher Nelson'
 
 
@@ -14,6 +15,15 @@ class Element:
         self.rowids = []
         self.value_query_count = 0
         self.last_value = 0
+
+    def __iter__(self):
+        """
+        Provides a way to access all of the items in the element.
+
+        :return: A generator over all of the items in the element. Yields a tuple of (rowid, value)
+        """
+        for i, v in self._enumerate_values():
+            yield self._rowid_at_index(i), v
 
     def _enumerate_values(self):
         """
