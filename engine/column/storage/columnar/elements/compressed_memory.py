@@ -3,6 +3,7 @@ import sys
 
 from engine.column.storage.columnar.memory import ResultType
 from engine.column.storage import varint
+from engine.schema.datatype import DataType
 
 
 __author__ = 'Christopher Nelson'
@@ -17,7 +18,21 @@ class Element:
         self.df = decompressor_factory
         self.cf = compressor_factory
 
-        self._store_int(existing_element)
+        if membase.data_type in (DataType.i8, DataType.i16, DataType.i32, DataType.i64):
+            self._store_int(existing_element)
+        elif membase.data_type in (DataType.f32, DataType.i64):
+            self._store_fixed(existing_element)
+        else:
+            self._store_variable(existing_element)
+
+    def _get_rowids(self, existing_element):
+        d = {}
+        # First pass, create a sorted array for the rowids.
+        for rowid, value in iter(existing_element):
+            d[rowid] = value
+            self.rowids.append(rowid)
+        self.rowids.sort()
+        return d
 
     def _store_int(self, existing_element):
         """
@@ -25,7 +40,7 @@ class Element:
 
         :param existing_element: The existing element to fetch the data from.
         """
-        self._get_rowids(existing_element)
+        d = self._get_rowids(existing_element)
 
         compacted_values = bytearray()
 
@@ -40,13 +55,6 @@ class Element:
         self.values.append(c.compress(compacted_values))
         self.values.append(c.flush())
 
-    def _get_rowids(self, existing_element):
-        d = {}
-        # First pass, create a sorted array for the rowids.
-        for rowid, value in iter(existing_element):
-            d[rowid] = value
-            self.rowids.append(rowid)
-        self.rowids.sort()
 
     def _store_fixed(self, existing_element):
         """
@@ -54,20 +62,47 @@ class Element:
 
         :param existing_element: The existing element to fetch the data from.
         """
-        self._get_rowids(existing_element)
-
+        d = self._get_rowids(existing_element)
         c = self.cf()
 
         # Second pass, store the values in row order.
         for rowid in self.rowids:
-            pass
+            self.values.append(
+                c.compress(bytes(d[rowid]))
+            )
+        self.values.append(
+            c.flush()
+        )
 
-
-
-
-    def _enumerate_values(self):
+    def _store_variable(self, existing_element):
         """
-        Provides a generator which will enumerate all of the values in the store.
+        Stores variable length data as efficiently as possible: each element is
+        prefixed with a varint encoded length.
+
+        :param existing_element: The existing element to fetch the data from.
+        """
+        d = self._get_rowids(existing_element)
+
+        compacted_values = bytearray()
+
+        # Second pass, store the values in row order.
+        for rowid in self.rowids:
+            v = bytes(d[rowid])
+            self.offsets.append(len(compacted_values))
+            varint.encode(compacted_values.append, len(v))
+            compacted_values.append(v)
+
+        c = self.cf()
+
+        # Third pass, compress the whole thing.
+        self.values.append(c.compress(compacted_values))
+        self.values.append(c.flush())
+
+    def _enumerate_int(self):
+        """
+        Provides a generator which will enumerate all of the values in the store. This
+        function expects that they are an integer of some kind.
+
         :return: Each yield provides the index of the item in the system and the value.
         """
         last_value = 0
