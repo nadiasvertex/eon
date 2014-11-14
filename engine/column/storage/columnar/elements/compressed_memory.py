@@ -1,5 +1,4 @@
 from array import array
-
 import bisect
 import struct
 import sys
@@ -38,6 +37,10 @@ class Element:
         else:
             self._store_variable(existing_element)
             self.enumerator = self._enumerate_variable
+
+        # Freeze the data. This is safer and possibly smaller and faster.
+        self.values = bytes(self.values)
+
 
     def _get_rowids(self, existing_element):
         d = {}

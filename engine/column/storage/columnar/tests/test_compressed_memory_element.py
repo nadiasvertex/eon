@@ -69,4 +69,4 @@ class TestElement(unittest.TestCase):
             eb.put(i, int(i*3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
-        self.assertEqual(1042072, e.storage_size())
+        self.assertEqual(1014272, e.storage_size())
