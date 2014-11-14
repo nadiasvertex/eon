@@ -87,10 +87,34 @@ def _signed_varint_decoder(mask):
 
     return decode_varint
 
+def _signed_varint_stream_decoder(mask):
+    """Like _varint_decoder() but decodes signed values from a stream."""
+
+    def decode_varint(reader):
+        result = 0
+        shift = 0
+        bytes_read = 0
+        while 1:
+            b = reader.read(1)[0]
+            result |= ((b & 0x7f) << shift)
+            bytes_read += 1
+            if not (b & 0x80):
+                if result > 0x7fffffffffffffff:
+                    result -= (1 << 64)
+                    result |= ~mask
+                else:
+                    result &= mask
+                return (result, bytes_read)
+            shift += 7
+            if shift >= 64:
+                raise RuntimeError('Too many bytes when decoding varint.')
+
+    return decode_varint
+
 
 decode = _varint_decoder((1 << 64) - 1)
 decode_signed = _signed_varint_decoder((1 << 64) - 1)
-
+decode_signed_stream = _signed_varint_stream_decoder((1 << 64) - 1)
 
 # Use these versions for values which must be limited to 32 bits.
 decode_int32 = _varint_decoder((1 << 32) - 1)

@@ -30,5 +30,16 @@ class Reader:
         return data
 
 
+class Writer:
+    def __init__(self, compressor):
+        self.data = bytearray()
+        self.compressor = compressor
+
+    def write(self, data):
+        self.data += self.compressor.compress(data)
+
+    def get_bytes(self):
+        self.data += self.compressor.flush()
+        return memoryview(self.data)
 
 
