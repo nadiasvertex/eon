@@ -1,6 +1,7 @@
 import bisect
 
 from array import array
+import sys
 from engine.column.storage.columnar.memory import ResultType
 
 
@@ -24,7 +25,7 @@ class Element:
             yield self.rowids[i], v
 
     def storage_size(self):
-        return (len(self.rowids) * self.rowids.itemsize) + (len(self.values) * self.values.itemsize)
+        return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
 
     def put(self, rowid, value):
         """

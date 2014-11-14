@@ -70,7 +70,7 @@ class TestElement(unittest.TestCase):
 
     def test_get_storage_size(self):
         e = compact_memory.Element(self.mb)
-        for i in range(1000, 10000):
+        for i in range(1000, 100000):
             e.put(i, int(i*3))
 
-        self.assertEqual(9000*12, e.storage_size())
+        self.assertEqual(1224968, e.storage_size())
