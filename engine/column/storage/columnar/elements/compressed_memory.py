@@ -1,3 +1,5 @@
+from array import array
+
 import bisect
 import struct
 import sys
@@ -20,7 +22,7 @@ class Element:
     def __init__(self, membase, existing_element, compressor_factory, decompressor_factory):
         self.membase = membase
         self.values = bytearray()
-        self.rowids = []
+        self.rowids = None
         self.value_query_count = 0
         self.fixed_fmt = None
         self.fixed_size = None
@@ -42,8 +44,7 @@ class Element:
         # First pass, create a sorted array for the rowids.
         for rowid, value in iter(existing_element):
             d[rowid] = value
-            self.rowids.append(rowid)
-        self.rowids.sort()
+        self.rowids = array("Q", sorted(d.keys()))
         return d
 
     def _store_int(self, existing_element):
