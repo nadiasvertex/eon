@@ -41,6 +41,15 @@ class Element:
         # Freeze the data. This is safer, smaller, and possibly  faster.
         self.values = bytes(self.values)
 
+    def __iter__(self):
+        """
+        Provides a way to access all of the items in the element.
+
+        :return: A generator over all of the items in the element. Yields a tuple of (rowid, value)
+        """
+        for i, v in self.enumerator():
+            yield self.rowids[i], v
+
     def _get_rowids(self, existing_element):
         d = {}
         # First pass, create a sorted array for the rowids.

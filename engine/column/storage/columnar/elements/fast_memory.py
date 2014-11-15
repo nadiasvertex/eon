@@ -15,6 +15,9 @@ class Element:
         self.value_query_count = 0
         self.index_threshold = 5000
 
+    def __iter__(self):
+        return self.db.items()
+
     def _create_value_index(self):
         self.values = [(v, r) for r, v in self.db.items()]
         self.values.sort()
