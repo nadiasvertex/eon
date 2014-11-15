@@ -1,9 +1,25 @@
+import bisect
+import sys
+
+from engine.column.storage.columnar.memory import ResultType
+
+
 __author__ = 'Christopher Nelson'
+
 
 class Element:
     def __init__(self, membase):
         self.membase = membase
         self.db = {}
+        self.values = None
+        self.value_query_count = 0
+
+    def _create_value_index(self):
+        self.values = [(v, r) for r, v in self.db.items()]
+        self.values.sort()
+
+    def storage_size(self):
+        return sys.getsizeof(self.db) + sys.getsizeof(self.values)
 
     def put(self, rowid, value):
         """
@@ -12,6 +28,8 @@ class Element:
         :param value: The value to store.
         """
         self.db[rowid] = value
+        if self.values is not None:
+            bisect.insort(self.values, (value, rowid))
 
     def get(self, rowid):
         """
@@ -26,7 +44,12 @@ class Element:
         return len(self.db)
 
     def contains(self, value):
-        return value in self.db.values()
+        self.value_query_count += 1
+        if self.values is None:
+            return value in self.db.values()
+
+        value_index = bisect.bisect_left(self.values, value)
+        return self.values[value_index] == value
 
     def where(self, predicate, want=ResultType.ROW_ID):
         for k, v in self.db.items():
@@ -37,15 +60,18 @@ class Element:
                 else v
 
     def range(self, low, high, want=ResultType.ROW_ID):
+        self.value_query_count += 10
+        values = self.values if self.values is not None \
+            else sorted([(v, r) for r, v in self.db.items()])
 
-        value_index = bisect.bisect_left(self.values, low)
-        for i, value in enumerate(iter(self.values[value_index:]), value_index):
+        value_index = bisect.bisect_left(values, (low, 0))
+        for i, item in enumerate(iter(values[value_index:]), value_index):
+            value, rid = item
             if value < low:
                 continue
 
             if value > high:
                 return
 
-            yield self.rowids[self.value_to_row[i]] if want == ResultType.ROW_ID \
+            yield rid if want == ResultType.ROW_ID \
                 else value
-

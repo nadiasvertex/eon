@@ -38,9 +38,8 @@ class Element:
             self._store_variable(existing_element)
             self.enumerator = self._enumerate_variable
 
-        # Freeze the data. This is safer and possibly smaller and faster.
+        # Freeze the data. This is safer, smaller, and possibly  faster.
         self.values = bytes(self.values)
-
 
     def _get_rowids(self, existing_element):
         d = {}
@@ -154,14 +153,6 @@ class Element:
 
     def storage_size(self):
         return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
-
-    def put(self, rowid, value):
-        """
-        Puts a new value into the element at the given row.
-        :param rowid: The row id where the value should go.
-        :param value: The value to store.
-        """
-        raise RuntimeError("A compressed element is not updateable. Elements can be deleted, but never changed.")
 
     def get(self, rowid):
         """
