@@ -13,6 +13,7 @@ class Element:
         self.db = {}
         self.values = None
         self.value_query_count = 0
+        self.index_threshold = 5000
 
     def _create_value_index(self):
         self.values = [(v, r) for r, v in self.db.items()]
@@ -45,11 +46,14 @@ class Element:
 
     def contains(self, value):
         self.value_query_count += 1
+        if self.value_query_count >= self.index_threshold and self.values is None:
+            self._create_value_index()
+
         if self.values is None:
             return value in self.db.values()
 
-        value_index = bisect.bisect_left(self.values, value)
-        return self.values[value_index] == value
+        value_index = bisect.bisect_left(self.values, (value, 0))
+        return self.values[value_index][0] == value
 
     def where(self, predicate, want=ResultType.ROW_ID):
         for k, v in self.db.items():
@@ -61,6 +65,9 @@ class Element:
 
     def range(self, low, high, want=ResultType.ROW_ID):
         self.value_query_count += 10
+        if self.value_query_count >= self.index_threshold and self.values is None:
+            self._create_value_index()
+
         values = self.values if self.values is not None \
             else sorted([(v, r) for r, v in self.db.items()])
 
