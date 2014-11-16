@@ -26,34 +26,34 @@ class TestElement(unittest.TestCase):
     def test_get_some(self):
         eb = compact_memory.Element(self.mb)
         for i in range(1010, 1000, -1):
-            eb.put(i, int(i*3))
+            eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
         for i in range(1010, 1000, -1):
-            self.assertEqual(e.get(i), int(i*3))
+            self.assertEqual(e.get(i), int(i * 3))
 
     def test_get_many(self):
         eb = compact_memory.Element(self.mb)
         for i in range(1000, 10000):
-            eb.put(i, int(i*3))
+            eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
         for i in range(1000, 10000):
-            self.assertEqual(e.get(i), int(i*3))
+            self.assertEqual(e.get(i), int(i * 3))
 
     def test_contains(self):
         eb = compact_memory.Element(self.mb)
         for i in range(1000, 10000):
-            eb.put(i, int(i*3))
+            eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
         for i in range(1000, 10000):
-            self.assertTrue(e.contains(int(i*3)))
+            self.assertTrue(e.contains(int(i * 3)))
 
     def test_range(self):
         eb = compact_memory.Element(self.mb)
         for i in range(1000, 10000):
-            eb.put(i, int(i*3))
+            eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
         last_i = 0
@@ -66,7 +66,7 @@ class TestElement(unittest.TestCase):
     def test_get_storage_size(self):
         eb = compact_memory.Element(self.mb)
         for i in range(1000, 100000):
-            eb.put(i, int(i*3))
+            eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
         self.assertEqual(1014272, e.storage_size())
