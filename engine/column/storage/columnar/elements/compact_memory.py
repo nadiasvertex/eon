@@ -1,7 +1,7 @@
 import bisect
-
 from array import array
 import sys
+
 from engine.column.storage.columnar.memory import ResultType
 
 
@@ -12,7 +12,7 @@ class Element:
     def __init__(self, membase):
         self.membase = membase
         self.values = array(membase.typecode)
-        self.rowids = array('Q')
+        self.base_rowid = None
         self.value_query_count = 0
 
     def __iter__(self):
@@ -22,10 +22,10 @@ class Element:
         :return: A generator over all of the items in the element. Yields a tuple of (rowid, value)
         """
         for i, v in enumerate(self.values):
-            yield self.rowids[i], v
+            yield self.base_rowid + i, v
 
     def storage_size(self):
-        return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
+        return sys.getsizeof(self.values)
 
     def put(self, rowid, value):
         """
@@ -33,15 +33,12 @@ class Element:
         :param rowid: The row id where the value should go.
         :param value: The value to store.
         """
-        if len(self.rowids) == 0:
-            self.rowids.append(rowid)
-            self.values.append(value)
-            return
+        if self.base_rowid is None:
+            self.base_rowid = rowid
+        elif rowid < self.base_rowid:
+            raise ValueError("Row ids must be monotonically increasing.")
 
-        row_index = bisect.bisect_right(self.rowids, rowid)
-
-        self.rowids.insert(row_index, rowid)
-        self.values.insert(row_index, value)
+        self.values.append(value)
 
     def get(self, rowid):
         """
@@ -50,14 +47,11 @@ class Element:
         :param rowid: The row to get the value from.
         :return: The value, or None if there is no value stored there.
         """
-        row_index = bisect.bisect_left(self.rowids, rowid)
-        if row_index >= len(self.rowids):
+        row_index = rowid - self.base_rowid
+        if row_index < 0 or row_index >= len(self.values):
             return None
 
-        if self.rowids[row_index] == rowid:
-            return self.values[row_index]
-
-        return None
+        return self.values[row_index]
 
     def count(self):
         """
@@ -65,7 +59,7 @@ class Element:
 
         :return: The number of rows as an integer.
         """
-        return len(self.rowids)
+        return len(self.values)
 
     def contains(self, value):
         """
@@ -88,12 +82,12 @@ class Element:
         :param want: Determines if you want row ids or column ids.
         :return: A generator that provides the values for which predicate returns True.
         """
-        for i, v in enumerate(self.values):
-            if not predicate(v):
+        for index, value in enumerate(self.values):
+            if not predicate(value):
                 continue
 
-            yield self.rowids[i] if want == ResultType.ROW_ID \
-                else v
+            yield self.base_rowid + index if want == ResultType.ROW_ID \
+                else value
 
     def range(self, low, high, want=ResultType.ROW_ID):
         """
@@ -128,5 +122,5 @@ class Element:
             if value > high:
                 return
 
-            yield self.rowids[index] if want == ResultType.ROW_ID \
+            yield self.base_rowid + index if want == ResultType.ROW_ID \
                 else value

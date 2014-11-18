@@ -12,7 +12,8 @@ class Element:
     def __init__(self, membase):
         self.membase = membase
         self.values = bytearray()
-        self.rowids = []
+        self.base_rowid = None
+        self.row_count = 0
         self.value_query_count = 0
         self.last_value = 0
 
@@ -23,7 +24,7 @@ class Element:
         :return: A generator over all of the items in the element. Yields a tuple of (rowid, value)
         """
         for i, v in self._enumerate_values():
-            yield self._rowid_at_index(i), v
+            yield self.base_rowid + i, v
 
     def _enumerate_values(self):
         """
@@ -32,26 +33,15 @@ class Element:
         """
         pos = 0
         last_value = 0
-        for i in range(0, len(self.rowids)):
+        for i in range(0, self.row_count):
             value, pos = varint.decode_signed(self.values, pos)
             value += last_value
             last_value = value
 
             yield (i, value)
 
-    def _rowid_at_index(self, index):
-        """
-        This very slow function returns the rowid that correspond to some index.
-
-        :param index: The index to find.
-        :return: The corresponding index.
-        """
-        for rowid, rid in self.rowids:
-            if rid == index:
-                return rowid
-
     def storage_size(self):
-        return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
+        return sys.getsizeof(self.values)
 
     def put(self, rowid, value):
         """
@@ -59,19 +49,14 @@ class Element:
         :param rowid: The row id where the value should go.
         :param value: The value to store.
         """
-        index = len(self.rowids)
+        if self.base_rowid is None:
+            self.base_rowid = rowid
+        elif rowid < self.base_rowid:
+            raise ValueError("Row ids must be monotonically increasing.")
+
         varint.encode_signed(self.values.append, value - self.last_value)
         self.last_value = value
-
-        row_index = bisect.bisect_right(self.rowids, (rowid, 0))
-        if len(self.rowids) == 0 or row_index >= len(self.rowids):
-            self.rowids.append((rowid, index))
-            return
-
-        if self.rowids[row_index][0] == rowid:
-            self.rowids[row_index] = (rowid, index)
-        else:
-            self.rowids.insert(row_index, (rowid, index))
+        self.row_count += 1
 
     def get(self, rowid):
         """
@@ -80,17 +65,14 @@ class Element:
         :param rowid: The row to get the value from.
         :return: The value, or None if there is no value stored there.
         """
-        row_index = bisect.bisect_left(self.rowids, (rowid, 0))
-        if row_index >= len(self.rowids):
+        index = rowid - self.base_rowid
+
+        if self.row_count == 0 or index < 0:
             return None
 
-        rid, index = self.rowids[row_index]
-        if rid == rowid:
-            for i, value in self._enumerate_values():
-                if i == index:
-                    return value
-
-        return None
+        for i, value in self._enumerate_values():
+            if i == index:
+                return value
 
     def count(self):
         """
@@ -98,7 +80,7 @@ class Element:
 
         :return: The number of rows as an integer.
         """
-        return len(self.rowids)
+        return self.row_count
 
     def contains(self, value):
         """
@@ -110,8 +92,8 @@ class Element:
         self.value_query_count += 1
         # TODO: When this value exceeds some threshold:
         # move to a representation that can more efficiently answer these kinds of queries.
-        for index, value in self._enumerate_values():
-            if value == value:
+        for _, stored_value in self._enumerate_values():
+            if value == stored_value:
                 return True
         else:
             return False
@@ -125,11 +107,11 @@ class Element:
         :param want: Determines if you want row ids or column ids.
         :return: A generator that provides the values for which predicate returns True.
         """
-        for i, value in self._enumerate_values():
+        for index, value in self._enumerate_values():
             if not predicate(value):
                 continue
 
-            yield self._rowid_at_index(i) if want == ResultType.ROW_ID \
+            yield self.base_rowid + index if want == ResultType.ROW_ID \
                 else value
 
     def range(self, low, high, want=ResultType.ROW_ID):
@@ -142,7 +124,7 @@ class Element:
         :param want: Determines if you want row ids or column ids.
         :return: All values that fall in the given range.
         """
-        if len(self.values) == 0:
+        if self.row_count == 0:
             return
 
         # Range queries are more expensive than point queries in this system.
@@ -165,5 +147,5 @@ class Element:
             if value > high:
                 return
 
-            yield self._rowid_at_index(index) if want == ResultType.ROW_ID \
+            yield self.base_rowid + index if want == ResultType.ROW_ID \
                 else value

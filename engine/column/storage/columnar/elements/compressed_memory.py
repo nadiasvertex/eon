@@ -1,4 +1,3 @@
-from array import array
 import bisect
 import struct
 import sys
@@ -21,12 +20,14 @@ class Element:
     def __init__(self, membase, existing_element, compressor_factory, decompressor_factory):
         self.membase = membase
         self.values = bytearray()
-        self.rowids = None
+        self.base_rowid = None
+        self.row_count = 0
         self.value_query_count = 0
         self.fixed_fmt = None
         self.fixed_size = None
         self.df = decompressor_factory
         self.cf = compressor_factory
+        self.row_count = existing_element.count()
 
         if membase.data_type in (DataType.i8, DataType.i16, DataType.i32, DataType.i64):
             self._store_int(existing_element)
@@ -48,15 +49,7 @@ class Element:
         :return: A generator over all of the items in the element. Yields a tuple of (rowid, value)
         """
         for i, v in self.enumerator():
-            yield self.rowids[i], v
-
-    def _get_rowids(self, existing_element):
-        d = {}
-        # First pass, create a sorted array for the rowids.
-        for rowid, value in iter(existing_element):
-            d[rowid] = value
-        self.rowids = array("Q", sorted(d.keys()))
-        return d
+            yield self.base_rowid + i, v
 
     def _store_int(self, existing_element):
         """
@@ -64,17 +57,15 @@ class Element:
 
         :param existing_element: The existing element to fetch the data from.
         """
-        d = self._get_rowids(existing_element)
-
         compacted_values = bytearray()
-
-        # Second pass, store the values in row order.
-        for rowid in self.rowids:
-            varint.encode_signed(compacted_values.append, d[rowid])
+        for rowid, value in iter(existing_element):
+            if self.base_rowid is None:
+                self.base_rowid = rowid
+            varint.encode_signed(compacted_values.append, value)
 
         c = self.cf()
 
-        # Third pass, compress the whole thing.
+        # Compress the whole thing.
         self.values += c.compress(compacted_values)
         self.values += c.flush()
 
@@ -84,21 +75,25 @@ class Element:
 
         :param existing_element: The existing element to fetch the data from.
         """
-        d = self._get_rowids(existing_element)
+
         c = self.cf()
 
         data_type = self.membase.data_type
         self.fixed_fmt = fixed_size[data_type]
         self.fixed_size = struct.calcsize(self.fixed_fmt)
 
-        transfer = bytearray(len(d) * self.fixed_size)
+        transfer = bytearray(existing_element.count() * self.fixed_size)
         offset = 0
 
-        # Second pass, store the values in row order.
-        for rowid in self.rowids:
-            struct.pack_into(self.fixed_fmt, transfer, offset, d[rowid])
+        # Store the values in row order.
+        for rowid, value in iter(existing_element):
+            if self.base_rowid is None:
+                self.base_rowid = rowid
+
+            struct.pack_into(self.fixed_fmt, transfer, offset, value)
             offset += self.fixed_size
 
+        # Compress the whole thing
         self.values += c.compress(transfer)
         self.values += c.flush()
 
@@ -109,19 +104,21 @@ class Element:
 
         :param existing_element: The existing element to fetch the data from.
         """
-        d = self._get_rowids(existing_element)
 
         compacted_values = bytearray()
 
-        # Second pass, store the values in row order.
-        for rowid in self.rowids:
-            v = bytes(d[rowid])
+        # Store the values in row order.
+        for rowid, value in iter(existing_element):
+            if self.base_rowid is None:
+                self.base_rowid = rowid
+
+            v = bytes(value)
             varint.encode(compacted_values.append, len(v))
             compacted_values.append(v)
 
         c = self.cf()
 
-        # Third pass, compress the whole thing.
+        # Compress the whole thing.
         self.values += c.compress(compacted_values)
         self.values += c.flush()
 
@@ -133,7 +130,7 @@ class Element:
         :return: Each yield provides the index of the item in the system and the value.
         """
         r = compressed.Reader(self.values, self.df())
-        for i in range(0, len(self.rowids)):
+        for i in range(0, self.row_count):
             value, bytes_read = varint.decode_signed_stream(r)
             yield (i, value)
 
@@ -145,7 +142,7 @@ class Element:
         :return: Each yield provides the index of the item in the system and the value.
         """
         r = compressed.Reader(self.values, self.df())
-        for i in range(0, len(self.rowids)):
+        for i in range(0, self.row_count):
             yield (i, struct.unpack(self.fixed_fmt, r.read(self.fixed_size)))
 
     def _enumerate_variable(self):
@@ -156,12 +153,12 @@ class Element:
         :return: Each yield provides the index of the item in the system and the value.
         """
         r = compressed.Reader(self.values, self.df())
-        for i in range(0, len(self.rowids)):
+        for i in range(0, self.row_count):
             data_size, _ = varint.decode_signed_stream(r)
             yield (i, r.read(data_size))
 
     def storage_size(self):
-        return sys.getsizeof(self.rowids) + sys.getsizeof(self.values)
+        return sys.getsizeof(self.values)
 
     def get(self, rowid):
         """
@@ -170,15 +167,10 @@ class Element:
         :param rowid: The row to get the value from.
         :return: The value, or None if there is no value stored there.
         """
-        row_index = bisect.bisect_left(self.rowids, rowid)
-        if row_index >= len(self.rowids):
-            return None
-
-        rid = self.rowids[row_index]
-        if rid == rowid:
-            for i, value in self.enumerator():
-                if i == row_index:
-                    return value
+        index = rowid - self.base_rowid
+        for i, value in self.enumerator():
+            if i == index:
+                return value
 
         return None
 
@@ -186,7 +178,7 @@ class Element:
         """
         :return: The number of rows as an integer.
         """
-        return len(self.rowids)
+        return self.row_count
 
     def contains(self, value):
         """
@@ -217,7 +209,7 @@ class Element:
             if not predicate(value):
                 continue
 
-            yield self.rowids[i] if want == ResultType.ROW_ID \
+            yield self.base_rowid + i if want == ResultType.ROW_ID \
                 else value
 
     def range(self, low, high, want=ResultType.ROW_ID):
@@ -253,5 +245,5 @@ class Element:
             if value > high:
                 return
 
-            yield self.rowids[index] if want == ResultType.ROW_ID \
+            yield self.base_rowid + index if want == ResultType.ROW_ID \
                 else value

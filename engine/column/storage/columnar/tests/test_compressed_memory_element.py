@@ -25,11 +25,11 @@ class TestElement(unittest.TestCase):
 
     def test_get_some(self):
         eb = compact_memory.Element(self.mb)
-        for i in range(1010, 1000, -1):
+        for i in range(1000, 1010):
             eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
-        for i in range(1010, 1000, -1):
+        for i in range(1000, 1010):
             self.assertEqual(e.get(i), int(i * 3))
 
     def test_get_many(self):
@@ -69,4 +69,4 @@ class TestElement(unittest.TestCase):
             eb.put(i, int(i * 3))
 
         e = compressed_memory.Element(self.mb, eb, zlib.compressobj, zlib.decompressobj)
-        self.assertEqual(1014272, e.storage_size())
+        self.assertEqual(222208, e.storage_size())
