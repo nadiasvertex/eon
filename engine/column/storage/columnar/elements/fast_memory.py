@@ -1,7 +1,7 @@
 import bisect
 import sys
 
-from engine.column.storage.columnar.memory import ResultType
+from engine.column.storage.columnar.rtype import ResultType
 
 
 __author__ = 'Christopher Nelson'

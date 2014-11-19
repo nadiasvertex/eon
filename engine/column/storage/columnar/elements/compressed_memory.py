@@ -2,8 +2,8 @@ import bisect
 import struct
 import sys
 
-from engine.column.storage.columnar.memory import ResultType
 from engine.column.storage import varint
+from engine.column.storage.columnar.rtype import ResultType
 from engine.io import compressed
 from engine.schema.datatype import DataType
 

@@ -3,7 +3,7 @@ import unittest
 
 from engine.column.storage.columnar import memory
 from engine.column.storage.columnar.elements import delta_memory
-from engine.column.storage.columnar.memory import ResultType
+from engine.column.storage.columnar.rtype import ResultType
 from engine.schema.datatype import DataType
 
 

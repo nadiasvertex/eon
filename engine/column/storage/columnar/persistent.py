@@ -1,3 +1,8 @@
+import struct
+
+from engine.column.storage.columnar.rtype import dt_to_tc
+
+
 __author__ = 'Christopher Nelson'
 
 # A store contains the data for a column. It is a sorted, possibly compressed set of data files. Each file contains
@@ -12,7 +17,7 @@ __author__ = 'Christopher Nelson'
 #
 # 0. No compression
 # 1. lz4 compression
-#   2. snappy compression
+# 2. snappy compression
 #   3. lzo compression
 #   4. zlib compression
 #   5. bzip compression
@@ -25,8 +30,9 @@ __author__ = 'Christopher Nelson'
 #
 # Following that is the rowid array.
 #
-# The rowid array is a sorted set of tuples (rowid, value-offset). The rowid is delta-encoded from the minimum rowid
-# in the header, and stored as a varint. The value-offset is the offset from the beginning of the column array
+# The rowid array doesn't actually contain any row ids. It has a single entry which indicates the base rowid. The row
+# can then be directly indexed by using the difference from the base and the requested rowid. The values in the array
+# are value-offsets. Each value-offset is the offset from the beginning of the column array
 # encoded as a delta and stored as a varint.
 #
 # The value array is where things get complex. The values are always stored in some highly compressed format. There
@@ -37,8 +43,59 @@ __author__ = 'Christopher Nelson'
 #      from the last value. The difference is written as a varint.)
 #
 #   2. Run-length encoding (A set of tuples of (value, length), length is always stored as a varint. If value is
-#   numeric it will also be stored as a varint.)
+#      numeric it will also be stored as a varint.)
+#
+#   3. Arity-encoding (Similar to run-length, except that all values in the element are processed for similarity.
+#      Storage is (value, count), count is always a varint. The value is varint encoded if it's numeric.)
 #
 # The value array is designed to be accessed randomly from the row-id array, but must be expanded in memory for
 # a binary search. The store can be told to favor space over speed, in which case operations will traverse the
 # array directly, decoding on the fly.
+
+header_format = "<QQQQQQQIBB"
+
+
+class Header:
+    def __init__(self, parts):
+        self.entry_count = parts[0]
+        self.min_row = parts[1]
+        self.max_row = parts[2]
+        self.min_value_ptr = parts[3]
+        self.max_value_ptr = parts[4]
+        self.row_array_ptr = parts[5]
+        self.val_array_ptr = parts[6]
+        self.temperature = parts[7]
+        self.data_type = parts[8]
+        self.compression_type = parts[9]
+
+    def save(self, data_file):
+        data_file.seek(0)
+        struct.pack_into(
+            header_format, 0,
+            self.entry_count,
+            self.min_row, self.max_row,
+            self.max_value_ptr, self.max_value_ptr,
+            self.row_array_ptr, self.val_array_ptr,
+            self.temperature,
+            self.data_type, self.compression_type)
+
+
+class Durabase:
+    def __init__(self, data_type, data_path):
+        self.data_type = data_type
+        self.type_code = dt_to_tc.get(data_type)
+        self.element_limit = 5000
+        self.next_segment_id = 0
+        self.data_path = data_path
+
+    def get_next_segment_id(self):
+        v = self.next_segment_id
+        self.next_segment_id += 1
+        return v
+
+    def get_element_header(self, data_file):
+        data_file.seek(0)
+        parts = struct.unpack_from(header_format, data_file)
+        return Header(parts)
+
+
