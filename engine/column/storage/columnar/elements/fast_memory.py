@@ -1,7 +1,9 @@
 import bisect
+from heapq import merge
 import sys
 
 from engine.column.storage.columnar.rtype import ResultType
+from array import array
 
 
 __author__ = 'Christopher Nelson'
@@ -12,6 +14,9 @@ class Element:
         self.membase = membase
         self.db = {}
         self.values = None
+        self.levels = array(membase.typecode)
+        self.current_level = 0
+        self.base_rowid = None
         self.value_query_count = 0
         self.index_threshold = 5000
 
@@ -31,18 +36,48 @@ class Element:
         :param rowid: The row id where the value should go.
         :param value: The value to store.
         """
-        self.db[rowid] = value
-        if self.values is not None:
-            bisect.insort(self.values, (value, rowid))
+        if self.base_rowid is None:
+            self.base_rowid = rowid
+        row_index = rowid - self.base_rowid
 
-    def get(self, rowid):
+        required_size = (1 << (self.current_level + 1))
+        actual_size = len(self.levels)
+        if actual_size < required_size:
+            array.extend((0 for i in range(0, required_size - actual_size)))
+
+        # Insert the value by doing an amortized sort over the various levels.
+        # Of course, at level 0 no sort is needed. We use a merge sort to construct
+        # all following levels.
+        if self.current_level == 0:
+            self.levels[0] = value
+        else:
+            sources = [[value]]
+            for i in range(0, self.current_level):
+                start_index = (1 << i) - 1
+                end_index = start_index + (1 << i)
+                g = (self.levels[j] for j in range(start_index, end_index + 1))
+                sources.append(g)
+
+            target_index_start = (1 << self.current_level) - 1
+            for i, k in enumerate(merge(sources), target_index_start):
+                self.levels[i] = k
+
+        self.current_level += 1
+
+
+    def get(self, value):
         """
-        Get the value at the given row id.
+        Get the rowid at the given value.
 
-        :param rowid: The row to get the value from.
+        :param value: The value to find the row for.
         :return: The value, or None if there is no value stored there.
         """
-        return self.db[rowid]
+        for i in range(0, self.current_level):
+            start_index = (1 << i) - 1
+            end_index = start_index + (1 << i)
+
+            idx = bisect.bisect_right(self.levels, value, start_index, end_index)
+
 
     def count(self):
         return len(self.db)
