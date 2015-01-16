@@ -1,0 +1,5 @@
+[package]
+
+name = "store"
+version = "0.0.1"
+authors = ["Christopher Nelson <nadiasvertex@gmail.com>"]

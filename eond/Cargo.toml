@@ -1,0 +1,10 @@
+[package]
+
+name="eon"
+version="0.0.1"
+authors=["Christopher Nelson nadiasvertex@gmail.com"]
+
+[[bin]]
+
+name = "eond"
+
