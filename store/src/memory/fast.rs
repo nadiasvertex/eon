@@ -19,7 +19,7 @@ impl<T> Element<T> {
         let required_size = (1 << (self.current_level + 1));
 
         if row_index < self.values.len() {
-            self.values[row_index] = value;
+            *self.values.get_mut(row_index) = value;
         } else {
             self.values.push(value);
         }
