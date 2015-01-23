@@ -11,10 +11,6 @@ import Data.List
 import HFlags
 
 -- Eon modules
-import Compute
-import Parse.Query
-
-import qualified Consensus as C
 
 defineFlag "l:listen" "127.0.0.1:10001" "The address:port to bind to for the consensus network."
 defineFlag "v:version" False "eon data sever 0.1"
@@ -37,6 +33,3 @@ main    :: IO ()
 main    = do
   s <- $initHFlags "eon v0.1"
   when (flags_version) version
-  uncurry C.process $ get_address_args flags_listen
-  runLoop
-  --print (parseString (head args))
