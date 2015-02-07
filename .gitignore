@@ -10,6 +10,8 @@ __pycache__/
 *.hi
 eon.exe
 eon
+.cabal-sandbox
+cabal.sandbox.config
 
 # Distribution / packaging
 .Python
