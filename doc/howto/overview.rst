@@ -109,3 +109,10 @@ Communication
 Each of the components will be built in isolation. There are no tight couplings
 between them so that we can augment or substitute pieces as needed. Consequently
 we will define an interface that each of the major components must implement.
+
+Consensus
+----------
+
+Ideally the hope is that `ZooKeeper <http://zookeeper.apache.org/>`_ can be used
+for consensus in the cluster. If not, `Raft <https://raftconsensus.github.io/>`_
+will need to be implemented.
