@@ -9,6 +9,7 @@ implementation follows from these early choices.
    :maxdepth: 2
 
    oid
+   storage_implementation
 
 
 Columnar Storage
