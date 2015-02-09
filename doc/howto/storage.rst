@@ -53,7 +53,7 @@ store a bloom filter for optimal In addition we store how
 many reads, insertions, updates, and deletes have occurred on this segment. This
 will help us understand how important this segment is, and may affect its
 candidacy for eviction or retention from memory.
-fi
+
 The two arrays are important. One array stores every value written (either
 directly, or in some compressed way.) The other stores a list of extents. The
 extent is a run length encoding of the logically row address of the column.

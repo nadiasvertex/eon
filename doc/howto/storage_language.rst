@@ -11,7 +11,7 @@ C++
 -------------
 
 This is the obvious choice. The amount of control the language provides is
-legend. Good compiler iplementations are available for any platform you might
+legendary. Good compiler implementations are available for any platform you might
 care to work with, and there are many libraries that either support C++
 directly, or work seamlessly via C support.
 
@@ -82,7 +82,7 @@ It is fast, flexible, and has clean syntax. Being closer to the problem space,
 some of the algorithms that we'll be implementing fall out very naturally. The
 language also has an amazingly good concurrency story, and a high performance
 optimizing compiler. Library support is very good, and interoperability with
-C is also extremely good.
+C is extremely good.
 
 On the other hand, the language has a formidable reputation for being hard to
 learn. While this is in some ways deserved, in other ways it is simply that

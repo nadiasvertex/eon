@@ -13,13 +13,15 @@ data Segment a = Segment {
 }
 
 appendExtent :: Int64 -> [Extent] -> [Extent]
-appendExtent    oid      xts  =
+appendExtent    oid        []      = [Extent {start=oid, len=0}]
+appendExtent    oid        xts     =
     if oid - (xt_start + fromIntegral xt_length) == 1
     then Extent {start=xt_start, len=xt_length+1} : the_rest
     else Extent {start=oid, len=0}      : current : the_rest
     where
         (current:the_rest) = xts
         Extent {start=xt_start, len=xt_length} = current
+
 
 enumerateExtent :: [    Extent   ] -> [Int64]
 enumerateExtent    (last_xt:the_rest) =
