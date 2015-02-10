@@ -119,6 +119,51 @@ We can see this works:
    [Extent {start = 1, len = 0}]
 
 
+Simple calls work well, but what about big ones? To make that easier, we build
+a new function:
+
+.. code-block:: haskell
+   :linenos:
+
+   extentFromList :: [Extent] -> [ Int64 ] -> [Extent]
+   extentFromList       xt       [       ] =  xt
+   extentFromList       xt       ( x:xs  ) =
+      extentFromList r xs
+      where
+         r = appendExtent xt x
+
+
+Now we try it:
+
+.. code-block:: hs
+
+   *DataColumn> extentFromList [] [1..100000]
+   [Extent {start = 98308, len = 1692},Extent {start = 65539, len = -32768},Extent {start = 32770, len = -32768},Extent {start = 1, len = -32768}]
+
+
+We missed a boundary condition. We have to make sure the length of any one extent
+doesn't exceed the size of Int16. To do that we change line 4 above:
+
+.. code-block:: hs
+   :linenos:
+
+    if    oid - (xt_start + fromIntegral xt_length) == 1
+       && xt_length < (maxBound :: Int16)
+
+Which works much better:
+
+.. code-block:: hs
+
+   *DataColumn Data.Int> :l DataColumn.hs
+   [1 of 1] Compiling DataColumn       ( DataColumn.hs, interpreted )
+   Ok, modules loaded: DataColumn.
+   *DataColumn Data.Int> extentFromList [] [1..100000]
+   [Extent {start = 98305, len = 1695},Extent {start = 65537, len = 32767},Extent {start = 32769, len = 32767},Extent {start = 1, len = 32767}]
+
+   *DataColumn Data.Int> let a = extentFromList [] [1..100000]
+   *DataColumn Data.Int> extentFromList a [200000..300000]
+   [Extent {start = 298304, len = 1696},Extent {start = 265536, len = 32767},Extent {start = 232768, len = 32767},Extent {start = 200000, len = 32767},Extent {start = 98305, len = 1695},Extent {start = 65537, len = 32767},Extent {start = 32769, len = 32767},Extent {start = 1, len = 32767}]
+
 
 The entire source is included below:
 
