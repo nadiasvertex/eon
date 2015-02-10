@@ -12,9 +12,9 @@ data Segment a = Segment {
     array      :: [a]
 }
 
-appendExtent :: Int64 -> [Extent] -> [Extent]
-appendExtent    oid        []      = [Extent {start=oid, len=0}]
-appendExtent    oid        xts     =
+appendExtent :: [Extent] -> Int64 -> [Extent]
+appendExtent    [      ]    oid    = [Extent {start=oid, len=0}]
+appendExtent      xts       oid    =
     if oid - (xt_start + fromIntegral xt_length) == 1
     then Extent {start=xt_start, len=xt_length+1} : the_rest
     else Extent {start=oid, len=0}      : current : the_rest
@@ -23,7 +23,7 @@ appendExtent    oid        xts     =
         Extent {start=xt_start, len=xt_length} = current
 
 
-enumerateExtent :: [    Extent   ] -> [Int64]
+enumerateExtent :: [    Extent      ] -> [Int64]
 enumerateExtent    (last_xt:the_rest) =
   enumerate_extent' (initial_oid xt_start xt_length) last_xt the_rest
   where
@@ -49,4 +49,4 @@ enumerateExtent    (last_xt:the_rest) =
 -- | Appends a value to a segment.
 appendValue :: Segment a -> Int64 -> a -> Segment a
 appendValue Segment{extents=xt, array=arr} oid value =
-  Segment{extents=appendExtent oid xt, array=value : arr}
+  Segment{extents=appendExtent xt oid, array=value : arr}

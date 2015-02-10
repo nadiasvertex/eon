@@ -110,13 +110,13 @@ and the tail.
 
 We can see this works:
 
-.. code-block:: ghci
+.. code-block:: hs
 
-Prelude> :l DataColumn.hs
-[1 of 1] Compiling DataColumn       ( DataColumn.hs, interpreted )
-Ok, modules loaded: DataColumn.
-*DataColumn> appendExtent 1 []
-[Extent {start = 1, len = 0}]
+   Prelude> :l DataColumn.hs
+   [1 of 1] Compiling DataColumn       ( DataColumn.hs, interpreted )
+   Ok, modules loaded: DataColumn.
+   *DataColumn> appendExtent 1 []
+   [Extent {start = 1, len = 0}]
 
 
 
