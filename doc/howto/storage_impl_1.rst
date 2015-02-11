@@ -29,6 +29,13 @@ compression, and a way to get the data back.
 This code is implemented as `src/Store/DataColumn.hs`. The full implementation
 is included below.
 
+.. note::
+
+   The author is new to Haskell. Consequently, the initial exposition will be
+   very verbose. Things which might seem obvious to a seasoned Haskell
+   programmer might be explained in detail. This should be useful to others
+   reading this documentation, who are also not familiar with Haskell.
+
 Basic Setup
 -------------
 
@@ -164,6 +171,71 @@ Which works much better:
    *DataColumn Data.Int> extentFromList a [200000..300000]
    [Extent {start = 298304, len = 1696},Extent {start = 265536, len = 32767},Extent {start = 232768, len = 32767},Extent {start = 200000, len = 32767},Extent {start = 98305, len = 1695},Extent {start = 65537, len = 32767},Extent {start = 32769, len = 32767},Extent {start = 1, len = 32767}]
 
+
+Segments
+---------
+
+At this point we just need to be able to append a value to a segement. This is
+actually quite simple:
+
+.. code-block:: haskell
+   :linenos:
+
+   appendValue :: Segment a -> Int64 -> a -> Segment a
+   appendValue Segment{extents=xt, array=arr} oid value =
+     Segment{extents=appendExtent xt oid, array=value : arr}
+
+
+Does it work?
+
+.. code-block:: haskell
+   :linenos:
+
+
+   *DataColumn Data.Int> let s = Segment{extents=[], array=[]}
+   *DataColumn Data.Int> s
+   Segment {extents = [], array = []}
+   *DataColumn Data.Int> appendValue s 1 100
+   Segment {extents = [Extent {start = 1, len = 0}], array = [100]}
+
+Indeed it does. Let's implement another helper for Segment like we did for Extent
+and see if it works for larger values.
+
+.. code-block:: haskell
+   :linenos:
+
+   segmentFromList :: Segment a -> [(Int64, a)] -> Segment a
+   segmentFromList          seg    [          ] =  seg
+   segmentFromList          seg    (   x:xs   ) =
+      segmentFromList r xs
+      where
+         (oid, value) = x
+         r = appendValue seg oid value
+
+
+Now we try it...
+
+.. code-block:: haskell
+
+   *DataColumn Data.Int> :l DataColumn.hs
+   [1 of 1] Compiling DataColumn       ( DataColumn.hs, interpreted )
+   Ok, modules loaded: DataColumn.
+   *DataColumn Data.Int> let s = Segment{extents=[], array=[]}
+   *DataColumn Data.Int> segmentFromList s [(x, x*100) | x <- [1..100]]
+   Segment {extents = [Extent {start = 1, len = 99}], array = [10000,9900,9800,9700,9600,9500,9400,9300,9200,9100,9000,8900,8800,8700,8600,8500,8400,8300,8200,8100,8000,7900,7800,7700,7600,7500,7400,7300,7200,7100,7000,6900,6800,6700,6600,6500,6400,6300,6200,6100,6000,5900,5800,5700,5600,5500,5400,5300,5200,5100,5000,4900,4800,4700,4600,4500,4400,4300,4200,4100,4000,3900,3800,3700,3600,3500,3400,3300,3200,3100,3000,2900,2800,2700,2600,2500,2400,2300,2200,2100,2000,1900,1800,1700,1600,1500,1400,1300,1200,1100,1000,900,800,700,600,500,400,300,200,100]}
+
+
+Good enough for now.
+
+.. note::
+
+   Ideally we would write unit tests for this stuff. Haskell has a very
+   sophisticated test framework called QuickCheck. Sadly, the author has not
+   yet learned how to use it. That will be the subject of a future section in
+   this book.
+
+Source
+---------
 
 The entire source is included below:
 

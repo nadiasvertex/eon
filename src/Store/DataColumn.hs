@@ -10,7 +10,7 @@ data Extent = Extent {
 data Segment a = Segment {
     extents    :: [Extent],
     array      :: [a]
-}
+} deriving(Eq, Show)
 
 -- | Append a new oid to a list of extents.
 appendExtent :: [Extent] -> Int64 -> [Extent]
@@ -61,3 +61,12 @@ extentFromList       xt       ( x:xs  ) =
 appendValue :: Segment a -> Int64 -> a -> Segment a
 appendValue Segment{extents=xt, array=arr} oid value =
   Segment{extents=appendExtent xt oid, array=value : arr}
+
+-- | Take a list of oids and values, and append them to a segment.
+segmentFromList :: Segment a -> [(Int64, a)] -> Segment a
+segmentFromList          seg    [          ] =  seg
+segmentFromList          seg    (   x:xs   ) =
+   segmentFromList r xs
+   where
+      (oid, value) = x
+      r = appendValue seg oid value
