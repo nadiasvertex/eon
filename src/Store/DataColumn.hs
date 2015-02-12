@@ -1,15 +1,15 @@
-module DataColumn where
+module Store.DataColumn where
 
-import Data.Int (Int64, Int16)
+import           Data.Int (Int16, Int64)
 
 data Extent = Extent {
-    start   :: Int64,
-    len     :: Int16
+    start :: Int64,
+    len   :: Int16
 } deriving(Eq, Show)
 
 data Segment a = Segment {
-    extents    :: [Extent],
-    array      :: [a]
+    extents :: [Extent],
+    array   :: [a]
 } deriving(Eq, Show)
 
 -- | Append a new oid to a list of extents.
@@ -29,8 +29,8 @@ enumerateExtent :: [    Extent      ] -> [Int64]
 enumerateExtent    (last_xt:the_rest) =
   enumerate_extent' (initial_oid xt_start xt_length) last_xt the_rest
   where
-    xt_start        = DataColumn.start last_xt
-    xt_length       = DataColumn.len   last_xt
+    xt_start        = Store.DataColumn.start last_xt
+    xt_length       = Store.DataColumn.len   last_xt
     initial_oid s l = s + fromIntegral l - 1
 
     enumerate_extent' current_value current_extent remaining_extents =
@@ -69,4 +69,4 @@ segmentFromList          seg    (   x:xs   ) =
    segmentFromList r xs
    where
       (oid, value) = x
-      r = appendValue seg oid value
+      r            = appendValue seg oid value

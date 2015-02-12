@@ -1,5 +1,5 @@
-First steps
-===============
+Mutable segments
+=================
 
 The first thing we are going to implement is the data column. This is the most
 important part of the data storage engine, because it's where the data goes.
@@ -232,7 +232,7 @@ Good enough for now.
    Ideally we would write unit tests for this stuff. Haskell has a very
    sophisticated test framework called QuickCheck. Sadly, the author has not
    yet learned how to use it. That will be the subject of a future section in
-   this book.
+   this documentation.
 
 Source
 ---------
