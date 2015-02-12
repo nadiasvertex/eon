@@ -33,3 +33,32 @@ It appears to be the premier array package. There is some additional
 complexity involved in using it, due to its flexibility. However, it's not too
 bad, and there are also high-level simplifications in the package that may make
 our lives easier in other places.
+
+Frozen Data
+------------
+
+We need a place to put our frozen data:
+
+.. code-block:: haskell
+   :linenos:
+
+   data FrozenSegment a = FrozenSegment {
+       extents :: [Extent],
+       array   :: Array U DIM1 a
+   } deriving(Eq, Show)
+
+Some explanation may be in order. repa has a very rich type language for talking
+about arrays. Without getting into that too much, we want an unboxed, one
+dimensional array that contains items of type 'a'.
+
+
+
+
+Source
+---------
+
+The entire source is included below:
+
+.. literalinclude:: ../../src/Store/FrozenDataColumn.hs
+  :language: haskell
+  :linenos:
