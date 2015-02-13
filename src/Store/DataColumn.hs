@@ -62,6 +62,12 @@ appendValue :: Segment a -> Int64 -> a -> Segment a
 appendValue Segment{extents=xt, array=arr} oid value =
   Segment{extents=appendExtent xt oid, array=value : arr}
 
+enumerateSegment :: Segment a -> [(a, Int64)]
+enumerateSegment         seg   =
+  zip arr (enumerateExtent xt)
+  where
+    Segment{extents=xt, array=arr} = seg
+
 -- | Take a list of oids and values, and append them to a segment.
 segmentFromList :: Segment a -> [(Int64, a)] -> Segment a
 segmentFromList          seg    [          ] =  seg

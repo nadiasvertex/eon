@@ -15,7 +15,7 @@ efficient. Note this execution of just 100 appends:
   (0.00 secs, 2577184 bytes)
 
 On this same machine, appending 1,000 elements goes through 8mb of RAM. The
-Haskell garbage collector is quite efficient, but this is still quite a bit of
+Haskell garbage collector is quite efficient, but this is still a lot of
 memory. Of course, not all of this memory ends up allocated, its just that we
 are allocating new structures frequently. Many of those don't survive. Still, we
 want to store as much data as possible in the memory we have. That means being
