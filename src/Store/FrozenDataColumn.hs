@@ -1,7 +1,10 @@
 module Store.FrozenDataColumn where
 
-import Data.Array.Repa
-import Data.List        (sort, unzip)
+import Data.Array.Repa (Array, U, DIM1, ix1, fromListUnboxed)
+import Data.Array.Repa.Repr.Unboxed (Unbox)
+
+import Data.List        (sortBy)
+import Data.Ord         (comparing)
 
 import qualified Store.DataColumn as MD
 
@@ -14,12 +17,12 @@ data FrozenSegment a = FrozenSegment {
     column   :: Array U DIM1 a
 } deriving(Eq, Show)
 
-freeze :: MD.Segment a -> FrozenSegment a
+freeze :: (Ord a, Unbox a) => MD.Segment a -> FrozenSegment a
 freeze             seg  =
   FrozenSegment{column=frozen_array}
   where
     size = length arr
     frozen_array   = fromListUnboxed (ix1 size) values
     (values, oids) = unzip sorted
-    sorted = sort $ MD.enumerateSegment seg
-    MD.Segment{MD.extents=xt, MD.array=arr} = seg
+    sorted = sortBy (comparing fst) (MD.enumerateSegment seg)
+    MD.Segment{MD.array=arr} = seg
