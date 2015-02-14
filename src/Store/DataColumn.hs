@@ -31,7 +31,7 @@ enumerateExtent    (last_xt:the_rest) =
   where
     xt_start        = Store.DataColumn.start last_xt
     xt_length       = Store.DataColumn.len   last_xt
-    initial_oid s l = s + fromIntegral l - 1
+    initial_oid s l = s + fromIntegral l
 
     enumerate_extent' current_value current_extent remaining_extents =
       current_value : if not has_more
