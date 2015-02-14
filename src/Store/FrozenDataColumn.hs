@@ -19,10 +19,13 @@ data FrozenSegment a = FrozenSegment {
     column :: Array U DIM1 a
 } deriving(Eq, Show)
 
+-- | Takes a mutable segment and turns it into a sorted, efficiently packed
+-- immutable segment, plus a map indicating how to find the original oid in
+-- the sorted array.
 freeze :: (Ord a, Unbox a) => MD.Segment a -> (SegmentMap, FrozenSegment a)
 freeze                               seg    =
-  (SegmentMap{extents=xt, indexes=frozen_indexes},
-   FrozenSegment{column=frozen_array})
+  (SegmentMap    {extents=xt, indexes=frozen_indexes},
+   FrozenSegment {column=frozen_array})
   where
     size           = length arr
     frozen_array   = fromListUnboxed (ix1 size) values
