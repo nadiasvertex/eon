@@ -138,7 +138,6 @@ of `freeze s'`. So in the future, we'll use that value when looking at ballpark
 memory usage in ghci.
 
 
-
 Source
 ---------
 
