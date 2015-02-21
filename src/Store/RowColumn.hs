@@ -1,7 +1,7 @@
 module RowColumn where
 
 import           Data.Int            (Int64)
-import qualified Data.Map as Map
+import qualified Data.Map            as Map
 import           Data.Maybe
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as VU
@@ -11,10 +11,10 @@ data CopyColumn = None | Old | New
 
 -- | The value of rows
 data Row = Row {
-  rid      :: Int64,           -- The row id.
-  version  :: Int64,           -- The version of this row.
-  columns  :: VU.Vector Int64, -- The addresses of the columns for this row.
-  present  :: VU.Vector Bool   -- Which columns are present in this row.
+  rid     :: Int64,           -- The row id.
+  version :: Int64,           -- The version of this row.
+  columns :: VU.Vector Int64, -- The addresses of the columns for this row.
+  present :: VU.Vector Bool   -- Which columns are present in this row.
 } deriving (Show)
 
 instance Eq Row where
@@ -26,11 +26,18 @@ instance Ord Row where
     | r1<r2     = True
     | otherwise = False
 
--- The row column
-
+-- | The row column
 data RowColumn = RowColumn {
   rows :: Map.Map Int64 [Row]
 }
+
+-- | Append a row to the database. The caller must ensure that the version is
+--   unique.
+--
+--       rid: The row identifier of the new row.
+--   version: The version of the new row.
+--   present: Indicates what columns are present in this row.
+--    values: The addresses of the values for the new columns.
 
 append :: RowColumn          -> Int64 -> Int64 -> VU.Vector Bool -> VU.Vector Int64 -> RowColumn
 append RowColumn{rows=old_rows} rid      version  present           values =
@@ -98,6 +105,7 @@ update RowColumn{rows=old_rows} rid      previous_version version  new_present  
       map_presence (ix, (Just False, True)) = (ix,  Old)
 
       -- Determine which columns can be ignored
+
       match_presence (_, None) = False
       match_presence (_,    _) = True
 
@@ -107,3 +115,13 @@ update RowColumn{rows=old_rows} rid      previous_version version  new_present  
       copy (x:xs) = copy_column x : copy xs
 
       new_values  = VU.fromList $ reverse $ copy copy_program
+
+-- | Find the row with the given id and version.
+lookup :: RowColumn -> Int64 -> Int64 -> Maybe Row
+lookup    row_column   rid      rversion =
+  do
+    row_versions  <- Map.lookup rid (rows row_column)
+    last_version  <- listToMaybe $ reverse $ filter match_version row_versions
+    return last_version
+  where
+    match_version Row{version=cversion} = rversion == cversion
