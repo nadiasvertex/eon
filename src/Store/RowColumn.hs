@@ -3,8 +3,9 @@ module RowColumn where
 import           Data.Int            (Int64)
 import qualified Data.Map            as Map
 import           Data.Maybe
-import qualified Data.Vector         as V
+import           Data.Vector.Unboxed ((!))
 import qualified Data.Vector.Unboxed as VU
+
 
 -- | Identifies how to copy columns when updating rows.
 data CopyColumn = None | Old | New
@@ -29,7 +30,49 @@ instance Ord Row where
 -- | The row column
 data RowColumn = RowColumn {
   rows :: Map.Map Int64 [Row]
-}
+} deriving (Show)
+
+-- | Transforms an updateable present list into a lookup array for
+--   the column values.
+--
+--   Example:
+--   [Just False, Just True]
+--   [(0, False),  (1,True)]
+--   [        -1,         0]
+--
+--   When we use got to copy from the columns array we know that absolute
+--   column 1 is actually in the columns array at offset 0. A value of -1
+--   means not present.
+updateablePresentToIndex :: [Maybe Bool] -> VU.Vector Int
+updateablePresentToIndex         present  =
+  VU.fromList global_indexes
+  where
+    global_indexes = convert_truth 0 truth_values
+    truth_values   = map convert_present present
+
+    convert_present Nothing      = False
+    convert_present (Just False) = False
+    convert_present (Just  True) = True
+
+    convert_truth     _ [        ] = []
+    convert_truth index (True :xs) = index : convert_truth (index+1) xs
+    convert_truth index (False:xs) =    -1 : convert_truth  index    xs
+
+-- | Transforms a frozen present list into a lookup array for the column
+--   values. This is the array equivalent of updateablePresentToIndex
+--   above.
+presentToIndex :: VU.Vector Bool -> VU.Vector Int
+presentToIndex present  =
+    convert_truth 0 0 VU.empty
+  where
+    convert_truth offset index output
+      | offset < VU.length present =
+          if   present ! offset
+          then convert_truth (offset+1) (index+1) (VU.snoc output index)
+          else convert_truth (offset+1)  index    (VU.snoc output  (-1))
+
+      | otherwise = output
+
 
 -- | Append a row to the database. The caller must ensure that the version is
 --   unique.
@@ -62,13 +105,13 @@ append RowColumn{rows=old_rows} rid      version  present           values =
 --            version: The new version of the row.
 --
 --            present: The 'present' field is special for update. If a value of
---   'Just true' is found, then the values field will have an updated value for that column. If
---   the value is 'Just false' then there is no update for that column for this
---   row. If it is present in the previous version, we copy that value over. If
---   it wasn't present, then we do nothing. Finally if the entry is 'Nothing'
---   then this column is being set to NULL. If there was a value in the previous
---   version of the row we omit it in this version. If there was no value in the
---   previous version then we ignore it.
+-- 'Just true' is found, then the values field will have an updated value for
+-- that column. If the value is 'Just false' then there is no update for that
+-- column for this row. If it is present in the previous version, we copy that
+-- value over. If it wasn't present, then we do nothing. Finally if the entry is
+-- 'Nothing' then this column is being set to NULL. If there was a value in the
+-- previous version of the row we omit it in this version. If there was no value
+-- in the previous version then we ignore it.
 --
 --         new_values: The oids of the values of the columns.
 --
@@ -88,15 +131,18 @@ update RowColumn{rows=old_rows} rid      previous_version version  new_present  
       new_row_version  = Row {
          rid    =rid,
          version=version,
-         columns=new_values,
-         present=new_presence
+         columns=final_values,
+         present=updated_present
       }
+
+      old_present_indexes = presentToIndex (present old_row_version)
+      new_present_indexes = updateablePresentToIndex new_present
 
       old_values        = columns old_row_version
       old_present       = VU.toList $ present old_row_version
+      updated_present   = VU.fromList $ map match_presence fused_presence
       combined_presence = zip [0..] $ zip new_present old_present
       fused_presence    = map map_presence combined_presence
-      new_presence      = VU.fromList $ map match_presence  fused_presence
       copy_program      = filter match_presence fused_presence
 
       -- Figure out where the final column value comes from.
@@ -105,16 +151,40 @@ update RowColumn{rows=old_rows} rid      previous_version version  new_present  
       map_presence (ix, (Just False, True)) = (ix,  Old)
 
       -- Determine which columns can be ignored
-
       match_presence (_, None) = False
       match_presence (_,    _) = True
 
       -- Copy the column values from the right location
-      copy_column (ix, Old) = old_values VU.! ix
-      copy_column (ix, New) = new_values VU.! ix
-      copy (x:xs) = copy_column x : copy xs
+      copy_column (ix, Old) = old_values ! (old_present_indexes ! ix)
+      copy_column (ix, New) = new_values ! (new_present_indexes ! ix)
 
-      new_values  = VU.fromList $ reverse $ copy copy_program
+      final_values  = VU.fromList $ reverse $ map copy_column copy_program
+
+{- | Note on Update |
+
+ The update process is fairly straight forward, but there are some complexities.
+Basically, the process works like this:
+
+  1. Find the previous version of the row.
+  2. Determine the mapping between absolute column index and the stored column
+  index.
+  3. Evaluate the new version of the row.
+  4. Determine the mapping between the absolute and stored column indexes for
+  the new row.
+
+  Old Version:
+  [    0,     1,      2,     3,     4,    5]
+  [False, False,   True,  True, False, True]
+  [   -1,    -1,      0,    -1,    -1,    1] = result of step 2
+
+
+  New Version:
+  [    0,     1,       2,    3,     4,    5]
+  [False, False, Nothing, True, False, True]
+  [   -1,    -1,      -1,    0,    -1,    1] = result of step 4
+
+
+-}
 
 -- | Find the row with the given id and version.
 lookup :: RowColumn -> Int64 -> Int64 -> Maybe Row
