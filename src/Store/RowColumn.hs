@@ -81,7 +81,6 @@ presentToIndex present  =
 --   version: The version of the new row.
 --   present: Indicates what columns are present in this row.
 --    values: The addresses of the values for the new columns.
-
 append :: RowColumn          -> Int64 -> Int64 -> VU.Vector Bool -> VU.Vector Int64 -> RowColumn
 append RowColumn{rows=old_rows} rid      version  present           values =
    RowColumn{rows=new_rows}
@@ -167,10 +166,10 @@ Basically, the process works like this:
 
   1. Find the previous version of the row.
   2. Determine the mapping between absolute column index and the stored column
-  index.
+    index.
   3. Evaluate the new version of the row.
   4. Determine the mapping between the absolute and stored column indexes for
-  the new row.
+    the new row.
 
   Old Version:
   [    0,     1,      2,     3,     4,    5]
@@ -183,6 +182,10 @@ Basically, the process works like this:
   [False, False, Nothing, True, False, True]
   [   -1,    -1,      -1,    0,    -1,    1] = result of step 4
 
+  5. Determine what columns will actually be present in the new row.
+  6. Create a list of copy operations that should be performed to generate
+    a new row.
+  7. Generate a new column array by executing the list of copy operations.
 
 -}
 
