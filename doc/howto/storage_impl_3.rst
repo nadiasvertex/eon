@@ -227,3 +227,7 @@ As a simple example, if we had the following present vector:
 we would end up with this lookup vector:
 
    [   -1,    0]
+
+This allows us to lookup absolute column index 1, and see that it is found at
+local column index 0. You can see the usage of this lookup table in lines 139
+and 140 in "update" above.
