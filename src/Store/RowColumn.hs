@@ -63,16 +63,11 @@ updateablePresentToIndex         present  =
 --   above.
 presentToIndex :: VU.Vector Bool -> VU.Vector Int
 presentToIndex present  =
-    convert_truth 0 0 VU.empty
+    VU.map (\v -> if fst v then snd v else -1) truth_indexes
   where
-    convert_truth offset index output
-      | offset < VU.length present =
-          if   present ! offset
-          then convert_truth (offset+1) (index+1) (VU.snoc output index)
-          else convert_truth (offset+1)  index    (VU.snoc output  (-1))
-
-      | otherwise = output
-
+    truth_accum accum el = if el then accum+1 else accum
+    truth_indexes        = VU.zip present indexes
+    indexes              = VU.prescanl truth_accum (0 :: Int) present
 
 -- | Append a row to the database. The caller must ensure that the version is
 --   unique.
