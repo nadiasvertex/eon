@@ -229,5 +229,31 @@ we would end up with this lookup vector:
    [   -1,    0]
 
 This allows us to lookup absolute column index 1, and see that it is found at
-local column index 0. You can see the usage of this lookup table in lines 139
-and 140 in "update" above.
+local column index 0. You can see the usage of this lookup table in lines 41
+and 42 in "update" above.
+
+We wrote a similar, but slighty more complex function for the new_present values
+passed into update. The additional complexity is due to the use of Maybe to
+encode null values, and the possibility of deletion.
+
+.. code-block:: haskell
+   :linenos:
+
+   updateablePresentToIndex :: [Maybe Bool] -> VU.Vector Int
+   updateablePresentToIndex         present  =
+     VU.fromList global_indexes
+     where
+       global_indexes = convert_truth 0 truth_values
+       truth_values   = map convert_present present
+
+       convert_present Nothing      = False
+       convert_present (Just False) = False
+       convert_present (Just  True) = True
+
+       convert_truth     _ [        ] = []
+       convert_truth index (True :xs) = index : convert_truth (index+1) xs
+       convert_truth index (False:xs) =    -1 : convert_truth  index    xs
+
+You can see that this is basically the same function, but rewritten to handle
+the ternary logic needed for dealing with NULL. It's also written in a simpler
+format using a list.
