@@ -1,6 +1,7 @@
 module RowColumn where
 
 import           Data.Int            (Int64)
+import           Data.List           (mapAccumL)
 import qualified Data.Map            as Map
 import           Data.Maybe
 import           Data.Vector.Unboxed ((!))
@@ -32,8 +33,8 @@ data RowColumn = RowColumn {
   rows :: Map.Map Int64 [Row]
 } deriving (Show)
 
--- | Transforms an updateable present list into a lookup array for
---   the column values.
+-- | Transforms a present list that can have nulled values into a lookup array
+--   for the column values.
 --
 --   Example:
 --   [Just False, Just True]
@@ -43,31 +44,27 @@ data RowColumn = RowColumn {
 --   When we use got to copy from the columns array we know that absolute
 --   column 1 is actually in the columns array at offset 0. A value of -1
 --   means not present.
-updateablePresentToIndex :: [Maybe Bool] -> VU.Vector Int
-updateablePresentToIndex         present  =
-  VU.fromList global_indexes
+presentToIndexWithNull :: [Maybe Bool] -> VU.Vector Int
+presentToIndexWithNull  =
+  VU.fromList . snd . mapAccumL accum 0
   where
-    global_indexes = convert_truth 0 truth_values
-    truth_values   = map convert_present present
+    accum acc el = if convert_present el then (acc+1, acc) else (acc, -1)
 
     convert_present Nothing      = False
     convert_present (Just False) = False
     convert_present (Just  True) = True
 
-    convert_truth     _ [        ] = []
-    convert_truth index (True :xs) = index : convert_truth (index+1) xs
-    convert_truth index (False:xs) =    -1 : convert_truth  index    xs
-
 -- | Transforms a frozen present list into a lookup array for the column
---   values. This is the array equivalent of updateablePresentToIndex
+--   values. This is the array equivalent of presentToIndexWithNull
 --   above.
 presentToIndex :: VU.Vector Bool -> VU.Vector Int
 presentToIndex present  =
-    VU.map (\v -> if fst v then snd v else -1) truth_indexes
+    VU.map mapper truth_indexes
   where
-    truth_accum accum el = if el then accum+1 else accum
+    accum acc el         = if el then acc+1 else acc
+    mapper (present, ix) = if present then ix else -1
     truth_indexes        = VU.zip present indexes
-    indexes              = VU.prescanl truth_accum (0 :: Int) present
+    indexes              = VU.prescanl accum 0 present
 
 -- | Append a row to the database. The caller must ensure that the version is
 --   unique.
@@ -130,7 +127,7 @@ update RowColumn{rows=old_rows} rid      previous_version version  new_present  
       }
 
       old_present_indexes = presentToIndex (present old_row_version)
-      new_present_indexes = updateablePresentToIndex new_present
+      new_present_indexes = presentToIndexWithNull new_present
 
       old_values        = columns old_row_version
       old_present       = VU.toList $ present old_row_version

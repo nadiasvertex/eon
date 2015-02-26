@@ -63,7 +63,8 @@ the new row to the list of rows already in that bucket.
 .. code-block:: haskell
    :linenos:
 
-    append :: RowColumn          -> Int64 -> Int64 -> VU.Vector Bool -> VU.Vector Int64 -> RowColumn
+    append ::
+           RowColumn             -> Int64 -> Int64 -> VU.Vector Bool -> VU.Vector Int64 -> RowColumn
     append RowColumn{rows=old_rows} rid      version  present           values =
        RowColumn{rows=new_rows}
        where
@@ -96,7 +97,8 @@ rows in the map.
 .. code-block:: haskell
    :linenos:
 
-    update :: RowColumn          -> Int64 -> Int64         -> Int64 -> [Maybe Bool] -> VU.Vector Int64 -> RowColumn
+    update ::
+           RowColumn             -> Int64 -> Int64         -> Int64 -> [Maybe Bool] -> VU.Vector Int64 -> RowColumn
     update RowColumn{rows=old_rows} rid      previous_version version  new_present     new_values =
        RowColumn{rows=new_rows}
        where
@@ -117,7 +119,7 @@ rows in the map.
           }
 
           old_present_indexes = presentToIndex (present old_row_version)
-          new_present_indexes = updateablePresentToIndex new_present
+          new_present_indexes = presentToIndexWithNull new_present
 
           old_values        = columns old_row_version
           old_present       = VU.toList $ present old_row_version
@@ -166,12 +168,12 @@ contain the column index, and an operation.
 
     data CopyColumn = None | Old | New
 
-On line 27 of the `update` function, we zip together the present vectors for the
+On line 28 of the `update` function, we zip together the present vectors for the
 previous row (old) and the updates (new). Then we zip those together with the
 index of the column they represent.
 
-Line 28 maps that list into a simpler list of indexes and CopyColumn values by
-pattern matching over the various options. Finally, line 29 generates our
+Line 29 maps that list into a simpler list of indexes and CopyColumn values by
+pattern matching over the various options. Finally, line 30 generates our
 copy program by eliminating any 'None' operations from the list.
 
 While the explanation given here has used procedural language, it is the
@@ -194,37 +196,35 @@ absolute column indexes to the actual column vectors for each row.
 
     presentToIndex :: VU.Vector Bool -> VU.Vector Int
     presentToIndex present  =
-        convert_truth 0 0 VU.empty
+        VU.map mapper truth_indexes
       where
-        convert_truth offset index output
-          | offset < VU.length present =
-              if   present ! offset
-              then convert_truth (offset+1) (index+1) (VU.snoc output index)
-              else convert_truth (offset+1)  index    (VU.snoc output  (-1))
-
-          | otherwise = output
-
+        accum acc el         = if el then acc+1 else acc
+        mapper (present, ix) = if present then ix else -1
+        truth_indexes        = VU.zip present indexes
+        indexes              = VU.prescanl accum 0 present
 
 This function is designed to generate a lookup vector for existing row data. It
-is fairly simple:
+is fairly simple and uses some vector-specific functions that should be very
+efficient:
 
- #. For each element of the present vector, generate a lookup index for the
-    columns vector.
- #. If the present element is "True", then write the current index into the
-    vector, increment the index, and process the next element.
- #. If the present element is "False", write a -1 into the vector, and go to
-    the next element.
-
-This particular implementation is not entirely satisfying, but the existing
-vector traversal mechanisms do not lend themselves to carrying the index state
-to succeeding elements. An attempt was made to utilize the state monad here,
-but the results seemed even less readable.
+ #. (Line 8) Run an accumulator (Line 5) over the present vector that increases
+    only when the presence element is True.
+ #. (Line 5) If the present element is "True", then bump the accumulator,
+    otherwise return the current value.
+ #. (Line 7) Zip the indexes we just generated together with the present vector.
+ #. (Line 3) Map the vector we made in the previous step to a new vector where
+    every (False, _) tuple is replaced by -1, and every (True, ix) is replaced
+    with ix.
 
 As a simple example, if we had the following present vector:
 
    [False, True]
 
-we would end up with this lookup vector:
+we would generate the following intermediate structure:
+
+   [(False, 0), (True, 0)]
+
+and end up with this lookup vector:
 
    [   -1,    0]
 
@@ -232,28 +232,45 @@ This allows us to lookup absolute column index 1, and see that it is found at
 local column index 0. You can see the usage of this lookup table in lines 41
 and 42 in "update" above.
 
+A longer example:
+
+[False,False,True,True,False,True]
+
+intermediate:
+
+[(False, 0),(False,0),(True, 0),(True, 1),(False, 1),(True,2)]
+
+final:
+
+[-1,-1,0,1,-1,2]
+
 We wrote a similar, but slighty more complex function for the new_present values
 passed into update. The additional complexity is due to the use of Maybe to
-encode null values, and the possibility of deletion.
+encode columns that might have been set to null in an update (and thus deleted
+from the current row).
 
 .. code-block:: haskell
    :linenos:
 
-   updateablePresentToIndex :: [Maybe Bool] -> VU.Vector Int
-   updateablePresentToIndex         present  =
-     VU.fromList global_indexes
+   presentToIndexWithNull :: [Maybe Bool] -> VU.Vector Int
+   presentToIndexWithNull  =
+     VU.fromList . snd . mapAccumL accum 0
      where
-       global_indexes = convert_truth 0 truth_values
-       truth_values   = map convert_present present
+       accum acc el = if convert_present el then (acc+1, acc) else (acc, -1)
 
        convert_present Nothing      = False
        convert_present (Just False) = False
        convert_present (Just  True) = True
 
-       convert_truth     _ [        ] = []
-       convert_truth index (True :xs) = index : convert_truth (index+1) xs
-       convert_truth index (False:xs) =    -1 : convert_truth  index    xs
-
 You can see that this is basically the same function, but rewritten to handle
 the ternary logic needed for dealing with NULL. It's also written in a simpler
 format using a list.
+
+Generating Final Column Values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The result of the update function basically derives from lines 45 and 27, where
+we run the copy program and merge the old and new vectors into its final
+output.
+
+Line 6 provides an updated map with the new row inserted into the right place.
