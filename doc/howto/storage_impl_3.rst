@@ -274,3 +274,58 @@ we run the copy program and merge the old and new vectors into its final
 output.
 
 Line 6 provides an updated map with the new row inserted into the right place.
+
+Unit Tests
+---------------------
+
+After spending some time researching various supported methods for writing
+tests in Haskell, it was determined that the best choice would be a mix of
+doc tests and spec tests, as explained in
+`this tutorial. <https://github.com/kazu-yamamoto/unit-test-example/blob/master/markdown/en/tutorial.md>`_
+
+Briefly, the idea is that doc tests should explain how to use the library, and
+spec tests should perform algorithmic testing. The spec tests can include
+QuickCheck property tests too.
+
+A sample run:
+
+.. code-block:: bash
+
+  $ cabal test
+  Building eon-0.1.0.0...
+  Preprocessing library eon-0.1.0.0...
+  [1 of 1] Compiling Store.RowColumn  ( src/Store/RowColumn.hs, dist/build/Store/RowColumn.o )
+  In-place registering eon-0.1.0.0...
+  Preprocessing executable 'eon' for eon-0.1.0.0...
+  [1 of 2] Compiling Store.RowColumn  ( src/Store/RowColumn.hs, dist/build/eon/eon-tmp/Store/RowColumn.o )
+  Linking dist/build/eon/eon ...
+  Preprocessing test suite 'doctest' for eon-0.1.0.0...
+  Preprocessing test suite 'spec' for eon-0.1.0.0...
+  Linking dist/build/spec/spec ...
+  Running 2 test suites...
+  Test suite doctest: RUNNING...
+  Test suite doctest: PASS
+  Test suite logged to: dist/test/eon-0.1.0.0-doctest.log
+  Test suite spec: RUNNING...
+  Test suite spec: PASS
+  Test suite logged to: dist/test/eon-0.1.0.0-spec.log
+  2 of 2 test suites (2 of 2 test cases) passed.
+
+
+Source
+---------
+
+The entire source is included below:
+
+.. literalinclude:: ../../src/Store/RowColumn.hs
+  :language: haskell
+  :linenos:
+
+Tests
+---------
+
+The entire spec test is included below:
+
+.. literalinclude:: ../../test/RowColumnSpec.hs
+  :language: haskell
+  :linenos:
