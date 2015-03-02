@@ -48,26 +48,51 @@ extra-source-files:  README.md
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.18
 
+test-suite doctest
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  hs-source-dirs:   test
+  ghc-options:      -threaded -Wall
+  main-is:          doctests.hs
+
+  build-depends:    base,
+                    doctest >= 0.9.3
+
+test-suite spec
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  hs-source-dirs:   test
+  ghc-options:      -Wall
+  main-is:          Spec.hs
+  other-modules:    RowColumnSpec
+
+  build-depends:    base,
+                    containers >=0.5  &&  < 0.6,
+                    vector     >=0.10 &&  < 1.0,
+                    hspec      >=1.3,
+                    QuickCheck,
+                    eon
+
+library
+  exposed-modules:     Store.RowColumn
+
+  build-depends:       base       >=4.6  &&  < 4.7,
+                       parsec     >=3.1  &&  < 3.2,
+                       vector     >=0.10 &&  < 1.0,
+                       repa       >=3.2  &&  < 3.3,
+                       containers >=0.5  &&  < 0.6
+
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
 
 executable eon
-  -- .hs or .lhs file containing the Main module.
   main-is:             Main.hs
+  build-depends:       base       >=4.6  &&  < 4.7,
+                       parsec     >=3.1  &&  < 3.2,
+                       vector     >=0.10 &&  < 1.0,
+                       repa       >=3.2  &&  < 3.3,
+                       containers >=0.5  &&  < 0.6
 
-  -- Modules included in this executable, other than Main.
-  -- other-modules:
-
-  -- LANGUAGE extensions used by modules in this package.
-  -- other-extensions:
-
-  -- Other library packages from which modules are imported.
-  build-depends:       base >=4.6 && <4.7,
-                       parsec >=3.1 && <3.2,
-                       vector >=0.10 && < 1.0,
-                       repa   >=3.2 && <3.3,
-                       
-
-  -- Directories containing source files.
   hs-source-dirs:      src
-
-  -- Base language which the package is written in.
   default-language:    Haskell2010
