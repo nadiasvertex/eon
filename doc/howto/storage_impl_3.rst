@@ -275,6 +275,28 @@ output.
 
 Line 6 provides an updated map with the new row inserted into the right place.
 
+Lookups
+---------
+
+Finding a particular row version is very simple. It's just a matter of finding
+the list of row versions in the row map, and then returning the first one that
+matches the version. The versions are sorted, so we can early out. Since the
+versions are stored in a list, it doesn't make sense to use a binary search to
+find the right one. We could do early-out for better performance, but the number
+of versions of a row should always be small enough that we don't really care
+at this point. Perhaps it's an optimization we'll do later.
+
+.. code-block:: haskell
+
+  lookup row_column row_id row_version =
+    do
+      row_versions  <- Map.lookup row_id (rows row_column)
+      last_version  <- listToMaybe . reverse $ filter match_version row_versions
+      return last_version
+    where
+      match_version Row{version=current_version} = row_version == current_version
+
+
 Unit Tests
 ---------------------
 

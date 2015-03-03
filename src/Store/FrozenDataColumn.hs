@@ -22,8 +22,11 @@ data FrozenSegment a = FrozenSegment {
 -- | Takes a mutable segment and turns it into a sorted, efficiently packed
 -- immutable segment, plus a map indicating how to find the original oid in
 -- the sorted array.
-freeze :: (Ord a, Unbox a) => MD.Segment a -> (SegmentMap, FrozenSegment a)
-freeze                               seg    =
+freeze :: (Ord a, Unbox a)               -- ^ Requires the data type to be ordered and unboxable.
+      => MD.Segment a                    -- ^ The segment to freeze
+      -> (SegmentMap, FrozenSegment a)   -- ^ Returns a frozen copy of the segment.
+      
+freeze seg    =
   (SegmentMap    {extents=xt, indexes=frozen_indexes},
    FrozenSegment {column=frozen_array})
   where

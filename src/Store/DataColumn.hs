@@ -76,3 +76,7 @@ segmentFromList          seg    (   x:xs   ) =
    where
       (oid, value) = x
       r            = appendValue seg oid value
+
+-- | Create a new, empty segment
+empty :: Segment a
+empty = Segment {extents=[],  array=[]}

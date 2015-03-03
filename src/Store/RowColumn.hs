@@ -110,15 +110,15 @@ append :: RowColumn       -- ^ The rows to append to.
        -> VU.Vector Int64 -- ^ values
        -> RowColumn       -- ^ The new rows.
 
-append RowColumn{rows=old_rows} rid' version' present' values =
+append RowColumn{rows=old_rows} row_id version' present' values =
    RowColumn{rows=new_rows}
    where
-      new_rows         = Map.insert rid' new_row_versions old_rows
-      old_row_versions = fromMaybe [] (Map.lookup rid' old_rows)
+      new_rows         = Map.insert row_id new_row_versions old_rows
+      old_row_versions = fromMaybe [] (Map.lookup row_id old_rows)
 
       new_row_versions = new_row_version : old_row_versions
       new_row_version  = Row{
-         rid    =rid',
+         rid    =row_id,
          version=version',
          columns=values,
          present=present'
@@ -191,20 +191,20 @@ update :: RowColumn       -- ^ The old rows.
        -> [Maybe Bool]    -- ^ updates_present
        -> VU.Vector Int64 -- ^ new_values
        -> RowColumn       -- ^ The new rows.
-update RowColumn{rows=old_rows} rid' previous_version version' new_present new_values =
+update RowColumn{rows=old_rows} row_id previous_version version' new_present new_values =
    RowColumn{rows=new_rows}
    where
-      new_rows = Map.insert rid' new_row_versions old_rows
+      new_rows = Map.insert row_id new_row_versions old_rows
 
       match_row Row{version=current_version} =
          current_version == previous_version
 
-      old_row_versions = fromMaybe [] (Map.lookup rid' old_rows)
+      old_row_versions = fromMaybe [] (Map.lookup row_id old_rows)
       old_row_version  = head $ filter match_row old_row_versions
 
       new_row_versions = new_row_version : old_row_versions
       new_row_version  = Row {
-         rid    =rid',
+         rid    =row_id,
          version=version',
          columns=final_values,
          present=updated_present
@@ -252,10 +252,10 @@ lookup :: RowColumn -- ^ The rows to search.
        -> Int64     -- ^ row_id
        -> Int64     -- ^ row_version
        -> Maybe Row -- ^ @Just Row@ if the row and version is found, or @Nothing@.
-lookup row_column rid' rversion =
+lookup row_column row_id row_version =
   do
-    row_versions  <- Map.lookup rid' (rows row_column)
+    row_versions  <- Map.lookup row_id (rows row_column)
     last_version  <- listToMaybe . reverse $ filter match_version row_versions
     return last_version
   where
-    match_version Row{version=cversion} = rversion == cversion
+    match_version Row{version=current_version} = row_version == current_version
