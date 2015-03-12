@@ -64,3 +64,4 @@ docs/_build/
 
 # Cabal distribution
 dist/
+/.dist-buildwrapper/
