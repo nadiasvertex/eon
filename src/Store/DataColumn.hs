@@ -1,6 +1,10 @@
 module Store.DataColumn where
 
-import           Data.Int (Int16, Int64)
+-- System modules
+import           Data.Int     (Int16, Int64)
+
+-- Application modules
+import           Engine.Query
 
 data Extent = Extent {
     start :: Int64,
@@ -11,6 +15,10 @@ data Segment a = Segment {
     extents :: [Extent],
     array   :: [a]
 } deriving(Eq, Show)
+
+instance Engine.Query.Query Segment where
+  filter  = filterSegment
+  ifilter = ifilterSegment
 
 -- | Append a new oid to a list of extents.
 appendExtent :: [Extent] -> Int64 -> [Extent]
@@ -76,6 +84,24 @@ segmentFromList          seg    (   x:xs   ) =
    where
       (oid, value) = x
       r            = appendValue seg oid value
+
+-- | Filter a segment using function 'f', returning a list of matching values
+filterSegment :: Segment a    -- ^ The segment to filter
+              -> (a -> Bool)  -- ^ The function to user as the filter
+              -> [a]          -- ^ Return a list of values that pass the filter
+filterSegment s f = flt (enumerateSegment s)
+  where
+    flt [        ] = []
+    flt ((v,i):xs) = if f v
+      then v : flt xs
+      else flt xs
+
+ifilterSegment s f = flt (enumerateSegment s)
+  where
+    flt [        ] = []
+    flt ((v,i):xs) = if f v
+      then (v,i) : flt xs
+      else flt xs
 
 -- | Create a new, empty segment
 empty :: Segment a
