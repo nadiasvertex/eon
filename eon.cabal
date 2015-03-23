@@ -16,7 +16,9 @@ version:             0.1.0.0
 synopsis:            A distributed data framework.
 
 -- A longer description of the package.
--- description:
+description:        Provides a system for storing and querying data, along with application hosting,
+                    distributed over a cluster of nodes. The system automatically distributes storage
+                    and load throughout the cluster.
 
 -- URL for the project homepage or repository.
 homepage:            https://github.com/nadiasvertex/eon
