@@ -1,10 +1,13 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Store.DataColumn where
 
 -- System modules
-import           Data.Int     (Int16, Int64)
+import  Data.Int     (Int16, Int64)
+import  Data.Typeable
 
 -- Application modules
-import           Engine.Query
+import  Engine.Query
 
 data Extent = Extent {
     start :: Int64,
@@ -14,9 +17,9 @@ data Extent = Extent {
 data Segment a = Segment {
     extents :: [Extent],
     array   :: [a]
-} deriving(Eq, Show)
+} deriving(Eq, Show, Typeable)
 
-instance Engine.Query.Query Segment where
+instance Engine.Query.Queryable Segment where
   filter  = filterSegment
   ifilter = ifilterSegment
 
@@ -56,6 +59,7 @@ enumerateExtent    (last_xt:the_rest) =
               Extent{start=s, len=l} = x in
                 (initial_oid s l, x, xs)
 
+
 -- | Take a list of oids and turn it into a list of extents.
 extentFromList :: [Extent] -> [ Int64 ] -> [Extent]
 extentFromList       xt       [       ] =  xt
@@ -66,15 +70,22 @@ extentFromList       xt       ( x:xs  ) =
 
 
 -- | Appends a value to a segment.
-appendValue :: Segment a -> Int64 -> a -> Segment a
+appendValue :: Segment a -- ^ The segment to append a value to
+            -> Int64     -- ^ The row id of the value
+            -> a         -- ^ The value
+            -> Segment a -- ^ A new segment with the value appended
 appendValue Segment{extents=xt, array=arr} oid value =
   Segment{extents=appendExtent xt oid, array=value : arr}
 
-enumerateSegment :: Segment a -> [(a, Int64)]
-enumerateSegment         seg   =
+
+-- | Walks the segment and provides and indexed list of the segment's values.
+enumerateSegment :: Segment a    -- ^ The segment to enumerate
+                -> [(a, Int64)]  -- ^ A list of (value, index) tuples
+enumerateSegment seg   =
   zip arr (enumerateExtent xt)
   where
     Segment{extents=xt, array=arr} = seg
+
 
 -- | Take a list of oids and values, and append them to a segment.
 segmentFromList :: Segment a -> [(Int64, a)] -> Segment a
@@ -85,23 +96,31 @@ segmentFromList          seg    (   x:xs   ) =
       (oid, value) = x
       r            = appendValue seg oid value
 
+
 -- | Filter a segment using function 'f', returning a list of matching values
 filterSegment :: Segment a    -- ^ The segment to filter
-              -> (a -> Bool)  -- ^ The function to user as the filter
+              -> (a -> Bool)  -- ^ The function to use as the filter
               -> [a]          -- ^ Return a list of values that pass the filter
 filterSegment s f = flt (enumerateSegment s)
   where
     flt [        ] = []
-    flt ((v,i):xs) = if f v
+    flt ((v,_):xs) = if f v
       then v : flt xs
       else flt xs
 
+
+-- | Filter a segment using function 'f', returning a list of tuples with the
+-- | matching value and the index of the match.
+ifilterSegment :: Segment a    -- ^ The segment to filter
+               -> (a -> Bool)  -- ^ The function to use as the filter
+               -> [(a, Int64)] -- ^ Return a list of (value, index) tuples that pass the filter
 ifilterSegment s f = flt (enumerateSegment s)
   where
     flt [        ] = []
     flt ((v,i):xs) = if f v
       then (v,i) : flt xs
       else flt xs
+
 
 -- | Create a new, empty segment
 empty :: Segment a
