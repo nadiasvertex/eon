@@ -76,3 +76,6 @@ class FrozenRow(Row):
 
     def insert(self, columns, values):
         raise ImmutableError
+
+    def get_column(self, column_no):
+        return self.columns[column_no]

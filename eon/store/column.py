@@ -33,7 +33,10 @@ class Column:
         if self.data_type in (DataType.small_int, DataType.standard_int, DataType.big_int):
             return FrozenNumericColumn(self.data_type, data), index
 
-    def op_vector(self, op, value):
+    def get(self, index):
+        return self.data[index]
+
+    def vector_op(self, op, value):
         """
         Performs the '<' on this column, returning an array of truth values that indicates
         the result of the test for each row in the column.
@@ -53,13 +56,13 @@ class Column:
         elif op == Op.ne:
             return np.bool_([v != value for v in self.data])
 
-    def op_stream(self, op, value):
+    def stream_op(self, op, value):
         """
         Provides a generator which yields the indices for which this operation is true.
         :param value: The value to test.
         :return: A generator yielding the indices for which this operation is true.
         """
-        r = self.op_vector(op, value)
+        r = self.vector_op(op, value)
         for i, v in enumerate(r):
             if v:
                 yield i
@@ -74,7 +77,7 @@ class FrozenNumericColumn(Column):
     def insert(self, value):
         raise ValueError("Cannot insert data into a frozen column.")
 
-    def op_vector(self, op, value):
+    def vector_op(self, op, value):
         """
         Performs the specified operation on this column, returning an array of truth values that indicates
         the result of the test for each row in the column.
