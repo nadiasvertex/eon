@@ -43,3 +43,24 @@ class EvaluateTest(unittest.TestCase):
             with self.subTest(i=i):
                 self.assertEqual(v < pivot, selected[i])
 
+
+    def test_binary_op(self):
+        pivot1 = random.randint(0, 1 << 16)
+        pivot2 = random.randint(0, 1 << 16)
+
+        plan = Plan()
+        plan.lt(0, pivot1)
+        plan.gt(1, pivot2)
+        plan.logical_and()
+
+        e = Evaluate(plan)
+        selected = e.evaluate(self.full_row)
+
+        c0 = self.full_row.get_column(0)
+        c1 = self.full_row.get_column(1)
+        for i, v in enumerate(selected):
+            with self.subTest(i=i):
+                c0_v = c0.data[i]
+                c1_v = c1.data[i]
+                self.assertEqual(c0_v < pivot1 and c1_v > pivot2, v)
+
