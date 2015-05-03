@@ -40,10 +40,38 @@ class Row:
 
         self.data.append(column_rids)
 
+    def select(self, columns, idx):
+        """
+        Get specific column values at the given index.
+        :param columns: A list of boolean values for each column in the table. A value of True means to select the
+                        column, a value of false means skip it.
+        :param idx: The row index to get.
+        :return: A list of values for the given columns at the given row index.
+        """
+        d = self.data[idx]
+        r = []
+        for i, present in enumerate(columns):
+            if not present:
+                continue
+
+            row_idx = d[i]
+            r.append(self.columns[i].get(row_idx) if row_idx is not None else None)
+
+        return r
+
     def get(self, idx):
+        """
+        Get all column values at the given index.
+        :param idx: The row index to get.
+        :return: A list of values for the given row index.
+        """
         d = self.data[idx]
         return [self.columns[i].get(row_idx) if row_idx is not None else None
                 for i, row_idx in enumerate(d)]
+
+    def get_column(self, column_no):
+        return self.columns[column_no]
+
 
     def freeze(self):
         new_columns = []
@@ -80,6 +108,3 @@ class FrozenRow(Row):
 
     def insert(self, columns, values):
         raise ImmutableError
-
-    def get_column(self, column_no):
-        return self.columns[column_no]
