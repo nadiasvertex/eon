@@ -24,7 +24,7 @@ class Column:
 
     def insert(self, value):
         self.data.append(value)
-        return len(self.data)
+        return len(self.data)-1
 
     def freeze(self):
         sorted_data = sorted([(v, i) for i, v in enumerate(self.data)])

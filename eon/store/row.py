@@ -1,5 +1,8 @@
 from copy import deepcopy
 
+from eon.store.column import Column
+
+
 __author__ = 'Christopher Nelson'
 
 
@@ -13,32 +16,34 @@ class Row:
         self.base_rid = base_rid
         self.row_type = row_type
         self.data = []
-        self.columns = []
+        self.columns = [Column(data_type) for data_type in row_type]
 
     def insert(self, columns, values):
         """
         Inserts the given values into the data store.
 
-        :param columns: A tuple of booleans, one for each attribute in the row_type.= v
+        :param columns: A tuple of booleans, one for each attribute in the row_type.
                         If a present value is False, there is no value present for
                         that column in the values tuple.
         :param values: A tuple of values that should be written into the row.
         :return: The row id.
         """
-        value_idx = 0
         column_rids = []
         for i, present in enumerate(columns):
             if not present:
                 column_rids.append(None)
                 continue
 
-            value = values[value_idx]
-            column = self.columns[value_idx]
+            value = values[i]
+            column = self.columns[i]
             column_rids.append(column.insert(value))
 
-            value_idx += 1
-
         self.data.append(column_rids)
+
+    def get(self, idx):
+        d = self.data[idx]
+        return [self.columns[i].get(row_idx) if row_idx is not None else None
+                for i, row_idx in enumerate(d)]
 
     def freeze(self):
         new_columns = []
@@ -65,7 +70,6 @@ class Row:
                 new_data[ix][ci] = i
 
         return FrozenRow(self.base_rid, self.row_type, new_columns, new_data)
-
 
 
 class FrozenRow(Row):
