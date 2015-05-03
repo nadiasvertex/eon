@@ -33,6 +33,31 @@ class RowTest(unittest.TestCase):
                 self.assertEqual(c2[i], d[1])
                 self.assertEqual(c3[i], d[2])
 
+    def test_insert_null(self):
+        row_type = (DataType.big_int, DataType.standard_int, DataType.small_int)
+        r = Row(0, row_type)
+
+        c1 = random.sample(range(1, 10000), 1800)
+        c2 = random.sample(range(1, 10000), 1800)
+        c3 = random.sample(range(1, 10000), 1800)
+
+        b1 = [random.choice((True, False)) for _ in range(0, len(c1))]
+        b2 = [random.choice((True, False)) for _ in range(0, len(c2))]
+        b3 = [random.choice((True, False)) for _ in range(0, len(c2))]
+
+        for i in range(0, len(c1)):
+            r.insert((b1[i], b2[i], b3[i]), (c1[i], c2[i], c3[i]))
+
+        self.assertEqual(len(c1), len(r.data))
+
+        for i in range(0, len(c1)):
+            d = r.get(i)
+            with self.subTest(i=i):
+                self.assertEqual(c1[i] if b1[i] else None, d[0])
+                self.assertEqual(c2[i] if b2[i] else None, d[1])
+                self.assertEqual(c3[i] if b3[i] else None, d[2])
+
+
     def test_select(self):
         row_type = (DataType.big_int, DataType.standard_int, DataType.small_int)
         r = Row(0, row_type)
