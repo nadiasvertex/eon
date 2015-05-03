@@ -24,8 +24,8 @@ class Evaluate:
             # the column specified. Save the result (a bool vector)
             # in the stack.
             if op in (Op.lt, Op.gt, Op.lte, Op.gte, Op.eq, Op.ne):
-                column_no = op[1]
-                value = op[2]
+                column_no = instruction[1]
+                value = instruction[2]
                 column = row.get_column(column_no)
                 self.stack.append(column.vector_op(op, value))
 

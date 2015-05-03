@@ -57,7 +57,6 @@ class RowTest(unittest.TestCase):
                 self.assertEqual(c2[i] if b2[i] else None, d[1])
                 self.assertEqual(c3[i] if b3[i] else None, d[2])
 
-
     def test_select(self):
         row_type = (DataType.big_int, DataType.standard_int, DataType.small_int)
         r = Row(0, row_type)
