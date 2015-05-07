@@ -1,5 +1,6 @@
 import json
 import uuid
+import io
 
 from eon.query.plan import Plan
 
@@ -12,8 +13,8 @@ The JSON query is quite simple. It looks like a deconstructed SQL query, because
 {
   "from": "tablename",
   "join": [
-    {"left":"tablename",
-     "right":"tablename",
+    {
+     "table":"tablename",
      "type":"left|right|cross",
      "outer": false,
      "on": {
@@ -57,8 +58,8 @@ The JSON query is quite simple. It looks like a deconstructed SQL query, because
     {"window":5,
      "where": { ... just like where above ... },
      "action": "drop|store_true|store_false|store",
+     "store_expr": { ... expression to evaluate when where is true, result is stored in new column in output stream ... }
      "column": "new_column_name",
-     "store_expr": { ... expression to evaluate when where is true, result is stored in column in output stream ... }
     }, etc...
   ]
 }
@@ -80,7 +81,10 @@ class Parser:
     def __init__(self, data):
         self.query = json.loads(data)
         self.qid = uuid.uuid4()
+        self.msg = io.StringIO()
 
+    def get_message(self):
+        return self.msg.getvalue()
 
     def compile(self):
         """
@@ -89,6 +93,14 @@ class Parser:
         :return: The query plan.
         """
         plan = Plan()
+
+        base_table = self.query.get("from")
+        if base_table is None:
+            self.msg.write("ERROR: Unable to parse query, no 'from' clause.")
+            return False
+
+
+
 
 
 
