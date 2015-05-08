@@ -16,7 +16,11 @@ class Row:
         self.base_rid = base_rid
         self.row_type = row_type
         self.data = []
+        self.deleted = []
         self.columns = [Column(data_type) for data_type in row_type]
+
+    def __len__(self):
+        return len(self.data)
 
     def insert(self, columns, values):
         """
@@ -39,6 +43,8 @@ class Row:
             column_rids.append(column.insert(value))
 
         self.data.append(column_rids)
+        self.deleted.append(False)
+        return self.base_rid + len(self.data) - 1
 
     def select(self, columns, idx):
         """
@@ -72,8 +78,12 @@ class Row:
     def get_column(self, column_no):
         return self.columns[column_no]
 
+    def delete(self, rid):
+        idx = rid - self.base_rid
+        self.deleted[idx] = True
 
     def freeze(self):
+        # TODO: Eliminate deleted rows during freeze.
         new_columns = []
         new_data = deepcopy(self.data)
         for ci, col in enumerate(self.columns):
