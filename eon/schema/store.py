@@ -36,8 +36,16 @@ class Table:
     def __init__(self, name=None, columns=[]):
         self.name = name
         self.columns = columns
+        self.col_map = None
+
+        # Maximum number of rows in a segment.
+        self.segment_row_limit = 1 << 16
+
         self.in_flight = Row(0, self.get_row_type())
-        self.archive = {}
+        self.archive = []
+
+    def _optimize(self):
+        pass
 
     def get_row_type(self):
         """
@@ -46,15 +54,24 @@ class Table:
         """
         return (c.data_type for c in self.columns)
 
+    def write(self, data):
+        """
+        Data must be a dictionary. Each key is a column
+        :param data:
+        :return:
+        """
+
     def store(self):
         return {
             "name": self.name,
-            "columns": [c.store() for c in self.columns]
+            "columns": [c.store() for c in self.columns],
+            "segment_row_limit": self.segment_row_limit
         }
 
     def load(self, data):
         self.name = data["name"]
         self.columns = [Column().load(cd) for cd in data["columns"]]
+        self.segment_row_limit = data["segment_row_limit"]
         return self
 
 
