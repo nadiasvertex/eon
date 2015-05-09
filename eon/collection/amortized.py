@@ -36,17 +36,25 @@ class AmortizedArray:
         self.arrays[-1] = new_array
 
     def _shift(self, value):
-        # The current slot is full. We need to merge everything from 0 to the last full slot
+        # The current slot is full. We need to merge everything from 0 to the next empty slot
         # and put it in a new array, set the full bit, and reset the other full bits.
-        full_slots = np.array(np.nonzero(self.full))
-        full_slots[-1] = 0
-        last_full_slot = (full_slots.max()) + 1
-        source_arrays = self.arrays[0:last_full_slot] + [np.array([value], dtype=self.dtype)]
+        full_slots = []
+        source_arrays = [np.array([value], dtype=self.dtype)]
+        for i, v in enumerate(self.full):
+            if not v:
+                next_empty_slot = i
+                break
+            full_slots.append(i)
+
+        for i in full_slots:
+            source_arrays.append(self.arrays[i])
+
+        #print("next=", next_empty_slot, "full=", full_slots, self.full, "concat=", source_arrays)
         new_array = np.concatenate(source_arrays)
         new_array.sort()
-        self.arrays[last_full_slot] = new_array
-        self.full[last_full_slot] = True
-        for i in range(0, last_full_slot):
+        self.arrays[next_empty_slot] = new_array
+        self.full[next_empty_slot] = True
+        for i in range(0, next_empty_slot):
             self.full[i] = False
             self.arrays[i] = None
 
@@ -64,7 +72,7 @@ if __name__ == "__main__":
     import random
 
     a = AmortizedArray(np.int)
-    c = random.sample(range(1, 20), 10)
+    c = random.sample(range(1, 50), 20)
     print(a.arrays)
     for v in c:
         a.append(v)
@@ -75,7 +83,7 @@ if __name__ == "__main__":
 
     print(sc)
     print(a2)
-    print(sc==a2)
+    print(sc == a2)
 
 
 

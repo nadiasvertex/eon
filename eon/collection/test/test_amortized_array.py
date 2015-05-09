@@ -21,7 +21,7 @@ class AmortizedArrayTest(unittest.TestCase):
             a.append(v)
 
         d = sorted(c)
+        self.assertEqual(len(d), len(list(a)))
         for i, v in enumerate(a):
             with self.subTest(i=i):
                 self.assertEqual(d[i], v)
-
