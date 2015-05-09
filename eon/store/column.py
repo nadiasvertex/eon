@@ -24,7 +24,7 @@ class Column:
 
     def insert(self, value):
         self.data.append(value)
-        return len(self.data)-1
+        return len(self.data) - 1
 
     def freeze(self):
         sorted_data = sorted([(v, i) for i, v in enumerate(self.data)])
@@ -35,6 +35,30 @@ class Column:
 
     def get(self, index):
         return self.data[index]
+
+    def vector_join(self, array):
+        """
+        Join array against this column. Yields up a series of lists of
+        tuples.
+
+        :param array: The array to join against.
+        :return: A list of tuples encoded as a vstacked array. The local column indexes are on the left, and the
+                 array indices are on the right.
+        """
+        data = np.array(self.data) if type(self.data) is list else self.data
+        common = np.intersect1d(array, data)
+        for v in common:
+            local_indices = np.nonzero(np.in1d(data, v))[0]
+            array_indices = np.nonzero(np.in1d(array, v))[0]
+            for idx in local_indices:
+                local_idx = np.zeros(len(array_indices), dtype="int")
+                local_idx.fill(idx)
+                yield (local_idx, array_indices)
+
+    def stream_join(self, array):
+        for local, remote in self.vector_join(array):
+            for i, v in enumerate(local):
+                yield (v, remote[i])
 
     def vector_op(self, op, value):
         """

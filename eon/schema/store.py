@@ -12,6 +12,10 @@ class Database:
     def __init__(self, name=None, tables=[]):
         self.name = None
         self.tables = tables
+        self.table_names = None
+
+    def _init_stage_2(self):
+        self.table_names = {table.name for table in self.tables}
 
     def modify(self, command):
         """
@@ -19,6 +23,16 @@ class Database:
         :param command: The DDL command to execute
         :return:
         """
+        pass
+
+    def get_table(self, name):
+        """
+        Provides the table object with the given name.
+
+        :param name: The name of the table.
+        :return: A table, or None if there is no table with that name.
+        """
+        return self.table_names.get(name)
 
     def store(self):
         return {

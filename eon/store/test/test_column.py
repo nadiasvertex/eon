@@ -1,6 +1,8 @@
 import random
 import unittest
 
+import numpy as np
+
 from eon.schema.data import DataType
 from eon.store.column import Column
 from eon.query.plan import Op
@@ -25,6 +27,42 @@ class ColumnTest(unittest.TestCase):
         for i, v in enumerate(data):
             with self.subTest(i=i):
                 self.assertEqual(v, c.get(i))
+
+    def test_vector_join(self):
+        c = Column(DataType.standard_int)
+        data = random.sample(range(1, 1 << 16), 10)
+        for i in data:
+            c.insert(i)
+
+        random_items = [random.choice(data) for _ in range(0, len(data) >> 1)]
+        array = np.array(random_items + random_items)
+        for item in c.vector_join(array):
+            with self.subTest():
+                self.assertEqual(2, len(item))
+                l, r = item
+                self.assertEqual(1, len(set(l)))
+                self.assertEqual(len(r), len(set(r)))
+
+                dv = data[l[0]]
+                r_indexes = [i for i, v in enumerate(array) if v == dv]
+                self.assertListEqual(r_indexes, list(r))
+
+
+    def test_stream_join(self):
+        c = Column(DataType.standard_int)
+        data = random.sample(range(1, 1 << 16), 1 << 15)
+        for i in data:
+            c.insert(i)
+
+        random_items = [random.choice(data) for _ in range(0, len(data) >> 1)]
+        array = np.array(random_items + random_items)
+        for item in c.stream_join(array):
+            with self.subTest():
+                self.assertEqual(2, len(item))
+                l, r = item
+                lv = data[l]
+                rv = array[r]
+                self.assertEqual(lv, rv)
 
     def test_logical_op(self):
         c = Column(DataType.standard_int)
@@ -52,6 +90,48 @@ class FrozenColumnTest(unittest.TestCase):
             c.insert(i)
 
         _ = c.freeze()
+
+    def test_vector_join(self):
+        c = Column(DataType.standard_int)
+        data = random.sample(range(1, 1 << 16), 10)
+        for i in data:
+            c.insert(i)
+
+        fc, m = c.freeze()
+        del c
+
+        random_items = [random.choice(data) for _ in range(0, len(data) >> 1)]
+        array = np.array(random_items + random_items)
+        for item in fc.vector_join(array):
+            with self.subTest():
+                self.assertEqual(2, len(item))
+                l, r = item
+                self.assertEqual(1, len(set(l)))
+                self.assertEqual(len(r), len(set(r)))
+
+                dv = data[m[l[0]]]
+                r_indexes = [i for i, v in enumerate(array) if v == dv]
+                self.assertListEqual(r_indexes, list(r))
+
+    def test_stream_join(self):
+        c = Column(DataType.standard_int)
+        data = random.sample(range(1, 1 << 16), 1 << 15)
+        for i in data:
+            c.insert(i)
+
+        fc, m = c.freeze()
+        del c
+
+        random_items = [random.choice(data) for _ in range(0, len(data) >> 1)]
+        array = np.array(random_items + random_items)
+        for item in fc.stream_join(array):
+            with self.subTest():
+                self.assertEqual(2, len(item))
+                l, r = item
+                lv = data[m[l]]
+                rv = array[r]
+                self.assertEqual(lv, rv)
+
 
     def test_logical_op(self):
         c = Column(DataType.standard_int)

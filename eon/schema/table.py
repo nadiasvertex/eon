@@ -1,6 +1,8 @@
 from copy import copy
+
 from eon.schema.column import Column
 from eon.store.row import Row
+
 
 __author__ = 'csnelson'
 
@@ -16,10 +18,35 @@ class Table:
         self.segment_row_limit = 1 << 16
 
         self.in_flight = Row(0, self.get_row_type())
-        self.segment_rids = []
         self.segments = []
 
         self._second_stage_init()
+
+    def __getitem__(self, item):
+        """
+        Return the row matching the row identifier. Note that not all row identifiers
+        are present between any two present values. For example, just because rows 5 and
+        7 are present, doesn't mean that row 6 is.
+
+        Getting valid row identifiers is generally the result of a query. This object also
+        provides an iterator for walking over all items in the table.
+
+        :param item: The row identifier.
+        :return: A row of data.
+        """
+        if type(item) is int:
+            rid = item
+            # Find segment that contains the row identifier.
+            if rid in self.in_flight:
+                return self.in_flight[rid]
+
+            for s in self.segments:
+                if rid in s:
+                    return s[rid]
+
+            return IndexError("Row identifier '%d' is not present in this table." % rid)
+
+        return TypeError("Indexes of type '%s' cannot be used on tables." % type(item))
 
     def _second_stage_init(self):
         self.col_index_map = {c.name: i for i, c in enumerate(self.columns)}
@@ -37,12 +64,6 @@ class Table:
         :return: A generator for the row type of this table.
         """
         return (c.data_type for c in self.columns)
-
-    def get(self, rid):
-        # Find segment that contains the row identifier.
-        if rid < self.in_flight:
-            bisect
-
 
     def insert(self, data):
         """
@@ -120,6 +141,21 @@ class Table:
         else:
             sorted_values = [el[1] for el in sorted_indexes]
             return True, self.in_flight.insert(present, sorted_values)
+
+    def join(self, local_column_no, array):
+        """
+        Join the array provided against the column in this table, specified as
+        local_column_no.
+
+        :param local_column_no: The column in this table to join against.
+        :param array: The array to join against. The data column's type must be
+                      compatible with the type of the local column.
+        :return: A generator providing (rid, data_column_idx) for every local row that matches an index in
+                 the array.
+        """
+        for s in self.segments:
+            yield from s.join(local_column_no, array)
+
 
     def store(self):
         return {

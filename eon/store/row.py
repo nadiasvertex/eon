@@ -22,6 +22,17 @@ class Row:
     def __len__(self):
         return len(self.data)
 
+    def __contains__(self, item):
+        return self.base_rid <= item <= self.base_rid + len(self.data)
+
+    def __getitem__(self, item):
+        if type(item) is int:
+            idx = item - self.base_rid
+            if idx > len(self.data):
+                raise IndexError()
+
+            return self.get(idx)
+
     def insert(self, columns, values):
         """
         Inserts the given values into the data store.
@@ -45,6 +56,10 @@ class Row:
         self.data.append(column_rids)
         self.deleted.append(False)
         return self.base_rid + len(self.data) - 1
+
+    def join(self, column_no, array):
+        column = self.columns[column_no]
+        return column.join(array)
 
     def select(self, columns, idx):
         """
