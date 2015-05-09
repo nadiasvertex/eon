@@ -38,6 +38,12 @@ class Table:
         """
         return (c.data_type for c in self.columns)
 
+    def get(self, rid):
+        # Find segment that contains the row identifier.
+        if rid < self.in_flight:
+            bisect
+
+
     def insert(self, data):
         """
         Writes data into the table.
@@ -88,7 +94,7 @@ class Table:
                 return False, "Not all value lists are the same length."
 
             rids = []
-            for offset in range(0, lengths[0]):
+            for offset in range(0, lengths.pop()):
                 row_present = copy(present)
                 row_values = []
                 for i, va in sorted_indexes:
