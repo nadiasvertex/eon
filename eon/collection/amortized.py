@@ -5,7 +5,7 @@ __author__ = 'Christopher Nelson'
 import numpy as np
 
 
-class AmortizedArray:
+class AmortizedWriteArray:
     """
     This object maintains several arrays, which are already sorted. The arrays have fixed size. Elements are
     migrated from array to array as the number of items grows. The arrays are always powers of two. Once you
@@ -21,6 +21,33 @@ class AmortizedArray:
     def __iter__(self):
         arrays = [a for a in self.arrays if a is not None]
         yield from heapq.merge(*arrays)
+
+    def __getitem__(self, item):
+        if type(item) is not int:
+            raise TypeError("Expected index to be an integer, but it wasn't.")
+
+        for a in self.arrays:
+            if a is None:
+                continue
+
+            if item > len(a):
+                item -= len(a)
+                continue
+
+            return a[item]
+
+        raise IndexError("Index '%d' exceeds the capacity of the array." % item)
+
+    def __contains__(self, item):
+        for a in self.arrays:
+            if a is None:
+                continue
+
+            i = np.searchsorted(a, item)
+            if i < len(a) and a[i] == item:
+                return True
+
+        return False
 
     def _grow(self, value):
         """
@@ -49,7 +76,7 @@ class AmortizedArray:
         for i in full_slots:
             source_arrays.append(self.arrays[i])
 
-        #print("next=", next_empty_slot, "full=", full_slots, self.full, "concat=", source_arrays)
+        # print("next=", next_empty_slot, "full=", full_slots, self.full, "concat=", source_arrays)
         new_array = np.concatenate(source_arrays)
         new_array.sort()
         self.arrays[next_empty_slot] = new_array
@@ -71,7 +98,7 @@ class AmortizedArray:
 if __name__ == "__main__":
     import random
 
-    a = AmortizedArray(np.int)
+    a = AmortizedWriteArray(np.int)
     c = random.sample(range(1, 50), 20)
     print(a.arrays)
     for v in c:

@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from eon.collection.amortized import AmortizedArray
+from eon.collection.amortized import AmortizedWriteArray
 
 
 __author__ = 'Christopher Nelson'
@@ -19,11 +19,11 @@ c = random.sample(range(0, 10000), 9000)
 
 s2 = """
 from eon.collection.test.test_amortized_array import _test_amortized
-from eon.collection.amortized import AmortizedArray
+from eon.collection.amortized import AmortizedWriteArray
 import random
 import numpy as np
 
-a = AmortizedArray(np.int)
+a = AmortizedWriteArray(np.int)
 c = random.sample(range(0, 10000), 9000)
 """
 
@@ -53,13 +53,13 @@ def _test_amortized(a, c):
 
 class AmortizedArrayTest(unittest.TestCase):
     def test_insert(self):
-        a = AmortizedArray(np.int)
+        a = AmortizedWriteArray(np.int)
         c = random.sample(range(0, 10000), 1500)
         for v in c:
             a.append(v)
 
     def test_iterate(self):
-        a = AmortizedArray(np.int)
+        a = AmortizedWriteArray(np.int)
         c = random.sample(range(0, 10000), 1500)
         for v in c:
             a.append(v)
@@ -70,6 +70,17 @@ class AmortizedArrayTest(unittest.TestCase):
             with self.subTest(i=i):
                 self.assertEqual(d[i], v)
 
+    def test_membership(self):
+        a = AmortizedWriteArray(np.int)
+        c = random.sample(range(0, 10000), 1500)
+        for v in c:
+            a.append(v)
+
+        for v in c:
+            with self.subTest():
+                self.assertIn(v, a)
+
+    @unittest.skip
     def test_performance(self):
 
         v1 = timeit.timeit("_test_append_and_sort(a,c)", setup=s1, number=10)
