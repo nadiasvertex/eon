@@ -1,6 +1,8 @@
 import random
 import unittest
 
+import numpy as np
+
 from eon.schema.data import DataType
 from eon.store.row import Row
 
@@ -85,3 +87,25 @@ class RowTest(unittest.TestCase):
             self.assertEqual(1, len(d))
             with self.subTest(i=i):
                 self.assertEqual(c3[i], d[0])
+
+    def test_join(self):
+        base_rid = (1 << 16) * 3
+        row_type = (DataType.big_int, DataType.standard_int, DataType.small_int)
+        row = Row(base_rid, row_type)
+
+        c1 = random.sample(range(1, 1 << 16), 1 << 15)
+        c2 = random.sample(range(1, 1 << 16), 1 << 15)
+        c3 = random.sample(range(1, 1 << 16), 1 << 15)
+
+        for i in range(0, len(c1)):
+            row.insert((True, True, True), (c1[i], c2[i], c3[i]))
+
+        random_items = [random.choice(c1) for _ in range(0, len(c1) >> 1)]
+        array = np.array(random_items + random_items)
+        for item in row.join(0, array):
+            with self.subTest():
+                self.assertEqual(2, len(item))
+                l, r = item
+                for i, v in enumerate(l):
+                    with self.subTest(i=i):
+                        self.assertLessEqual(base_rid, v)

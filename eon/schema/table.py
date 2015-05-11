@@ -65,6 +65,14 @@ class Table:
         """
         return (c.data_type for c in self.columns)
 
+    def get_column_no(self, name):
+        """
+        Provides the column number of the column with `name`.
+        :param name: The name of the column to look up.
+        :return: None if there is no such column, otherwise the number.
+        """
+        return self.col_index_map.get(name)
+
     def insert(self, data):
         """
         Writes data into the table.
@@ -155,7 +163,6 @@ class Table:
         """
         for s in self.segments:
             yield from s.join(local_column_no, array)
-
 
     def store(self):
         return {

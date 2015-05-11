@@ -132,7 +132,6 @@ class FrozenColumnTest(unittest.TestCase):
                 rv = array[r]
                 self.assertEqual(lv, rv)
 
-
     def test_logical_op(self):
         c = Column(DataType.standard_int)
         data = random.sample(range(1, 1 << 16), 1 << 15)

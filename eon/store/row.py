@@ -59,7 +59,10 @@ class Row:
 
     def join(self, column_no, array):
         column = self.columns[column_no]
-        return column.join(array)
+        for item in column.vector_join(array):
+            l, r = item
+            l += self.base_rid
+            yield (l, r)
 
     def select(self, columns, idx):
         """

@@ -1,7 +1,11 @@
 import random
+
+import numpy as np
+
 from eon.schema.data import DataType
 from eon.schema.table import Table
 from eon.schema.column import Column
+
 
 __author__ = 'Christopher Nelson'
 
@@ -47,3 +51,20 @@ class SchemaColumnTest(unittest.TestCase):
         r = t.insert({"column_0": c1, "column_1": c2, "column_2": c3})
         self.assertTrue(r[0])
         self.assertEqual([i for i in range(0, len(c1))], r[1])
+
+    def test_join(self):
+        t = Table("test", [self.c0, self.c1, self.c2])
+
+        c1 = random.sample(range(1, 1 << 18), 1 << 17)
+        c2 = random.sample(range(1, 1 << 18), 1 << 17)
+        c3 = random.sample(range(1, 1 << 18), 1 << 17)
+
+        t.insert({"column_0": c1, "column_1": c2, "column_2": c3})
+
+        random_items = [random.choice(c1) for _ in range(0, len(c1) >> 1)]
+        array = np.array(random_items + random_items)
+
+        for item in t.join(0, array):
+            with self.subTest():
+                self.assertEqual(2, len(item))
+
