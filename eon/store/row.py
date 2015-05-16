@@ -1,7 +1,8 @@
 from copy import deepcopy
 
-from eon.store.column import Column
+import numpy as np
 
+from eon.store.column import Column
 
 __author__ = 'Christopher Nelson'
 
@@ -63,6 +64,29 @@ class Row:
             l, r = item
             l += self.base_rid
             yield (l, r)
+
+    def get_empty_selection(self):
+        return np.zeros(len(self.data), dtype=np.bool_)
+
+    def get_expanded_selection(self, column_no, selection):
+        """
+        We fix the array to the row by expanding it in place. We figure out what values are present and which
+        are not, and interpolating false values for null in the selection bitmap.
+        :param column_no: The column number that the selection bitmap represents.
+        :param selection: The selection bitmap to expand.
+        :return: A selection bitmap expanded for this segment.
+        """
+        if len(selection) == len(self.data):
+            return selection
+
+        new_selection = np.zeros(len(self.data))
+        selection_idx = 0
+        for row in self.data:
+            if row[column_no] is None:
+                continue
+
+            new_selection[selection_idx] = selection[selection_idx]
+            selection_idx += 1
 
     def select(self, columns, idx):
         """

@@ -13,7 +13,7 @@ constructor_map = {
 
 class Column:
     """
-    A data column with fast write properties. It uses a tremendous amount of memory, so after it reachest is
+    A data column with fast write properties. It uses a tremendous amount of memory, so after it reaches
     a critical size it should be frozen. Point searches on this data structure are not very fast because
     there are no indexes. That is generally okay because this kind of column should not last very long.
     """
@@ -35,6 +35,14 @@ class Column:
 
     def get(self, index):
         return self.data[index]
+
+    def get_data(self):
+        """
+        Provides the column data as an array.
+        :return: A numpy array containing the data.
+        """
+        cons = constructor_map[self.data_type]
+        return cons(self.data)
 
     def vector_join(self, array):
         """
@@ -97,6 +105,13 @@ class FrozenNumericColumn(Column):
         Column.__init__(self, data_type)
         self.cons = constructor_map[data_type]
         self.data = self.cons(data)
+
+    def get_data(self):
+        """
+        Provides the column data as an array.
+        :return: A numpy array containing the data.
+        """
+        return self.data
 
     def insert(self, value):
         raise ValueError("Cannot insert data into a frozen column.")

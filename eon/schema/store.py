@@ -25,6 +25,18 @@ class Database:
         """
         pass
 
+    def create_table(self, table):
+        """
+        Creates a table in the database.
+
+        :param table: The table to make part of this database.
+        """
+        if self.table_names is None:
+            self.table_names = {}
+
+        self.tables.append(table)
+        self.table_names[table.name] = table
+
     def get_table(self, name):
         """
         Provides the table object with the given name.

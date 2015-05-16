@@ -13,6 +13,7 @@ class Op(enum.Enum):
     logical_and = 7
     logical_or = 8
     logical_not = 9
+    join = 10
 
 
 class Plan:
@@ -45,4 +46,7 @@ class Plan:
 
     def logical_not(self):
         self.program.append((Op.logical_not,))
+
+    def join(self, column_no, join_table_name, join_column_no):
+        self.program.append((Op.join, column_no, join_table_name, join_column_no))
 

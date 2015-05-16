@@ -1,5 +1,7 @@
 from copy import copy
 
+import numpy as np
+
 from eon.schema.column import Column
 from eon.store.row import Row
 
@@ -116,7 +118,8 @@ class Table:
 
         # Write the data, vector or scalar. We require that all values be the same length, so examining the first
         # value should provide the same results as examining any other.
-        if type(sorted_indexes[0][1]) is list:
+        value_type = type(sorted_indexes[0][1])
+        if value_type is list or value_type is np.ndarray:
             # Make sure the values are all the same length.
             lengths = {len(el[1]) for el in sorted_indexes}
             if len(lengths) > 1:
