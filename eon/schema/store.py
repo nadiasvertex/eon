@@ -34,7 +34,7 @@ class Store:
                 "created": datetime.now().isoformat(),
                 "modified": datetime.now().isoformat(),
                 "admin": getpass.getuser(),
-                "pass": hashlib.sha512(new_password),
+                "pass": hashlib.sha512(new_password.encode("utf-8")).hexdigest(),
                 "databases": []
             }
             with open(self.store_file, "wb") as o:
@@ -44,7 +44,7 @@ class Store:
 
             if "password" not in default_values:
                 self.log.info(
-                    "Password for new instance is '% s'. You should change this as"
+                    "Password for new instance is '% s'. You should change this as "
                     "soon as possible for production use.", new_password
                 )
 

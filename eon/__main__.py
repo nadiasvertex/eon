@@ -15,8 +15,19 @@ from eon.schema.store import Store
 __author__ = 'Christopher Nelson'
 
 
+def unknown_schema_error(language, name):
+    return web.Response(body=json.dumps({
+        "success": False,
+        "error_code": code.UNKNOWN_SCHEMA_OBJECT,
+        "message": get_error_message(language, code.UNKNOWN_SCHEMA_OBJECT).format(name=name)
+    }).encode("utf-8"))
+
+
 @asyncio.coroutine
 def handle_restful_table_get(request):
+    log = logging.getLogger(__name__)
+    language = locale.getdefaultlocale()[0]
+
     mi = request.match_info
     db_name = mi.get('db_name', "system")
     table_name = mi.get('table_name')
@@ -24,15 +35,29 @@ def handle_restful_table_get(request):
     response = {
         "success": False
     }
+
+    log.debug("table get: %s/%s/%s", db_name, table_name, rid)
+
+    db = instance_store.get_database(db_name)
+    if db is None:
+        return unknown_schema_error(language, db_name)
+
+    table = db.get_table(table_name)
+    if table is None:
+        return unknown_schema_error(language, table_name)
+
     return web.Response(body=json.dumps(response).encode('utf-8'))
 
 
 @asyncio.coroutine
 def query_handler(request):
+    log = logging.getLogger(__name__)
     mi = request.match_info
     db_name = mi.get('db_name', "system")
     db = instance_store.get_database(db_name)
     language = locale.getdefaultlocale()[0]
+
+    log.debug("querying database: %s", db_name)
 
     ws = web.WebSocketResponse()
     ws.start(request)
@@ -85,6 +110,9 @@ def main():
     )
 
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s")
+
     svc = urlsplit(args.service)
     if ":" in svc.netloc:
         address, port = svc.netloc.split(":")
@@ -92,7 +120,7 @@ def main():
         address = svc.netloc
     port = "8080"
 
-    base_data_dir = os.path.join(args.data, svc, port)
+    base_data_dir = os.path.join(args.data, address, port)
     instance_store = Store(base_data_dir)
 
     loop = asyncio.get_event_loop()
