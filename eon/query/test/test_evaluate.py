@@ -1,6 +1,6 @@
 from eon.schema.column import Column
 from eon.schema.data import DataType
-from eon.schema.store import Database
+from eon.schema.db import Database
 from eon.schema.table import Table
 from eon.store.row import Row
 

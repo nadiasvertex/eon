@@ -1,61 +1,81 @@
 """
 Stores the schema of all active databases.
 """
-
-from eon.schema.table import Table
-
+from datetime import datetime
+import getpass
+import hashlib
+import json
+import logging
+import os
+import random
+import string
+from eon.schema.db import Database
 
 __author__ = 'Christopher Nelson'
 
+NEW_PASSWORD_LENGTH = 10
 
-class Database:
-    def __init__(self, name=None, tables=[]):
-        self.name = None
-        self.tables = tables
-        self.table_names = None
 
-    def _init_stage_2(self):
-        self.table_names = {table.name for table in self.tables}
+class Store:
+    def __init__(self, data_dir, default_values={}):
+        self.log = logging.getLogger()
+        self.data_dir = data_dir
+        self.configuration = None
+        self.databases = {}
 
-    def modify(self, command):
+        if not os.path.exists(data_dir):
+            self.log.info("Creating data directory '%s'", data_dir)
+            os.makedirs(data_dir)
+
+        self.store_file = os.path.join(self.data_dir, "store.json")
+        if not os.path.exists(self.store_file):
+            new_password = default_values.get("password", self._pass_gen())
+            initial_data = {
+                "created": datetime.now().isoformat(),
+                "modified": datetime.now().isoformat(),
+                "admin": getpass.getuser(),
+                "pass": hashlib.sha512(new_password),
+                "databases": []
+            }
+            with open(self.store_file, "wb") as o:
+                o.write(json.dumps(initial_data).encode("utf-8"))
+
+            self.log.info("New data site initialized at '%s'", self.data_dir)
+
+            if "password" not in default_values:
+                self.log.info(
+                    "Password for new instance is '% s'. You should change this as"
+                    "soon as possible for production use.", new_password
+                )
+
+        self._load_site()
+
+    def _pass_gen(self):
         """
-        Modifies the database schema.
-        :param command: The DDL command to execute
-        :return:
+        Generates a secure random password.
+        :return: The new password.
         """
-        pass
 
-    def create_table(self, table):
-        """
-        Creates a table in the database.
+        r = random.SystemRandom()
+        return ''.join(
+            [r.choice(string.ascii_letters + string.digits + string.punctuation)
+             for _ in range(NEW_PASSWORD_LENGTH)]
+        )
 
-        :param table: The table to make part of this database.
-        """
-        if self.table_names is None:
-            self.table_names = {}
+    def _load_site(self):
+        with open(self.store_file, "rb") as i:
+            self.configuration = json.loads(i.read().decode("utf-8"))
 
-        self.tables.append(table)
-        self.table_names[table.name] = table
+        self.log.info("Loaded configuration from '%s'", self.store_file)
+        for db in self.configuration["databases"]:
+            dbo = Database()
+            dbo.load(db)
 
-    def get_table(self, name):
-        """
-        Provides the table object with the given name.
+            self.databases[dbo.name] = dbo
+            self.log.debug("loaded '%s'", dbo.name)
 
-        :param name: The name of the table.
-        :return: A table, or None if there is no table with that name.
-        """
-        return self.table_names.get(name)
-
-    def store(self):
-        return {
-            "name": self.name,
-            "tables": [t.store() for t in self.tables]
-        }
-
-    def load(self, data):
-        self.name = data["name"]
-        self.tables = [Table().load(t) for t in data["tables"]]
-
+    def get_database(self, name):
+        return self.databases.get(name)
 
 
 
