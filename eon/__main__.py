@@ -15,16 +15,16 @@ from eon.schema.store import Store
 __author__ = 'Christopher Nelson'
 
 
-def unknown_schema_error(language, name):
+def error(language, error_code, args):
     return web.Response(body=json.dumps({
         "success": False,
-        "error_code": code.UNKNOWN_SCHEMA_OBJECT,
-        "message": get_error_message(language, code.UNKNOWN_SCHEMA_OBJECT).format(name=name)
+        "error_code": error_code,
+        "message": get_error_message(language, error_code).format(**args)
     }).encode("utf-8"))
 
 
 @asyncio.coroutine
-def handle_restful_table_get(request):
+def handle_raw_table_get(request):
     log = logging.getLogger(__name__)
     language = locale.getdefaultlocale()[0]
 
@@ -32,19 +32,85 @@ def handle_restful_table_get(request):
     db_name = mi.get('db_name', "system")
     table_name = mi.get('table_name')
     rid = mi.get("row_id")
-    response = {
-        "success": False
-    }
 
     log.debug("table get: %s/%s/%s", db_name, table_name, rid)
 
     db = instance_store.get_database(db_name)
     if db is None:
-        return unknown_schema_error(language, db_name)
+        return error(language, code.UNKNOWN_SCHEMA_OBJECT, {"name": db_name})
 
     table = db.get_table(table_name)
     if table is None:
-        return unknown_schema_error(language, table_name)
+        return error(language, code.UNKNOWN_SCHEMA_OBJECT, {"name": db_name})
+
+    try:
+        row_data = table[int(rid)]
+    except IndexError:
+        return error(language, code.INDEX_ERROR, {"rid": rid, "object_name": ".".join([db_name, table_name])})
+
+    response = {
+        "success": True,
+        "data": row_data
+    }
+
+    return web.Response(body=json.dumps(response).encode('utf-8'))
+
+@asyncio.coroutine
+def handle_create_db(request):
+    log = logging.getLogger(__name__)
+    language = locale.getdefaultlocale()[0]
+
+    mi = request.match_info
+    db_name = mi.get('db_name')
+
+    log.debug("database create: %s", db_name)
+
+    db = instance_store.get_database(db_name)
+    if db is None:
+        return error(language, code.UNKNOWN_SCHEMA_OBJECT, {"name": db_name})
+
+    instance_store.create_database(db_name)
+
+    if request.content_length is not None:
+        details = request.json()
+        # For now we don't actually do anything
+        # with the data that we read.
+
+    response = {
+        "success": True
+    }
+
+    return web.Response(body=json.dumps(response).encode('utf-8'))
+
+@asyncio.coroutine
+def handle_create_table(request):
+    log = logging.getLogger(__name__)
+    language = locale.getdefaultlocale()[0]
+
+    mi = request.match_info
+    db_name = mi.get('db_name')
+    table_name = mi.get('table_name')
+
+    log.debug("table create: %s.%s", db_name, table_name)
+
+    db = instance_store.get_database(db_name)
+    if db is None:
+        return error(language, code.UNKNOWN_SCHEMA_OBJECT, {"name": db_name})
+
+    table = db.get_table(db_name)
+    if table is not None:
+        return error(language, code.DUPLICATE_SCHEMA_OBJECT, {"name": ".".join([db_name, table_name])})
+
+    db.
+
+    if request.content_length is not None:
+        details = request.json()
+        # For now we don't actually do anything
+        # with the data that we read.
+
+    response = {
+        "success": True
+    }
 
     return web.Response(body=json.dumps(response).encode('utf-8'))
 
@@ -87,7 +153,12 @@ def init(loop, address, port):
     log = logging.getLogger()
     app = web.Application(loop=loop)
     app.router.add_route('GET', '/q/{db_name}', query_handler)
-    app.router.add_route('GET', '/{db_name}/{table_name}/{row_id}', handle_restful_table_get)
+
+    # Raw table access
+    app.router.add_route('GET', '/r/{db_name}/{table_name}/{row_id}', handle_raw_table_get)
+
+    # Schema access
+    app.router.add_route('PUT', '/s/{db_name}', handle_create_db)
 
     srv = yield from loop.create_server(app.make_handler(), address, port)
     log.info("Server started at http://%s:%s" % (address, port))

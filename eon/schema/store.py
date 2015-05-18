@@ -9,7 +9,12 @@ import logging
 import os
 import random
 import string
+
+from eon.error import code
+from eon.schema.column import Column
+
 from eon.schema.db import Database
+from eon.schema.table import Table
 
 __author__ = 'Christopher Nelson'
 
@@ -48,7 +53,7 @@ class Store:
                     "soon as possible for production use.", new_password
                 )
 
-        self._load_site()
+        self.load_site()
 
     def _pass_gen(self):
         """
@@ -62,7 +67,7 @@ class Store:
              for _ in range(NEW_PASSWORD_LENGTH)]
         )
 
-    def _load_site(self):
+    def load_site(self):
         with open(self.store_file, "rb") as i:
             self.configuration = json.loads(i.read().decode("utf-8"))
 
@@ -74,8 +79,46 @@ class Store:
             self.databases[dbo.name] = dbo
             self.log.debug("loaded '%s'", dbo.name)
 
+    def store_site(self):
+        database_config = []
+        for db in self.databases.values():
+            database_config.append(db.store())
+
+        self.configuration["databases"] = database_config
+        with open(self.store_file, "wb") as o:
+            o.write(json.dumps(self.configuration).encode("utf-8"))
+
+        self.log.info("Stored configuration in '%s'", self.store_file)
+
     def get_database(self, name):
         return self.databases.get(name)
 
+    def create_database(self, name):
+        db = Database(name=name)
+        self.databases[name] = db
 
+        self.store_site()
 
+    def create_table(self, db_name, table_name, table_dsl):
+        """
+        Create a new table.
+
+        :param db_name: The database name.
+        :param table_name: The table name to create.
+        :param table_dsl: The table data structure language.
+        :return: False, error_code, formatting_arguments on failure; or True, None, None on success.
+        """
+        db = self.databases[db_name]
+        if "columns" not in table_dsl:
+            return False, code.MALFORMED_SCHEMA_SPEC, {"required_field_name": "columns"}
+
+        columns = []
+        for column_spec in table_dsl["columns"]:
+            c = Column()
+            c.load(column_spec)
+            columns.append(c)
+
+        table = Table(table_name, columns=columns)
+        db.create_table(table)
+
+        return True, None, None

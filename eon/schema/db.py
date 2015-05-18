@@ -4,10 +4,11 @@ __author__ = 'christopher'
 
 
 class Database:
-    def __init__(self, name=None, tables=[]):
-        self.name = None
+    def __init__(self, name=None, tables=list()):
+        self.name = name
         self.tables = tables
         self.table_names = None
+        self._init_stage_2()
 
     def _init_stage_2(self):
         self.table_names = {table.name for table in self.tables}

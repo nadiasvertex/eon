@@ -46,9 +46,11 @@ class Table:
                 if rid in s:
                     return s[rid]
 
-            return IndexError("Row identifier '%d' is not present in this table." % rid)
+            # The desired item is not present in this table.
+            raise IndexError("Row identifier '%d' is not present in this table." % rid)
 
-        return TypeError("Indexes of type '%s' cannot be used on tables." % type(item))
+        # We don't know how to index items of this type.
+        raise TypeError("Indexes of type '%s' cannot be used o  n tables." % type(item))
 
     def _second_stage_init(self):
         self.col_index_map = {c.name: i for i, c in enumerate(self.columns)}
@@ -91,7 +93,6 @@ class Table:
         # Freeze the current in-flight segment if we've hit our limit.
         if len(self.in_flight) >= self.segment_row_limit:
             frozen_segment = self.in_flight.freeze()
-            self.segment_rids.append(self.in_flight.base_rid)
             self.segments.append(frozen_segment)
             next_base_rid = self.in_flight.base_rid + self.segment_row_limit
             del self.in_flight
