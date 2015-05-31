@@ -101,8 +101,6 @@ def handle_create_table(request):
     if table is not None:
         return error(language, code.DUPLICATE_SCHEMA_OBJECT, {"name": ".".join([db_name, table_name])})
 
-    db.
-
     if request.content_length is not None:
         details = request.json()
         # For now we don't actually do anything
