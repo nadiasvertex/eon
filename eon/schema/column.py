@@ -1,3 +1,5 @@
+from eon.schema.data import DataType
+
 __author__ = 'csnelson'
 
 
@@ -12,7 +14,7 @@ class Column:
     def store(self):
         return {
             "name": self.name,
-            "data-type": self.data_type,
+            "data-type": self.data_type.value,
             "nullable": self.nullable,
             "default": self.default,
             "max-length": self.max_length
@@ -20,7 +22,7 @@ class Column:
 
     def load(self, data):
         self.name = data["name"]
-        self.data_type = data["data-type"]
+        self.data_type = DataType(data["data-type"])
         self.nullable = data["nullable"]
         self.default = data["default"]
         self.max_length = data["max-length"]

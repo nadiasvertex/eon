@@ -1,9 +1,6 @@
 __author__ = 'Christopher Nelson'
 
-import enum
-
-@enum.unique
-class DataType(enum.Enum):
+class DataType:
     small_int = 1
     standard_int = 2
     big_int = 3

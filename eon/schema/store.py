@@ -49,7 +49,7 @@ class Store:
 
             if "password" not in default_values:
                 self.log.info(
-                    "Password for new instance is '% s'. You should change this as "
+                    "Password for new instance is '%s'. You should change this as "
                     "soon as possible for production use.", new_password
                 )
 
@@ -97,23 +97,23 @@ class Store:
         db = Database(name=name)
         self.databases[name] = db
 
-        self.store_site()
+        return db
 
-    def create_table(self, db_name, table_name, table_dsl):
+    def create_table(self, db_name, table_name, table_ddl):
         """
         Create a new table.
 
         :param db_name: The database name.
         :param table_name: The table name to create.
-        :param table_dsl: The table data structure language.
+        :param table_ddl: The table data structure language.
         :return: False, error_code, formatting_arguments on failure; or True, None, None on success.
         """
         db = self.databases[db_name]
-        if "columns" not in table_dsl:
+        if "columns" not in table_ddl:
             return False, code.MALFORMED_SCHEMA_SPEC, {"required_field_name": "columns"}
 
         columns = []
-        for column_spec in table_dsl["columns"]:
+        for column_spec in table_ddl["columns"]:
             c = Column()
             c.load(column_spec)
             columns.append(c)

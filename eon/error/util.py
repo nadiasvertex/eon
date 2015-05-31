@@ -25,7 +25,7 @@ def get_language_code(language):
         log.debug("loading message module '%s' for language '%s'", module_file_path, lang)
         module_path = "eon.error.messages." + lang
         m = importlib.import_module(module_path)
-        message_cache[language] = m
+        message_cache[language] = m.messages
 
         return m.messages
 
