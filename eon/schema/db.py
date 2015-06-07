@@ -11,7 +11,7 @@ class Database:
         self._init_stage_2()
 
     def _init_stage_2(self):
-        self.table_names = {table.name for table in self.tables}
+        self.table_names = {table.name: table for table in self.tables}
 
     def modify(self, command):
         """

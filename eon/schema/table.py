@@ -19,10 +19,12 @@ class Table:
         # Maximum number of rows in a segment.
         self.segment_row_limit = 1 << 16
 
+        self._second_stage_init()
+        
         self.in_flight = Row(0, self.get_row_type())
         self.segments = []
 
-        self._second_stage_init()
+
 
     def __getitem__(self, item):
         """

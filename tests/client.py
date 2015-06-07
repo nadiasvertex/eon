@@ -1,4 +1,5 @@
 from pprint import pprint
+from eon.client.data import DataType
 
 __author__ = 'Christopher Nelson'
 
@@ -12,3 +13,11 @@ with cluster.connect() as c:
         db = c.create_database("test")
 
     pprint(db.schema)
+
+    if not db.has_table("table_1"):
+        db.create_table("table_1", [
+            {"name": "id", "data-type": DataType.big_int},
+            {"name": "title", "data-type": DataType.varchar},
+            {"name": "key_symbol", "data-type": DataType.varchar},
+            {"name": "file_size", "data-type": DataType.standard_int}
+        ])
