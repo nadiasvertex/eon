@@ -7,9 +7,9 @@ from urllib.parse import urlsplit
 from aiohttp import web
 from eon import instance
 
-from eon.handlers.db import handle_create_db, handle_get_db
+from eon.handlers.db import handle_create_db, handle_get_db, handle_get_db_list
 from eon.handlers.query import query_handler
-from eon.handlers.table import handle_create_table, handle_raw_table_get
+from eon.handlers.table import handle_create_table, handle_raw_table_get, handle_raw_table_put
 
 __author__ = 'Christopher Nelson'
 
@@ -22,11 +22,14 @@ def init(loop, address, port):
 
     # Raw table access
     app.router.add_route('GET', '/r/{db_name}/{table_name}/{row_id}', handle_raw_table_get)
+    app.router.add_route('PUT', '/r/{db_name}/{table_name}', handle_raw_table_put)
 
     # Schema access
     app.router.add_route('PUT', '/s/{db_name}/{table_name}', handle_create_table)
     app.router.add_route('PUT', '/s/{db_name}', handle_create_db)
     app.router.add_route('GET', '/s/{db_name}', handle_get_db)
+    app.router.add_route('GET', '/s', handle_get_db_list)
+
 
     srv = yield from loop.create_server(app.make_handler(), address, port)
     log.info("Server started at http://%s:%s" % (address, port))

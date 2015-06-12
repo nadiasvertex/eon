@@ -7,6 +7,9 @@ from eon.client import cluster
 from eon.client.exception import DataDefinitionLanguageError
 
 with cluster.connect() as c:
+    print("Current databases:")
+    pprint(c.databases())
+
     try:
         db = c.open_database("test")
     except DataDefinitionLanguageError:
@@ -21,3 +24,7 @@ with cluster.connect() as c:
             {"name": "key_symbol", "data-type": DataType.varchar},
             {"name": "file_size", "data-type": DataType.standard_int}
         ])
+
+    # Test inserting data
+    r = db.insert("table_1", {"title": "The Grandest Thing Ever", "file_size": 1500})
+    pprint(r)

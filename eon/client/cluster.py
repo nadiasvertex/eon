@@ -22,7 +22,7 @@ class Connection:
         self.session.close()
 
     @asyncio.coroutine
-    def _cmd(self, path, method, payload):
+    def _cmd(self, path: str, method: str, payload):
         """
         Issues a command by writing payload to path (if payload is not None) or just issuing a request to the given
         path. The payload is expected to be convertible to JSON. The result will be standard Python objects parsed
@@ -42,7 +42,7 @@ class Connection:
         )
         return (yield from response.json())
 
-    def cmd(self, path, method="GET", payload=None, sync=True):
+    def cmd(self, path: str, method="GET", payload=None, sync=True):
         """
         Issues a command by writing payload to path (if payload is not None) or just issuing a request to the given
         path. The payload is expected to be convertible to JSON. The result will be standard Python objects parsed
@@ -69,7 +69,7 @@ class Connection:
         if not result["success"]:
             raise DataDefinitionLanguageError(result["error_code"], result["message"])
 
-    def create_database(self, name, options=None):
+    def create_database(self, name: str, options=None):
         """
         Create a new database.
 
@@ -81,7 +81,7 @@ class Connection:
         self.check_for_ddl_error(r)
         return db.Database(self, name, r["schema"])
 
-    def open_database(self, name):
+    def open_database(self, name: str):
         """
         Open an existing database.
 
@@ -91,6 +91,15 @@ class Connection:
         r = self.cmd("s/" + name, method="GET")
         self.check_for_ddl_error(r)
         return db.Database(self, name, r["schema"])
+
+    def databases(self):
+        """
+        Retrieve a list of databases available on this cluster.
+        :return: A list of database names.
+        """
+        r = self.cmd("s", method="GET")
+        self.check_for_ddl_error(r)
+        return r["schema"]
 
 
 def connect(protocol="http", host="localhost", port=8080):

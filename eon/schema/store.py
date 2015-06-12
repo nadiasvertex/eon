@@ -96,14 +96,31 @@ class Store:
 
         self.log.info("Stored configuration in '%s'", self.store_file)
 
-    def get_database(self, name):
+    def get_database(self, name: str):
+        """
+        Get a database object given the database name.
+        :param name: The database to get.
+        :return: A database, or None if there is no database with that name.
+        """
         return self.databases.get(name)
 
-    def create_database(self, name):
+    def create_database(self, name: str):
+        """
+        Create a new database.
+        :param name: The name of the new database.
+        :return: An empty database object, registered with the given name.
+        """
         db = Database(name=name)
         self.databases[name] = db
 
         return db
+
+    def get_databases(self):
+        """
+        Get a list of the database names in this cluster.
+        :return: A list of databases.
+        """
+        return self.databases.keys()
 
     def create_table(self, db_name, table_name, table_ddl):
         """
@@ -164,3 +181,22 @@ class Store:
         db.create_table(table)
 
         return True, None, None
+
+    def insert(self, db_name, table_name, data):
+        """
+        Insert data into a table.
+        :param db_name:  The database to insert into.
+        :param table_name: The table to insert into.
+        :param data: The data to insert. Obeys the table.insert data format.
+        :return: False, error_code, params if the insert fails, True, rid_data, None on success.
+        """
+        db = self.databases.get(db_name)
+        if db is None:
+            return False, code.UNKNOWN_SCHEMA_OBJECT, {"name": db_name}
+
+        table = db.get_table(table_name)
+        if table is None:
+            return False, code.UNKNOWN_SCHEMA_OBJECT, {"name": ".".join([db_name, table_name])}
+
+        rid_data = table.insert(data)
+        return True, rid_data, None

@@ -1,5 +1,6 @@
 __author__ = 'Christopher Nelson'
 
+
 class Database:
     def __init__(self, c, name, schema=None):
         self.c = c
@@ -44,3 +45,18 @@ class Database:
             self.refresh_schema_cache()
 
         return table_name in {t["name"] for t in self.schema["tables"]}
+
+    def insert(self, table_name, values):
+        """
+        Insert data into the table.
+
+        :param table_name: The table to insert data into.
+        :param values: This is a dictionary where each column name is a key, and the value is the
+                        data for that column. If the value is a list, then the values specify consecutive rows. Every
+                        value must have the same amount of data, otherwise data corruption will result.
+        :return: A tuple of (True, rid) if it worked, or a list of (True, rid) for each row in the bulk stream that was
+                 inserted.
+        """
+        result = self.c.cmd("/".join(["r", self.name, table_name]), payload=values, method="PUT")
+        self.c.check_for_ddl_error(result)
+        return result["data"]

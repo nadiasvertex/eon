@@ -54,3 +54,4 @@ class Database:
     def load(self, data):
         self.name = data["name"]
         self.tables = [Table().load(t) for t in data["tables"]]
+        self._init_stage_2()

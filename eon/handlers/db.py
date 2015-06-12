@@ -60,3 +60,18 @@ def handle_get_db(request):
     }
 
     return response(body)
+
+@asyncio.coroutine
+def handle_get_db_list(request):
+    log = logging.getLogger(__name__)
+
+    log.debug("cluster get: list of databases")
+
+    store = instance.get_store()
+
+    body = {
+        "success": True,
+        "schema": list(store.get_databases())
+    }
+
+    return response(body)
