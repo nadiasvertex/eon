@@ -45,14 +45,16 @@ class Row:
         :return: The row id.
         """
         column_rids = []
+        value_idx = 0
         for i, present in enumerate(columns):
             if not present:
                 column_rids.append(None)
                 continue
 
-            value = values[i]
+            value = values[value_idx]
             column = self.columns[i]
             column_rids.append(column.insert(value))
+            value_idx += 1
 
         self.data.append(column_rids)
         self.deleted.append(False)

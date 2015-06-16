@@ -5,7 +5,6 @@ import numpy as np
 from eon.schema.column import Column
 from eon.store.row import Row
 
-
 __author__ = 'csnelson'
 
 
@@ -15,16 +14,14 @@ class Table:
         self.columns = columns
         self.col_index_map = None
         self.col_map = None
+        self.in_flight = None
 
         # Maximum number of rows in a segment.
         self.segment_row_limit = 1 << 16
 
         self._second_stage_init()
-        
-        self.in_flight = Row(0, self.get_row_type())
+
         self.segments = []
-
-
 
     def __getitem__(self, item):
         """
@@ -55,10 +52,19 @@ class Table:
         raise TypeError("Indexes of type '%s' cannot be used o  n tables." % type(item))
 
     def _second_stage_init(self):
+        """
+        Perform post-load initializations.
+        """
         self.col_index_map = {c.name: i for i, c in enumerate(self.columns)}
         self.col_map = {c.name: c for c in self.columns}
+        self.in_flight = Row(0, self.get_row_type())
 
     def _check_nulls(self, present):
+        """
+        Check to see if nulls are present, and if so, can a null be written to the column.
+        :param present: The present vector.
+        :return: (False, "error mesage") if the row is not permissible, (True, None) if it is.
+        """
         for i, c in enumerate(self.columns):
             if present[i] == False and c.nullable == False:
                 return False, "Column '%s' does not allow null values." % c.name
@@ -171,6 +177,10 @@ class Table:
             yield from s.join(local_column_no, array)
 
     def store(self):
+        """
+        Save the schema state of this table.
+        :return: A dictionary containing the table schema state.
+        """
         return {
             "name": self.name,
             "columns": [c.store() for c in self.columns],
@@ -178,6 +188,10 @@ class Table:
         }
 
     def load(self, data):
+        """
+        Load the schema state of this table.
+        :param data: The schema state dictionary.
+        """
         self.name = data["name"]
         self.columns = [Column().load(cd) for cd in data["columns"]]
         self.segment_row_limit = data["segment_row_limit"]
