@@ -60,3 +60,6 @@ class Database:
         result = self.c.cmd("/".join(["r", self.name, table_name]), payload=values, method="PUT")
         self.c.check_for_ddl_error(result)
         return result["data"]
+
+    def select(self, table_name):
+        pass

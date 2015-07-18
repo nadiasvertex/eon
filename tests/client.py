@@ -26,5 +26,13 @@ with cluster.connect() as c:
         ])
 
     # Test inserting data
-    r = db.insert("table_1", {"title": "The Grandest Thing Ever", "file_size": 1500})
-    pprint(r)
+    data = [
+        {"title": "The Grandest Thing Ever", "file_size": 1500},
+        {"title": "Super Cool", "file_size": 1200},
+        {"title": "Also Wonderful", "file_size": 783}
+    ]
+    for row in data:
+        r = db.insert("table_1", row)
+        pprint(r)
+
+    db.
