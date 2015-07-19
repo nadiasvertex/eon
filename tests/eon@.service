@@ -1,0 +1,11 @@
+[Unit]
+Description=eon
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker rmi eon
+ExecStartPre=-/usr/bin/docker load -i /home/christopher/workspace/eon/eon.tar
+ExecStart=/usr/bin/docker run --name eon eon
+ExecStop=/usr/bin/docker stop eon
