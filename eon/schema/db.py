@@ -1,6 +1,9 @@
+import numpy as np
+
+from eon.query.evaluate import Evaluate
 from eon.schema.table import Table
 
-__author__ = 'christopher'
+__author__ = 'Christopher Nelson'
 
 
 class Database:
@@ -42,8 +45,22 @@ class Database:
         """
         return self.table_names.get(name)
 
-    def query(self, q):
-        return {}
+    def query(self, q, plan):
+        """
+        Queries the database using the given query plan.
+
+        :param q: The query to execute.
+        :param plan: The plan to execute the query with.
+        :return: The query data.
+        """
+        e = Evaluate(self, plan)
+        table = self.table_names.get(q["from"])
+        result_rows = []
+        for row in table.rows():
+            to_select = e.evaluate(row)
+            result_rows.append([c for i, c in enumerate(row) if to_select[i]])
+
+        return result_rows
 
     def store(self):
         return {

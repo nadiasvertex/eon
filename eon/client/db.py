@@ -61,5 +61,14 @@ class Database:
         self.c.check_for_ddl_error(result)
         return result["data"]
 
-    def select(self, table_name):
-        pass
+    def select(self, query):
+        """
+        Selects data from a database. The query is a dictionary composed according to the query
+        rules defined in the server. (See eon.query.parser)
+
+        :param query: The query to run.
+        :return: The results.
+        """
+        result = self.c.cmd("/".join(["q", self.name]), payload=query, method="GET")
+        self.c.check_for_ddl_error(result)
+        return result["data"]

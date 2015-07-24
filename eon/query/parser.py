@@ -80,9 +80,10 @@ drop data and insert data into the stream based on simple predicates and generat
 class Parser:
     def __init__(self, db, data):
         self.db = db
-        self.query = json.loads(data)
+        self.query = data
         self.qid = uuid.uuid4()
         self.msg = io.StringIO()
+        self.plan = Plan()
 
     def _error(self, msg):
         self.msg.write("ERROR: ")
@@ -91,13 +92,16 @@ class Parser:
     def get_message(self):
         return self.msg.getvalue()
 
+    def get_plan(self):
+        return self.plan
+
     def compile(self):
         """
         Compiles a JSON query into a query plan.
 
         :return: The query plan.
         """
-        plan = Plan()
+
 
         base_table_name = self.query.get("from")
         if base_table_name is None:
@@ -109,6 +113,7 @@ class Parser:
             self._error("Database does not contain a table named '%s'", base_table_name)
             return False
 
+        return True
 
 
 

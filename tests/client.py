@@ -31,8 +31,10 @@ with cluster.connect() as c:
         {"title": "Super Cool", "file_size": 1200},
         {"title": "Also Wonderful", "file_size": 783}
     ]
+
     for row in data:
         r = db.insert("table_1", row)
         pprint(r)
 
-    db.
+    data = db.select({"from": "table_1", "select": ["title"]})
+    pprint(data)

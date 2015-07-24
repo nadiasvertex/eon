@@ -6,6 +6,8 @@ from aiohttp import web
 from eon import instance
 from eon.error import code
 from eon.error.util import get_error_message
+from eon.handlers.common import response, error
+from eon.query.parser import Parser
 
 __author__ = 'Christopher Nelson'
 
@@ -22,24 +24,20 @@ def query_handler(request):
 
     log.debug("querying database: %s", db_name)
 
-    ws = web.WebSocketResponse()
-    ws.start(request)
+    if request.content_length is None:
+        return error(language, code.MISSING_REQUEST_BODY, {})
 
-    while True:
-        msg = yield from ws.receive()
-        if msg.tp == web.MsgType.text:
-            data = json.loads(msg.data)
-            if db is None:
-                ws.send_str(json.dumps({
-                    "success": False,
-                    "message": get_error_message(language, code.UNKNOWN_SCHEMA_OBJECT)
-                }))
-            else:
-                ws.send_str(json.dumps({
-                    "success": True,
-                    "data": db.query(data)
-                }))
-        elif msg.tp == web.MsgType.close:
-            break
+    query = yield from request.json()
 
-    return ws
+    p = Parser(db, query)
+    if not p.compile():
+        return error(language, code.COMPILE_ERROR, {"message":p.get_message()})
+
+    row_data = db.query(query, p.get_plan())
+
+    body = {
+        "success": True,
+        "data": row_data
+    }
+
+    return response(body)

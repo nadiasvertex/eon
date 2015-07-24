@@ -10,4 +10,5 @@ messages = {
     code.ILLEGAL_DATA_LENGTH: "Data type '{name}' is not allowed to have a max-length constraint of '{limit}'",
     code.MISSING_REQUEST_BODY: "The command requires a message body, but none was provided.",
     code.INDEX_ERROR: "Row identifier '{rid}' does not exist in object '{object_name}'.",
+    code.COMPILE_ERROR: "Unable to compile query: {message}",
 }

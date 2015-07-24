@@ -176,6 +176,20 @@ class Table:
         for s in self.segments:
             yield from s.join(local_column_no, array)
 
+    def rows(self):
+        """
+        Iterate over all the rows in the table.
+
+        :return: A generator that produces rows from the table.
+        """
+        if self.in_flight is not None:
+            for idx in range(0, len(self.in_flight)):
+                yield self.in_flight.get(idx)
+
+        for s in self.segments:
+            for idx in range(0, len(s)):
+                yield s.get(idx)
+
     def store(self):
         """
         Save the schema state of this table.
