@@ -1,0 +1,14 @@
+[Unit]
+Description=ceph-mon
+After=ceph-mon@.service
+Requires=ceph-mon@.service
+
+[Service]
+TimeoutStartSec=0
+ExecStart=/usr/bin/docker exec ceph-mon ceph osd create
+ExecStop=/usr/bin/docker stop ceph-osd
+
+[X-Fleet]
+Conflicts=ceph-mon@*.service
+Conflicts=ceph-osd@*.service
+Conflicts=ceph-mds@*.service

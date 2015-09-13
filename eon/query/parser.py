@@ -4,7 +4,6 @@ import io
 
 from eon.query.plan import Plan
 
-
 __author__ = 'Christopher Nelson'
 
 """
@@ -89,6 +88,70 @@ class Parser:
         self.msg.write("ERROR: ")
         self.msg.write(msg)
 
+    def _parse_expr(self, e):
+        op = e.get("op")
+        if op is None:
+            self._error("No operation specified in expression '%s'." % json.dumps(e))
+            return False
+
+        left = e.get("left")
+        right = e.get("right")
+
+        if left is None:
+            self._error(self._error("No left side specified in expression '%s'." % json.dumps(e)))
+            return False
+
+        if right is None:
+            self._error(self._error("No right side specified in expression '%s'." % json.dumps(e)))
+            return False
+
+        if type(left) is dict:
+            if not self._parse_expr(left):
+                return False
+
+        if type(right) is dict:
+            if not self._parse_expr(right):
+                return False
+
+
+
+    def _parse_predicate(self, group, is_and=True):
+        first = True
+        for expr in group:
+            if not self._parse_expr(expr):
+                return False
+
+            if first:
+                first = False
+                continue
+
+            # Generate a logical op for the two items on the top of the stack.
+            if is_and:
+                self.plan.logical_and()
+            else:
+                self.plan.logical_or()
+
+        return True
+
+    def _parse_where(self):
+        predicate = self.query["where"]
+        any_group = predicate.get("any")
+        all_group = predicate.get("all")
+
+        if any_group is not None and all_group is not None:
+            self._error("WHERE expression may not contain both 'all' and 'any' at the top level. Use nesting "
+                        "to provide parenthetical scoping.")
+            return False
+
+        if any_group is None and all_group is None:
+            self._error("WHERE expression must contain either 'all' or 'any' at the top level.")
+            return False
+
+        if any_group is not None:
+            return self._parse_predicate(any_group, is_and=False)
+        else:
+            return self._parse_predicate(all_group)
+
     def get_message(self):
         return self.msg.getvalue()
 
@@ -102,7 +165,6 @@ class Parser:
         :return: The query plan.
         """
 
-
         base_table_name = self.query.get("from")
         if base_table_name is None:
             self._error("Unable to parse query, no 'from' clause.")
@@ -113,9 +175,8 @@ class Parser:
             self._error("Database does not contain a table named '%s'", base_table_name)
             return False
 
+        if "where" in self.query:
+            if not self._parse_where():
+                return False
+
         return True
-
-
-
-
-

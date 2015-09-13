@@ -5,13 +5,13 @@ coreos:
   etcd:
     addr: $public_ipv4:4001
     peer-addr: $public_ipv4:7001
-    discovery: https://discovery.etcd.io/030777a04eaf58512e0cfd78bea96738
+    discovery: https://discovery.etcd.io/9e528d4b2d7c753501d515abf460d2e1
   etcd2:
     advertise-client-urls: http://$public_ipv4:2379
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/030777a04eaf58512e0cfd78bea96738
+    discovery: https://discovery.etcd.io/9e528d4b2d7c753501d515abf460d2e1
   fleet:
     public-ip: $public_ipv4
   flannel:

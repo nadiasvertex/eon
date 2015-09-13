@@ -10,6 +10,7 @@ class Op(enum.Enum):
     gte = 4
     eq = 5
     ne = 6
+    
     logical_and = 7
     logical_or = 8
     logical_not = 9

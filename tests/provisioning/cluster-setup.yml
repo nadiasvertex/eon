@@ -3,4 +3,4 @@
   roles:
   - { role: amidos.install-docker, docker_user: vagrant }
   - consul
-
+  - ceph

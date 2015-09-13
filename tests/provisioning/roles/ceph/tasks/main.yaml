@@ -1,0 +1,5 @@
+- name: setup ceph monitors (docker)
+  docker:
+    state: started
+    name: ceph-mon
+    image: ceph/mon

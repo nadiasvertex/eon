@@ -1,0 +1,9 @@
+---
+ - name: ensure cluster exists
+   os_server:
+     state: present
+     flavor: m1.small
+     image: coreos-stable
+     key_name: christopher
+     config_drive: yes
+     name: eon

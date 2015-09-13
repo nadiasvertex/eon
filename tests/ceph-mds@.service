@@ -1,0 +1,14 @@
+[Unit]
+Description=ceph-mds
+After=ceph-mon@.service
+Requires=ceph-mon@.service
+
+[Service]
+TimeoutStartSec=0
+ExecStart=/usr/bin/docker run --name ceph-mds ceph/mds
+ExecStop=/usr/bin/docker stop ceph-mds
+
+[X-Fleet]
+Conflicts=ceph-mon@*.service
+Conflicts=ceph-osd@*.service
+Conflicts=ceph-mds@*.service
