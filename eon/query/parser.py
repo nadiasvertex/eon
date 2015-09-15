@@ -308,6 +308,7 @@ class Parser:
             self.program.write("\tselector = .false.\n")
             self.program.write("end where\n\n")
 
+        self.program.write("print *, record_count\n")
         self.program.write("print *, selector\n")
         self.program.write("end program\n")
 

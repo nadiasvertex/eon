@@ -1,3 +1,4 @@
+import subprocess
 import unittest
 
 from eon.query.parser import Parser
@@ -10,6 +11,12 @@ __author__ = 'Christopher Nelson'
 
 
 class TestParser(unittest.TestCase):
+    def _get_output(self, p, test_data):
+        process = subprocess.Popen([p.runnable_path], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        out, _ = process.communicate(input="\n".join(test_data).encode("utf-8"))
+
+        return out.decode("utf-8").strip()
+
     def setUp(self):
         self.c0 = Column("column_0", DataType.standard_int)
         self.c1 = Column("column_1", DataType.big_int)
@@ -51,3 +58,11 @@ class TestParser(unittest.TestCase):
         print(program)
         self.assertIsNotNone(program)
         self.assertLess(0, len(program))
+
+        test_data = [
+            "5",
+            "1 2 3 10 20",
+            "100 5 6 7 8"
+        ]
+
+        self.assertEqual("5\n F T T F F", self._get_output(p, test_data))
