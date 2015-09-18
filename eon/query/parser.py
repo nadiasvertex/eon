@@ -215,31 +215,50 @@ class Parser:
 
     def _generate_arrays(self):
         arrays = sorted(self.array_map.keys())
-        self.program.write("logical(1), dimension(:), allocatable :: selector\n")
+        self.program.write("\tlogical(1), dimension(:), allocatable :: selector\n")
         for k in arrays:
             arr_name, arr_type = self.array_map[k]
             self.program.write(
-                "%s, dimension(:), allocatable :: %s\t! %s\n" % (arr_type, arr_name, k)
+                "\t%s, dimension(:), allocatable :: %s\t! %s\n" % (arr_type, arr_name, k)
             )
 
+        self.program.write("\tinteger(4) :: record_count = 0\n")
+        self.program.write("\tinteger(4) :: last_record_count = 0\n")
+        self.program.write("\tlogical(1) :: allocated = .false.\n")
         self.program.write("\n")
 
     def _generate_load_arrays(self):
         arrays = sorted(self.array_map.keys())
 
-        self.program.write("integer(4) :: record_count = 0\n")
-        self.program.write("read *, record_count\n\n")
-
-        self.program.write("allocate(selector(record_count))\n")
-        self.program.write("selector = .true.\n\n")
-
+        self.program.write("\tread *, record_count\n\n")
+        self.program.write("\tif (record_count == 0) then\n\t\texit\n\tend if\n")
+        self.program.write("\tif (allocated .and. (record_count /= last_record_count)) then\n")
+        self.program.write("\t\tdeallocate(selector)\n")
         for k in arrays:
             arr_name, arr_type = self.array_map[k]
             self.program.write(
-                "allocate(%s(record_count)) ! %s\n" % (arr_name, k)
+                "\t\tdeallocate(%s) ! %s\n" % (arr_name, k)
             )
+
+        self.program.write("\t\tallocated = .false.\n")
+        self.program.write("\tend if\n")
+
+        self.program.write("\tif (.not. allocated) then\n")
+        self.program.write("\t\tallocate(selector(record_count))\n")
+        for k in arrays:
+            arr_name, arr_type = self.array_map[k]
             self.program.write(
-                "read *, %s\n" % arr_name
+                "\t\tallocate(%s(record_count)) ! %s\n" % (arr_name, k)
+            )
+        self.program.write("\t\tallocated = .true.\n")
+        self.program.write("\tend if\n")
+
+        self.program.write("\tlast_record_count = record_count\n")
+        self.program.write("\tselector = .true.\n\n")
+        for k in arrays:
+            arr_name, arr_type = self.array_map[k]
+            self.program.write(
+                "\tread *, %s\n" % arr_name
             )
 
         self.program.write("\n")
@@ -296,6 +315,8 @@ class Parser:
         # evaluated. Turn those into consecutive where clauses. Also generate the array allocations
         # that need to exist before the execution of the predicates.
         self._generate_arrays()
+
+        self.program.write("\ndo while(.true.)\n\n")
         self._generate_load_arrays()
 
         # A number of column arrays may be provided and processed. However, these arrays will always
@@ -309,7 +330,9 @@ class Parser:
             self.program.write("end where\n\n")
 
         self.program.write("print *, record_count\n")
-        self.program.write("print *, selector\n")
+        self.program.write("print *, selector\n\n")
+
+        self.program.write("\nend do\n")
         self.program.write("end program\n")
 
         return self._compile_query()

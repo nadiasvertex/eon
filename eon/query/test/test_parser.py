@@ -15,7 +15,7 @@ class TestParser(unittest.TestCase):
         process = subprocess.Popen([p.runnable_path], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         out, _ = process.communicate(input="\n".join(test_data).encode("utf-8"))
 
-        return out.decode("utf-8").strip()
+        return [l.strip() for l in out.decode("utf-8").split("\n") if l]
 
     def setUp(self):
         self.c0 = Column("column_0", DataType.standard_int)
@@ -62,7 +62,17 @@ class TestParser(unittest.TestCase):
         test_data = [
             "5",
             "1 2 3 10 20",
-            "100 5 6 7 8"
+            "100 5 6 7 8",
+            "5",
+            "20 10 3 2 1",
+            "8 7 6 5 100",
+            "10",
+            "1 2 3 10 20 20 10 3 2 1",
+            "8 7 6 5 100 100 5 6 7 8",
+            "0"
         ]
 
-        self.assertEqual("5\n F T T F F", self._get_output(p, test_data))
+        self.assertEqual(
+            ["5", "F T T F F", "5", "F F T T F", '10', 'T T T F F F F T T T'],
+            self._get_output(p, test_data)
+        )
