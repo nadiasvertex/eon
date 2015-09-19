@@ -41,6 +41,85 @@ class TestParser(unittest.TestCase):
         self.assertIsNotNone(program)
         self.assertLess(0, len(program))
 
+        test_data = [
+            "5",
+            "1 2 3 10 20",
+            "5",
+            "20 10 3 2 1",
+            "10",
+            "1 2 3 10 20 20 10 3 2 1",
+            "0"
+        ]
+
+        self.assertEqual(
+            ["5", "T T T F F", "5", "F F T T T", '10', 'T T T F F F F T T T'],
+            self._get_output(p, test_data)
+        )
+
+    def test_gt(self):
+        p = Parser(self.db, {
+            "from": "test",
+            "where": {
+                "all": [
+                    {"op": ">", "left": "column_0", "right": 5},
+                ]
+            }
+        })
+
+        self.assertTrue(p.compile(), msg=p.get_message())
+
+        program = p.get_program()
+        print(program)
+        self.assertIsNotNone(program)
+        self.assertLess(0, len(program))
+
+        test_data = [
+            "5",
+            "1 2 3 10 20",
+            "5",
+            "20 10 3 2 1",
+            "10",
+            "1 2 3 10 20 20 10 3 2 1",
+            "0"
+        ]
+
+        self.assertEqual(
+            ["5", "F F F T T", "5", "T T F F F", '10', 'F F F T T T T F F F'],
+            self._get_output(p, test_data)
+        )
+
+    def test_eq(self):
+        p = Parser(self.db, {
+            "from": "test",
+            "where": {
+                "all": [
+                    {"op": "=", "left": "column_0", "right": 5},
+                ]
+            }
+        })
+
+        self.assertTrue(p.compile(), msg=p.get_message())
+
+        program = p.get_program()
+        print(program)
+        self.assertIsNotNone(program)
+        self.assertLess(0, len(program))
+
+        test_data = [
+            "5",
+            "1 2 5 10 20",
+            "5",
+            "20 10 5 2 1",
+            "10",
+            "1 2 5 10 20 20 10 5 2 1",
+            "0"
+        ]
+
+        self.assertEqual(
+            ["5", "F F T F F", "5", "F F T F F", '10', 'F F T F F F F T F F'],
+            self._get_output(p, test_data)
+        )
+
     def test_two_column_lt(self):
         p = Parser(self.db, {
             "from": "test",
