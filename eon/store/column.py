@@ -70,6 +70,9 @@ class Column:
         p.write(";\n")
         p.write('print!("{} ", value);\n')
 
+    def _gen_get_filename(self, p):
+        p.write('let filename = env::args().nth(1).expect("Filename not provided as first argument.");\n')
+
     def _make_encoder(self):
         """
         An encoder takes a list of values and converts it into binary
@@ -79,12 +82,14 @@ class Column:
 
         p.write("use std::io;\n")
         p.write("use std::io::prelude::*;\n")
+        p.write("use std::env;\n")
         p.write("use std::fs::OpenOptions;\n\n")
 
         p.write("fn main() {\n")
         p.indent()
 
-        p.write('let mut f = OpenOptions::new().write(true).append(true).create(true).open("test.array").unwrap();\n\n')
+        self._gen_get_filename(p)
+        p.write('let mut f = OpenOptions::new().write(true).append(true).create(true).open(filename).unwrap();\n\n')
 
         p.write("let mut data = String::new();\n")
         p.write("io::stdin().read_line(&mut data).unwrap();\n")
@@ -111,12 +116,14 @@ class Column:
         p = IndentedWriter()
 
         p.write("use std::io::prelude::*;\n")
+        p.write("use std::env;\n")
         p.write("use std::fs::OpenOptions;\n\n")
 
         p.write("fn main() {\n")
         p.indent()
 
-        p.write('let mut f = OpenOptions::new().read(true).open("test.array").unwrap();\n\n')
+        self._gen_get_filename(p)
+        p.write('let mut f = OpenOptions::new().read(true).open(filename).unwrap();\n\n')
 
         p.write("loop {\n")
         p.indent()
